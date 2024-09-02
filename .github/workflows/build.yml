@@ -25,7 +25,7 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: binarybuilder_storage
+          path: ${{ github.workspace }}/binarybuilder_storage
           key: ${{ matrix.target }}
       - name: Build LLVM assert on ${{ matrix.target }}
         id: build
