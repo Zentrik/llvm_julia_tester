@@ -33,6 +33,26 @@ jobs:
           cd Yggdrasil
           git fetch
           git switch llvm-19-llvm
+          git apply '
+          diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
+          index a649c4d3..01432368 100644
+          --- a/L/LLVM/common.jl
+          +++ b/L/LLVM/common.jl
+          @@ -48,12 +48,7 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+              cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+          fi
+
+          -if [[ ${target} == *mingw32* ]]; then
+          -    # Build system for Windows is plagued by race conditions.
+          -    # We disable Ccache for this platform to avoid caching
+          -    # possibly badly compiled racey code.
+          -    export CCACHE_DISABLE=true
+          -fi
+          +
+
+          cd ${WORKSPACE}/srcdir/llvm-project/llvm
+          LLVM_SRCDIR=$(pwd)
+          '
           cd L/LLVM/LLVM_full@19
           mkdir -p bundled/patches
           echo '
