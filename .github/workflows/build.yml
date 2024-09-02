@@ -20,6 +20,12 @@ jobs:
           git clone https://github.com/JuliaPackaging/Yggdrasil.git
           cd Yggdrasil/L/LLVM
           julia -e '
+            import Pkg
+            Pkg.add("BinaryBuilder")
+            Pkg.add("BinaryBuilderBase")
+            Pkg.add("Pkg")
+            Pkg.add("LibGit2")
+
             version = v"19.0.0"
 
             include("common.jl")
