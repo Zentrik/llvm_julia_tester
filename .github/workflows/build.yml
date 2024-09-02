@@ -17,7 +17,6 @@ jobs:
           - aarch64-apple-darwin
           - i686-w64-mingw32-cxx11
     steps:
-      - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.7'
@@ -26,15 +25,19 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.target }}
-      - name: Build LLVM assert on ${{ matrix.target }}
+      - name: Fetch latest LLVM commit sha
         run: |
           set -o xtrace
           export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
+      - name: Clone Yggdrasil
+        run: |
           git clone https://github.com/Zentrik/Yggdrasil.git
           cd Yggdrasil
           git fetch
           git switch llvm-19-llvm
           cd L/LLVM/LLVM_full@19
+      - name: Add patches
+        run: |
           mkdir -p bundled/patches
           echo '
           From 7c4cffd9d8be424e9e9542be9aec3b5a6f69073e Mon Sep 17 00:00:00 2001
@@ -117,6 +120,8 @@ jobs:
            add_mlir_library(MLIRJitRunner
              JitRunner.cpp
           ' > bundled/patches/remove_mlir_shlib.patch
+      - name: Build LLVM assert on ${{ matrix.target }}
+        run: |
           BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
