@@ -17,10 +17,11 @@ jobs:
           arch: x64
       - name: BUILD
         run: |
+          set -o xtrace
           export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
           git clone https://github.com/Zentrik/Yggdrasil.git
           cd Yggdrasil
-          git fetch llvm-19
+          git fetch
           git switch llvm-19
           cd L/LLVM/LLVM_full@19
           mkdir -p bundled/patches
