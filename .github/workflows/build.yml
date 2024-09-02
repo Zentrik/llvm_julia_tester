@@ -115,7 +115,7 @@ jobs:
 
             version = v"19.0.0"
 
-            include("common.jl")
+            include("../common.jl")
 
             build_tarballs(["--verbose", "x86_64-w64-mingw32-cxx11"], configure_build([], version; assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
           '
