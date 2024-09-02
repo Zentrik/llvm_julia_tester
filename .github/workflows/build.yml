@@ -16,7 +16,7 @@ jobs:
           arch: x64
       - name: BUILD
         run: |
-          echo LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
+          export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
           git clone https://github.com/JuliaPackaging/Yggdrasil.git
           cd Yggdrasil/L/LLVM
           julia -e '
