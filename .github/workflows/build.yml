@@ -19,9 +19,10 @@ jobs:
         run: |
           export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
           git clone https://github.com/Zentrik/Yggdrasil.git
+          cd Yggdrasil
           git fetch llvm-19
           git switch llvm-19
-          cd Yggdrasil/L/LLVM/LLVM_full@19
+          cd L/LLVM/LLVM_full@19
           mkdir -p bundled/patches
           echo '
             From e19e51fde3e16da907bcc201319349f3d0d8a680 Mon Sep 17 00:00:00 2001
