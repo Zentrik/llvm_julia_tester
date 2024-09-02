@@ -137,7 +137,7 @@ jobs:
            add_mlir_library(MLIRJitRunner
              JitRunner.cpp
           ' > bundled/patches/remove_mlir_shlib.patch
-          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true julia -e '
+          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true BINARYBUILDER_CCACHE_DIR=$(ccache -k cache_dir) julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
             Pkg.add("BinaryBuilderBase")
