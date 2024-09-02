@@ -1,4 +1,4 @@
-name: Build LLVM
+name: Build LLVM assert
 on:
   pull_request:
   push:
@@ -14,13 +14,19 @@ jobs:
       matrix:
         target:
           - x86_64-w64-mingw32-cxx11
+          - aarch64-apple-darwin
+          - i686-w64-mingw32-cxx11
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.7'
           arch: x64
-      - name: Build LLVM on ${{ matrix.target }}
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.target }}
+      - name: Build LLVM assert on ${{ matrix.target }}
         run: |
           set -o xtrace
           export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
@@ -111,7 +117,7 @@ jobs:
            add_mlir_library(MLIRJitRunner
              JitRunner.cpp
           ' > bundled/patches/remove_mlir_shlib.patch
-          julia -e '
+          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
             Pkg.add("BinaryBuilderBase")
