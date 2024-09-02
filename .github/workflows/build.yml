@@ -1,0 +1,29 @@
+name: Build LLVM on x86_64-w64-mingw32-cxx11
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.7'
+          arch: x64
+      - name: BUILD
+        run: |
+          echo LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
+          git clone https://github.com/JuliaPackaging/Yggdrasil.git
+          cd Yggdrasil/L/LLVM
+          julia -e '
+            version = v"19.0.0"
+
+            include("common.jl")
+
+            build_tarballs(["--verbose", "x86_64-w64-mingw32-cxx11"], configure_build([], version; assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...;
+                          preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
+          '
