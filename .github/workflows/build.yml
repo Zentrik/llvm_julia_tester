@@ -139,8 +139,8 @@ jobs:
            add_mlir_library(MLIRJitRunner
              JitRunner.cpp
           ' > bundled/patches/remove_mlir_shlib.patch
-          mkdir -p binarybuilder_storage
-          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true BINARYBUILDER_STORAGE_DIR=binarybuilder_storage julia -e '
+          mkdir -p ${{ github.workspace }}/binarybuilder_storage
+          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true BINARYBUILDER_STORAGE_DIR=${{ github.workspace }}/binarybuilder_storage julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
             Pkg.add("BinaryBuilderBase")
