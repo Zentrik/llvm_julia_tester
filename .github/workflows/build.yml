@@ -21,9 +21,11 @@ jobs:
         with:
           version: '1.7'
           arch: x64
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Cache BinaryBuilder Storage Directory
+        id: cache
+        uses: actions/cache@v4
         with:
+          path: binarybuilder_storage
           key: ${{ matrix.target }}
       - name: Build LLVM assert on ${{ matrix.target }}
         id: build
@@ -137,7 +139,8 @@ jobs:
            add_mlir_library(MLIRJitRunner
              JitRunner.cpp
           ' > bundled/patches/remove_mlir_shlib.patch
-          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true BINARYBUILDER_CCACHE_DIR=$(ccache -k cache_dir) julia -e '
+          mkdir -p binarybuilder_storage
+          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true BINARYBUILDER_STORAGE_DIR=binarybuilder_storage julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
             Pkg.add("BinaryBuilderBase")
