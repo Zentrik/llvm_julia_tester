@@ -58,7 +58,7 @@ jobs:
            }
 
            } // namespace fuzzer
-          ' > bundled/patch/fix_setthreadname.patch
+          ' > bundled/patches/fix_setthreadname.patch
           echo '
           From fc64a5899f1c7be92ce4a71a4bffa7753cc67623 Mon Sep 17 00:00:00 2001
           From: Zentrik <Zentrik@users.noreply.github.com>
