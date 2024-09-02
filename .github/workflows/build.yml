@@ -1,5 +1,6 @@
 name: Build LLVM on x86_64-w64-mingw32-cxx11
 on:
+  pull_request:
   push:
   workflow_dispatch:
   schedule:
@@ -17,8 +18,92 @@ jobs:
       - name: BUILD
         run: |
           export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
-          git clone https://github.com/JuliaPackaging/Yggdrasil.git
-          cd Yggdrasil/L/LLVM
+          git clone https://github.com/Zentrik/Yggdrasil.git
+          git fetch llvm-19
+          git switch llvm-19
+          cd Yggdrasil/L/LLVM/LLVM_full@19
+          mkdir -p bundled/patches
+          echo '
+            From e19e51fde3e16da907bcc201319349f3d0d8a680 Mon Sep 17 00:00:00 2001
+            From: David CARLIER <devnexen@gmail.com>
+            Date: Sun, 1 Sep 2024 13:35:10 +0100
+            Subject: [PATCH] [compiler-rt][fuzzer] SetThreadName build fix for Mingwin
+            attempt (#106902)
+
+            ---
+            compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp | 4 ++++
+            1 file changed, 4 insertions(+)
+
+            diff --git a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
+            index db80eb383885e6..b262755fa436b2 100644
+            --- a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
+            +++ b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
+            @@ -239,6 +239,7 @@ size_t PageSize() {
+            }
+
+            void SetThreadName(std::thread &thread, const std::string &name) {
+            +#if !defined(__MINGW32__)
+              typedef HRESULT(WINAPI * proc)(HANDLE, PCWSTR);
+              HMODULE kbase = GetModuleHandleA("KernelBase.dll");
+              proc ThreadNameProc =
+            @@ -253,6 +254,9 @@ void SetThreadName(std::thread &thread, const std::string &name) {
+                  }
+                }
+              }
+            +#else
+            +  (void)pthread_setname_np(thread.native_handle(), name.c_str());
+            +#endif
+            }
+
+            } // namespace fuzzer
+            ' > bundled/patches/fix_setthreadname.patch
+          echo '
+            From fc64a5899f1c7be92ce4a71a4bffa7753cc67623 Mon Sep 17 00:00:00 2001
+            From: Zentrik <Zentrik@users.noreply.github.com>
+            Date: Sun, 1 Sep 2024 16:59:49 +0100
+            Subject: [PATCH] Revert "[MLIR][ExecutionEngine] Introduce shared library
+            (#87067)"
+
+            This reverts commit 631ae59d301496f86a8d46d28f7b12afbd12a3c1.
+            ---
+            mlir/lib/ExecutionEngine/CMakeLists.txt | 23 -----------------------
+            1 file changed, 23 deletions(-)
+
+            diff --git a/mlir/lib/ExecutionEngine/CMakeLists.txt b/mlir/lib/ExecutionEngine/CMakeLists.txt
+            index a091944b9ee7df..b7e448d5417ea9 100644
+            --- a/mlir/lib/ExecutionEngine/CMakeLists.txt
+            +++ b/mlir/lib/ExecutionEngine/CMakeLists.txt
+            @@ -97,29 +97,6 @@ add_mlir_library(MLIRExecutionEngine
+              MLIRTargetLLVMIRExport
+              )
+
+            -if(LLVM_BUILD_LLVM_DYLIB)
+            -  # Build a shared library for the execution engine. Some downstream projects
+            -  # use this library to build their own CPU runners while preserving dynamic
+            -  # linkage.
+            -  add_mlir_library(MLIRExecutionEngineShared
+            -    ExecutionEngine.cpp
+            -    SHARED
+            -
+            -    EXCLUDE_FROM_LIBMLIR
+            -
+            -    ADDITIONAL_HEADER_DIRS
+            -    ${MLIR_MAIN_INCLUDE_DIR}/mlir/ExecutionEngine
+            -
+            -    # Ensures that all necessary dependencies are resolved.
+            -    DEPENDS
+            -    MLIRExecutionEngine
+            -
+            -    LINK_LIBS PUBLIC
+            -    LLVM
+            -    MLIR
+            -    )
+            -endif()
+            -
+            get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
+            add_mlir_library(MLIRJitRunner
+              JitRunner.cpp
+          ' > bundled/patches/remove_mlir_shlib.patch
           julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
