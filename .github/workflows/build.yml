@@ -32,7 +32,7 @@ jobs:
         run: |
           set -o xtrace
           export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
-          echo "LLVM_VERSION=$LLVM_VERSION" >> "$GITHUB_OUTPUT"
+          export LLVM_VERSION_MAJOR= $(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')
           git clone https://github.com/Zentrik/Yggdrasil.git
           cd Yggdrasil
           git fetch
@@ -147,7 +147,7 @@ jobs:
             Pkg.add("Pkg")
             Pkg.add("LibGit2")
 
-            version = v"19.0.0"
+            version = v"$(ENV["LLVM_VERSION_MAJOR"]).0.0"
 
             include("../common.jl")
 
@@ -157,5 +157,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: llvm-assert-${{ matrix.target }}-${{ steps.build.outputs.LLVM_VERSION }}
-          path: products
+          path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
           if-no-files-found: warn
