@@ -162,7 +162,6 @@ jobs:
             Pkg.add("BinaryBuilderBase")
             Pkg.add("Pkg")
             Pkg.add("LibGit2")
-            using BinaryBuilderBase
 
             version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
 
