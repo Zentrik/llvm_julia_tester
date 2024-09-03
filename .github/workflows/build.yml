@@ -6,6 +6,11 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   build_llvm_assert:
     runs-on: ubuntu-latest
@@ -25,7 +30,9 @@ jobs:
         with:
           version: '1.7'
           arch: x64
-      - name: Prepare ccache timestamp
+      - uses: julia-actions/cache@v2
+        include-matrix: false
+      - name: Prepare cache timestamp
         id: cache_timestamp
         run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Cache BinaryBuilder Storage Directory
