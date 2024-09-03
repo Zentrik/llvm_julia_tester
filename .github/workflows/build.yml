@@ -9,6 +9,12 @@ on:
 jobs:
   build_llvm_assert:
     runs-on: ubuntu-latest
+    env:
+        BINARYBUILDER_USE_CCACHE: true
+        BINARYBUILDER_AUTOMATIC_APPLE: true
+        BINARYBUILDER_STORAGE_DIR: ${{ github.workspace }}/binarybuilder_storage
+        BINARYBUILDER_USE_SQUASHFS: true
+        BINARYBUILDER_RUNNER: privileged
     strategy:
       fail-fast: false
       matrix:
@@ -143,7 +149,7 @@ jobs:
              JitRunner.cpp
           ' > bundled/patches/remove_mlir_shlib.patch
           mkdir -p ${{ github.workspace }}/binarybuilder_storage
-          BINARYBUILDER_USE_CCACHE=true BINARYBUILDER_AUTOMATIC_APPLE=true BINARYBUILDER_STORAGE_DIR=${{ github.workspace }}/binarybuilder_storage julia -e '
+          julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
             Pkg.add("BinaryBuilderBase")
