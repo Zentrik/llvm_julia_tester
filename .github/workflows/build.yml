@@ -27,12 +27,15 @@ jobs:
         with:
           version: '1.7'
           arch: x64
+      - name: Prepare ccache timestamp
+        id: cache_timestamp
+        run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Cache BinaryBuilder Storage Directory
         id: cache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/binarybuilder_storage
-          key: ${{ matrix.target }}-${ { date +%s } }
+          key: ${{ matrix.target }}-${{ steps.cache_timestamp.outputs.timestamp }}
           restore-keys: |
                ${{ matrix.target }}
       - name: Build LLVM assert on ${{ matrix.target }}
@@ -40,6 +43,7 @@ jobs:
         run: |
           set -o xtrace
           export LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
+          echo "LLVM_VERSION=$LLVM_VERSION" >> "$GITHUB_OUTPUT"
           export LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')
           git clone https://github.com/Zentrik/Yggdrasil.git
           cd Yggdrasil
