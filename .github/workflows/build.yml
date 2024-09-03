@@ -34,7 +34,7 @@ jobs:
           path: ${{ github.workspace }}/binarybuilder_storage
           key: ${{ matrix.target }}-${ { date +%s } }
           restore-keys: |
-               ${{ matrix.target }}-
+               ${{ matrix.target }}
       - name: Build LLVM assert on ${{ matrix.target }}
         id: build
         run: |
