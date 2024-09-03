@@ -32,7 +32,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/binarybuilder_storage
-          key: ${{ matrix.target }}
           key: ${{ matrix.target }}-${ { date +%s } }
           restore-keys: |
                ${{ matrix.target }}-
