@@ -27,6 +27,9 @@ jobs:
         with:
           path: ${{ github.workspace }}/binarybuilder_storage
           key: ${{ matrix.target }}
+          key: ${{ matrix.target }}-${ { date +%s } }
+          restore-keys: |
+               ${{ matrix.target }}-
       - name: Build LLVM assert on ${{ matrix.target }}
         id: build
         run: |
@@ -151,7 +154,9 @@ jobs:
 
             include("../common.jl")
 
+            BinaryBuilderBase.versioninfo()
             build_tarballs(["--verbose", "${{ matrix.target }}"], configure_build([], version; assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
+            BinaryBuilderBase.versioninfo()
           '
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
