@@ -31,7 +31,8 @@ jobs:
           version: '1.7'
           arch: x64
       - uses: julia-actions/cache@v2
-        include-matrix: false
+        with:
+          include-matrix: false
       - name: Prepare cache timestamp
         id: cache_timestamp
         run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
