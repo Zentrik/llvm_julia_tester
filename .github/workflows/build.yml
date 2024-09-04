@@ -16,9 +16,10 @@ jobs:
       - name: "Fetch"
         run: |
           set -o xtrace
-          echo "LLVM_VERSION=$$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')" >> "$GITHUB_OUTPUT"
-          echo "LLVM_VERSION_MAJOR=$$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')" >> "$GITHUB_OUTPUT"
-          echo "$GITHUB_OUTPUT"
+          LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
+          LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')
+          echo "LLVM_VERSION=$LLVM_VERSION" >> "$GITHUB_OUTPUT"
+          echo "LLVM_VERSION_MAJOR=$LLVM_VERSION_MAJOR" >> "$GITHUB_OUTPUT"
   build_llvm_assert:
     needs: fetch_llvm_version
     runs-on: ubuntu-latest
