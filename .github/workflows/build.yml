@@ -189,11 +189,11 @@ jobs:
             Pkg.add("Pkg")
             Pkg.add("LibGit2")
 
-            version = VersionNumber(parse(Int, ENV["${{ needs.fetch_llvm_version.outputs.LLVM_VERSION_MAJOR }}"]), 0, 0)
+            version = VersionNumber(parse(Int, "${{ needs.fetch_llvm_version.outputs.LLVM_VERSION_MAJOR }}"), 0, 0)
 
             include("../common.jl")
 
-            build_tarballs(["--verbose", "${{ matrix.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["${{ needs.fetch_llvm_version.outputs.LLVM_VERSION }}"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
+            build_tarballs(["--verbose", "${{ matrix.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver="${{ needs.fetch_llvm_version.outputs.LLVM_VERSION }}")...; preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
           '
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
