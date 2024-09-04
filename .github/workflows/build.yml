@@ -10,10 +10,11 @@ jobs:
   fetch_llvm_version:
     runs-on: ubuntu-latest
     outputs: 
-      LLVM_VERSION: ${{ steps.Fetch.outputs.LLVM_VERSION }}
-      LLVM_VERSION_MAJOR: ${{ steps.Fetch.outputs.LLVM_VERSION_MAJOR }}
+      LLVM_VERSION: ${{ steps.fetch.outputs.LLVM_VERSION }}
+      LLVM_VERSION_MAJOR: ${{ steps.fetch.outputs.LLVM_VERSION_MAJOR }}
     steps:
       - name: "Fetch"
+        id: fetch
         run: |
           set -o xtrace
           LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
