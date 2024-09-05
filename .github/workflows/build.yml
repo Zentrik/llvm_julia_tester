@@ -218,7 +218,7 @@ jobs:
   #         path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
   #         if-no-files-found: warn
   build_julia_assert:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     # needs: build_llvm_assert
     container: "juliapackaging/package-windows-x86_64:latest"
     steps:
