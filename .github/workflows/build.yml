@@ -221,8 +221,8 @@ jobs:
     runs-on: windows-latest
     # needs: build_llvm_assert
     defaults:
-    run:
-      shell: msys2 {0}
+      run:
+        shell: msys2 {0}
     steps:
       - uses: msys2/setup-msys2@v2
         with:
