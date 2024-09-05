@@ -159,6 +159,7 @@ jobs:
 
            } // namespace fuzzer
           ' > bundled/patches/fix_setthreadname.patch
+          mkdir -p ${{ github.workspace }}/binarybuilder_storage
           julia -e '
             import Pkg
             Pkg.add("BinaryBuilder")
