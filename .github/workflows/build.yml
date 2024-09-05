@@ -220,11 +220,31 @@ jobs:
   build_julia_assert:
     runs-on: windows-latest
     # needs: build_llvm_assert
-    container: "juliapackaging/package-windows-x86_64:latest"
+    defaults:
+    run:
+      shell: msys2 {0}
     steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            cmake
+            diffutils
+            git
+            m4
+            make
+            patch
+            tar
+            p7zip
+            curl
+            python
+            mingw-w64-x86_64-gcc
       - name: "Build Julia Assert"
         run: |
           set -o xtrace
+          git config --global core.eol lf
+          git config --global core.autocrlf input
           git clone https://github.com/Zentrik/julia
           git fetch
           git switch llvm-19
