@@ -12,208 +12,221 @@ on:
     - cron: '0 */8 * * *'
 
 jobs:
-  fetch_llvm_version:
+  # fetch_llvm_version:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     LLVM_VERSION: ${{ steps.fetch.outputs.LLVM_VERSION }}
+  #     LLVM_VERSION_MAJOR: ${{ steps.fetch.outputs.LLVM_VERSION_MAJOR }}
+  #   steps:
+  #     - name: "Fetch"
+  #       id: fetch
+  #       run: |
+  #         set -o xtrace
+  #         LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
+  #         LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')
+  #         echo "LLVM_VERSION=$LLVM_VERSION" >> "$GITHUB_OUTPUT"
+  #         echo "LLVM_VERSION_MAJOR=$LLVM_VERSION_MAJOR" >> "$GITHUB_OUTPUT"
+  # build_llvm_assert:
+  #   needs: fetch_llvm_version
+  #   runs-on: ubuntu-latest
+  #   env:
+  #       BINARYBUILDER_USE_CCACHE: true
+  #       BINARYBUILDER_AUTOMATIC_APPLE: true
+  #       BINARYBUILDER_STORAGE_DIR: ${{ github.workspace }}/binarybuilder_storage
+  #       LLVM_VERSION: ${{ github.event.inputs.LLVM_VERSION || needs.fetch_llvm_version.outputs.LLVM_VERSION }}
+  #       LLVM_VERSION_MAJOR: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION_MAJOR }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       target:
+  #         - x86_64-w64-mingw32-cxx11
+  #         - aarch64-apple-darwin
+  #         - i686-w64-mingw32-cxx11
+  #   steps:
+      # - name: Maximize build disk space (Only remove unwanted software)
+  #     #     # You may pin to the exact commit or the version.
+  #     #     # uses: AdityaGarg8/remove-unwanted-software@8831c82abf29b34eb2caac48d5f999ecfc0d8eef
+      #   uses: AdityaGarg8/remove-unwanted-software@v4.1
+      #   with:
+  #     #     # Removes .NET runtime and libraries. (frees ~2 GB)
+  #     #     remove-dotnet: true
+      #     # Removes Android SDKs and Tools. (frees ~9 GB)
+      #     remove-android: true
+      #     # Removes GHC (Haskell) artifacts. (frees ~5.2 GB)
+      #     remove-haskell: true
+  #     #     # Removes CodeQL Action Bundles. (frees ~5.4 GB)
+  #     #     remove-codeql: true
+  #     #     # Removes cached Docker images. (frees ~3.2 GB)
+  #     #     remove-docker-images: true
+  #     #     # Removes unwanted large Apt packages. (frees ~3.1 GB)
+  #     #     remove-large-packages: true
+  #     #     # Removes cached tools used by setup actions by GitHub. (frees ~8.3 GB)
+  #     #     remove-cached-tools: true
+      #     # Enables detailed logging of the action
+      #     verbose: false
+  #     - uses: julia-actions/setup-julia@v2
+  #       with:
+  #         version: '1.7'
+  #         arch: x64
+  #     - name: Prepare cache timestamp
+  #       id: cache_timestamp
+  #       run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
+  #     - name: Cache BinaryBuilder Storage Directory
+  #       if: github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == ''
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ${{ github.workspace }}/binarybuilder_storage
+  #         key: ${{ matrix.target }}-${{ steps.cache_timestamp.outputs.timestamp }}
+  #         restore-keys: |
+  #              ${{ matrix.target }}
+  #     - name: Restore Cached BinaryBuilder Storage Directory
+  #       if: github.ref != 'refs/heads/master' || github.event.inputs.LLVM_VERSION != ''
+  #       uses: actions/cache/restore@v4
+  #       with:
+  #         path: ${{ github.workspace }}/binarybuilder_storage
+  #         key: ${{ matrix.target }}-${{ steps.cache_timestamp.outputs.timestamp }}
+  #         restore-keys: |
+  #              ${{ matrix.target }}
+  #     - name: Build LLVM assert on ${{ matrix.target }}
+  #       id: build
+  #       run: |
+  #         set -o xtrace
+  #         git clone https://github.com/Zentrik/Yggdrasil.git
+  #         cd Yggdrasil
+  #         git fetch
+  #         git switch llvm-19-llvm
+  #         echo '
+  #         diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
+  #         index a649c4d3..fc74fcf4 100644
+  #         --- a/L/LLVM/common.jl
+  #         +++ b/L/LLVM/common.jl
+  #         @@ -48,12 +48,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+  #              cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+  #          fi
+
+  #         -if [[ ${target} == *mingw32* ]]; then
+  #         -    # Build system for Windows is plagued by race conditions.
+  #         -    # We disable Ccache for this platform to avoid caching
+  #         -    # possibly badly compiled racey code.
+  #         -    export CCACHE_DISABLE=true
+  #         -fi
+
+  #          cd ${WORKSPACE}/srcdir/llvm-project/llvm
+  #          LLVM_SRCDIR=$(pwd)
+  #         ' | git apply
+  #         cd L/LLVM/LLVM_full@19
+  #         mkdir -p bundled/patches
+  #         echo '
+  #         From 7c4cffd9d8be424e9e9542be9aec3b5a6f69073e Mon Sep 17 00:00:00 2001
+  #         From: David CARLIER <devnexen@gmail.com>
+  #         Date: Sun, 1 Sep 2024 13:35:10 +0100
+  #         Subject: [PATCH] [compiler-rt][fuzzer] SetThreadName build fix for Mingwin
+  #          attempt (#106902)
+
+  #         ---
+  #          compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp | 4 ++++
+  #          1 file changed, 4 insertions(+)
+
+  #         diff --git a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
+  #         index e0210aa0ac3651..7252d99dd375df 100644
+  #         --- a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
+  #         +++ b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
+  #         @@ -239,6 +239,7 @@ size_t PageSize() {
+  #          }
+
+  #          void SetThreadName(std::thread &thread, const std::string &name) {
+  #         +#if !defined(__MINGW32__)
+  #            typedef HRESULT(WINAPI * proc)(HANDLE, PCWSTR);
+  #            HMODULE kbase = GetModuleHandleA("KernelBase.dll");
+  #            proc ThreadNameProc = reinterpret_cast<proc>(
+  #         @@ -253,6 +254,9 @@ void SetThreadName(std::thread &thread, const std::string &name) {
+  #                }
+  #              }
+  #            }
+  #         +#else
+  #         +  (void)pthread_setname_np(thread.native_handle(), name.c_str());
+  #         +#endif
+  #          }
+
+  #          } // namespace fuzzer
+  #         ' > bundled/patches/fix_setthreadname.patch
+  #         echo '
+  #         From fc64a5899f1c7be92ce4a71a4bffa7753cc67623 Mon Sep 17 00:00:00 2001
+  #         From: Zentrik <Zentrik@users.noreply.github.com>
+  #         Date: Sun, 1 Sep 2024 16:59:49 +0100
+  #         Subject: [PATCH] Revert "[MLIR][ExecutionEngine] Introduce shared library
+  #          (#87067)"
+
+  #         This reverts commit 631ae59d301496f86a8d46d28f7b12afbd12a3c1.
+  #         ---
+  #          mlir/lib/ExecutionEngine/CMakeLists.txt | 23 -----------------------
+  #          1 file changed, 23 deletions(-)
+
+  #         diff --git a/mlir/lib/ExecutionEngine/CMakeLists.txt b/mlir/lib/ExecutionEngine/CMakeLists.txt
+  #         index a091944b9ee7df..b7e448d5417ea9 100644
+  #         --- a/mlir/lib/ExecutionEngine/CMakeLists.txt
+  #         +++ b/mlir/lib/ExecutionEngine/CMakeLists.txt
+  #         @@ -97,29 +97,6 @@ add_mlir_library(MLIRExecutionEngine
+  #            MLIRTargetLLVMIRExport
+  #            )
+
+  #         -if(LLVM_BUILD_LLVM_DYLIB)
+  #         -  # Build a shared library for the execution engine. Some downstream projects
+  #         -  # use this library to build their own CPU runners while preserving dynamic
+  #         -  # linkage.
+  #         -  add_mlir_library(MLIRExecutionEngineShared
+  #         -    ExecutionEngine.cpp
+  #         -    SHARED
+  #         -
+  #         -    EXCLUDE_FROM_LIBMLIR
+  #         -
+  #         -    ADDITIONAL_HEADER_DIRS
+  #         -    ${MLIR_MAIN_INCLUDE_DIR}/mlir/ExecutionEngine
+  #         -
+  #         -    # Ensures that all necessary dependencies are resolved.
+  #         -    DEPENDS
+  #         -    MLIRExecutionEngine
+  #         -
+  #         -    LINK_LIBS PUBLIC
+  #         -    LLVM
+  #         -    MLIR
+  #         -    )
+  #         -endif()
+  #         -
+  #          get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
+  #          add_mlir_library(MLIRJitRunner
+  #            JitRunner.cpp
+  #         ' > bundled/patches/remove_mlir_shlib.patch
+  #         mkdir -p ${{ github.workspace }}/binarybuilder_storage
+  #         julia -e '
+  #           import Pkg
+  #           Pkg.add("BinaryBuilder")
+  #           Pkg.add("BinaryBuilderBase")
+  #           Pkg.add("Pkg")
+  #           Pkg.add("LibGit2")
+
+  #           version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
+
+  #           include("../common.jl")
+
+  #           build_tarballs(["--verbose", "${{ matrix.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
+  #         '
+  #     - name: Upload artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: llvm-assert-${{ matrix.target }}-${{ needs.fetch_llvm_version.outputs.LLVM_VERSION }}
+  #         path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
+  #         if-no-files-found: warn
+  build_julia_assert:
     runs-on: ubuntu-latest
-    outputs:
-      LLVM_VERSION: ${{ steps.fetch.outputs.LLVM_VERSION }}
-      LLVM_VERSION_MAJOR: ${{ steps.fetch.outputs.LLVM_VERSION_MAJOR }}
+    # needs: build_llvm_assert
+    container: "juliapackaging/package-windows-x86_64:latest"
     steps:
-      - name: "Fetch"
-        id: fetch
+      - name: "Build Julia Assert"
         run: |
           set -o xtrace
-          LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
-          LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')
-          echo "LLVM_VERSION=$LLVM_VERSION" >> "$GITHUB_OUTPUT"
-          echo "LLVM_VERSION_MAJOR=$LLVM_VERSION_MAJOR" >> "$GITHUB_OUTPUT"
-  build_llvm_assert:
-    needs: fetch_llvm_version
-    runs-on: ubuntu-latest
-    env:
-        BINARYBUILDER_USE_CCACHE: true
-        BINARYBUILDER_AUTOMATIC_APPLE: true
-        BINARYBUILDER_STORAGE_DIR: ${{ github.workspace }}/binarybuilder_storage
-        LLVM_VERSION: ${{ github.event.inputs.LLVM_VERSION || needs.fetch_llvm_version.outputs.LLVM_VERSION }}
-        LLVM_VERSION_MAJOR: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION_MAJOR }}
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - x86_64-w64-mingw32-cxx11
-          - aarch64-apple-darwin
-          - i686-w64-mingw32-cxx11
-    steps:
-      - name: Maximize build disk space (Only remove unwanted software)
-          # You may pin to the exact commit or the version.
-          # uses: AdityaGarg8/remove-unwanted-software@8831c82abf29b34eb2caac48d5f999ecfc0d8eef
-        uses: AdityaGarg8/remove-unwanted-software@v4.1
-        with:
-          # # Removes .NET runtime and libraries. (frees ~2 GB)
-          # remove-dotnet: true
-          # Removes Android SDKs and Tools. (frees ~9 GB)
-          remove-android: true
-          # Removes GHC (Haskell) artifacts. (frees ~5.2 GB)
-          remove-haskell: true
-          # # Removes CodeQL Action Bundles. (frees ~5.4 GB)
-          # remove-codeql: true
-          # # Removes cached Docker images. (frees ~3.2 GB)
-          # remove-docker-images: true
-          # # Removes unwanted large Apt packages. (frees ~3.1 GB)
-          # remove-large-packages: true
-          # # Removes cached tools used by setup actions by GitHub. (frees ~8.3 GB)
-          # remove-cached-tools: true
-          # Enables detailed logging of the action
-          verbose: false
-      - uses: julia-actions/setup-julia@v2
-        with:
-          version: '1.7'
-          arch: x64
-      - name: Prepare cache timestamp
-        id: cache_timestamp
-        run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
-      - name: Cache BinaryBuilder Storage Directory
-        if: github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == ''
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/binarybuilder_storage
-          key: ${{ matrix.target }}-${{ steps.cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-               ${{ matrix.target }}
-      - name: Restore Cached BinaryBuilder Storage Directory
-        if: github.ref != 'refs/heads/master' || github.event.inputs.LLVM_VERSION != ''
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ github.workspace }}/binarybuilder_storage
-          key: ${{ matrix.target }}-${{ steps.cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-               ${{ matrix.target }}
-      - name: Build LLVM assert on ${{ matrix.target }}
-        id: build
-        run: |
-          set -o xtrace
-          git clone https://github.com/Zentrik/Yggdrasil.git
-          cd Yggdrasil
+          git clone https://github.com/Zentrik/julia
           git fetch
-          git switch llvm-19-llvm
-          echo '
-          diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
-          index a649c4d3..fc74fcf4 100644
-          --- a/L/LLVM/common.jl
-          +++ b/L/LLVM/common.jl
-          @@ -48,12 +48,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
-               cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
-           fi
-
-          -if [[ ${target} == *mingw32* ]]; then
-          -    # Build system for Windows is plagued by race conditions.
-          -    # We disable Ccache for this platform to avoid caching
-          -    # possibly badly compiled racey code.
-          -    export CCACHE_DISABLE=true
-          -fi
-
-           cd ${WORKSPACE}/srcdir/llvm-project/llvm
-           LLVM_SRCDIR=$(pwd)
-          ' | git apply
-          cd L/LLVM/LLVM_full@19
-          mkdir -p bundled/patches
-          echo '
-          From 7c4cffd9d8be424e9e9542be9aec3b5a6f69073e Mon Sep 17 00:00:00 2001
-          From: David CARLIER <devnexen@gmail.com>
-          Date: Sun, 1 Sep 2024 13:35:10 +0100
-          Subject: [PATCH] [compiler-rt][fuzzer] SetThreadName build fix for Mingwin
-           attempt (#106902)
-
-          ---
-           compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp | 4 ++++
-           1 file changed, 4 insertions(+)
-
-          diff --git a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
-          index e0210aa0ac3651..7252d99dd375df 100644
-          --- a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
-          +++ b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
-          @@ -239,6 +239,7 @@ size_t PageSize() {
-           }
-
-           void SetThreadName(std::thread &thread, const std::string &name) {
-          +#if !defined(__MINGW32__)
-             typedef HRESULT(WINAPI * proc)(HANDLE, PCWSTR);
-             HMODULE kbase = GetModuleHandleA("KernelBase.dll");
-             proc ThreadNameProc = reinterpret_cast<proc>(
-          @@ -253,6 +254,9 @@ void SetThreadName(std::thread &thread, const std::string &name) {
-                 }
-               }
-             }
-          +#else
-          +  (void)pthread_setname_np(thread.native_handle(), name.c_str());
-          +#endif
-           }
-
-           } // namespace fuzzer
-          ' > bundled/patches/fix_setthreadname.patch
-          echo '
-          From fc64a5899f1c7be92ce4a71a4bffa7753cc67623 Mon Sep 17 00:00:00 2001
-          From: Zentrik <Zentrik@users.noreply.github.com>
-          Date: Sun, 1 Sep 2024 16:59:49 +0100
-          Subject: [PATCH] Revert "[MLIR][ExecutionEngine] Introduce shared library
-           (#87067)"
-
-          This reverts commit 631ae59d301496f86a8d46d28f7b12afbd12a3c1.
-          ---
-           mlir/lib/ExecutionEngine/CMakeLists.txt | 23 -----------------------
-           1 file changed, 23 deletions(-)
-
-          diff --git a/mlir/lib/ExecutionEngine/CMakeLists.txt b/mlir/lib/ExecutionEngine/CMakeLists.txt
-          index a091944b9ee7df..b7e448d5417ea9 100644
-          --- a/mlir/lib/ExecutionEngine/CMakeLists.txt
-          +++ b/mlir/lib/ExecutionEngine/CMakeLists.txt
-          @@ -97,29 +97,6 @@ add_mlir_library(MLIRExecutionEngine
-             MLIRTargetLLVMIRExport
-             )
-
-          -if(LLVM_BUILD_LLVM_DYLIB)
-          -  # Build a shared library for the execution engine. Some downstream projects
-          -  # use this library to build their own CPU runners while preserving dynamic
-          -  # linkage.
-          -  add_mlir_library(MLIRExecutionEngineShared
-          -    ExecutionEngine.cpp
-          -    SHARED
-          -
-          -    EXCLUDE_FROM_LIBMLIR
-          -
-          -    ADDITIONAL_HEADER_DIRS
-          -    ${MLIR_MAIN_INCLUDE_DIR}/mlir/ExecutionEngine
-          -
-          -    # Ensures that all necessary dependencies are resolved.
-          -    DEPENDS
-          -    MLIRExecutionEngine
-          -
-          -    LINK_LIBS PUBLIC
-          -    LLVM
-          -    MLIR
-          -    )
-          -endif()
-          -
-           get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
-           add_mlir_library(MLIRJitRunner
-             JitRunner.cpp
-          ' > bundled/patches/remove_mlir_shlib.patch
-          mkdir -p ${{ github.workspace }}/binarybuilder_storage
-          julia -e '
-            import Pkg
-            Pkg.add("BinaryBuilder")
-            Pkg.add("BinaryBuilderBase")
-            Pkg.add("Pkg")
-            Pkg.add("LibGit2")
-
-            version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
-
-            include("../common.jl")
-
-            build_tarballs(["--verbose", "${{ matrix.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
-          '
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: llvm-assert-${{ matrix.target }}-${{ needs.fetch_llvm_version.outputs.LLVM_VERSION }}
-          path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
-          if-no-files-found: warn
+          git switch llvm-19
+          cd julia
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1
