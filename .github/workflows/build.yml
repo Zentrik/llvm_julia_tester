@@ -246,7 +246,7 @@ jobs:
           git config --global core.eol lf
           git config --global core.autocrlf input
           git clone https://github.com/Zentrik/julia
+          cd julia
           git fetch
           git switch llvm-19
-          cd julia
           make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1
