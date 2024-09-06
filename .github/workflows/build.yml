@@ -3,6 +3,11 @@ on:
   pull_request:
   push:
   workflow_dispatch:
+    inputs:
+      LLVM_VERSION:
+        description: 'LLVM sha to build'
+        required: false
+        type: string
   schedule:
     - cron: '0 */8 * * *'
 
@@ -28,7 +33,7 @@ jobs:
         BINARYBUILDER_USE_CCACHE: true
         BINARYBUILDER_AUTOMATIC_APPLE: true
         BINARYBUILDER_STORAGE_DIR: ${{ github.workspace }}/binarybuilder_storage
-        LLVM_VERSION: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION }}
+        LLVM_VERSION: ${{ github.event.inputs.LLVM_VERSION || needs.fetch_llvm_version.outputs.LLVM_VERSION }}
         LLVM_VERSION_MAJOR: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION_MAJOR }}
     strategy:
       fail-fast: false
