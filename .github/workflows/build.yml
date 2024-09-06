@@ -43,27 +43,27 @@ jobs:
           - aarch64-apple-darwin
           - i686-w64-mingw32-cxx11
     steps:
-      # - name: Maximize build disk space (Only remove unwanted software)
-      #     # You may pin to the exact commit or the version.
-      #     # uses: AdityaGarg8/remove-unwanted-software@8831c82abf29b34eb2caac48d5f999ecfc0d8eef
-      #   uses: AdityaGarg8/remove-unwanted-software@v4.1
-      #   with:
-      #     # Removes .NET runtime and libraries. (frees ~2 GB)
-      #     remove-dotnet: true
-      #     # Removes Android SDKs and Tools. (frees ~9 GB)
-      #     remove-android: true
-      #     # Removes GHC (Haskell) artifacts. (frees ~5.2 GB)
-      #     remove-haskell: true
-      #     # Removes CodeQL Action Bundles. (frees ~5.4 GB)
-      #     remove-codeql: true
-      #     # Removes cached Docker images. (frees ~3.2 GB)
-      #     remove-docker-images: true
-      #     # Removes unwanted large Apt packages. (frees ~3.1 GB)
-      #     remove-large-packages: true
-      #     # Removes cached tools used by setup actions by GitHub. (frees ~8.3 GB)
-      #     remove-cached-tools: true
-      #     # Enables detailed logging of the action
-      #     verbose: false
+      - name: Maximize build disk space (Only remove unwanted software)
+          # You may pin to the exact commit or the version.
+          # uses: AdityaGarg8/remove-unwanted-software@8831c82abf29b34eb2caac48d5f999ecfc0d8eef
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          # # Removes .NET runtime and libraries. (frees ~2 GB)
+          # remove-dotnet: true
+          # Removes Android SDKs and Tools. (frees ~9 GB)
+          remove-android: true
+          # Removes GHC (Haskell) artifacts. (frees ~5.2 GB)
+          remove-haskell: true
+          # # Removes CodeQL Action Bundles. (frees ~5.4 GB)
+          # remove-codeql: true
+          # # Removes cached Docker images. (frees ~3.2 GB)
+          # remove-docker-images: true
+          # # Removes unwanted large Apt packages. (frees ~3.1 GB)
+          # remove-large-packages: true
+          # # Removes cached tools used by setup actions by GitHub. (frees ~8.3 GB)
+          # remove-cached-tools: true
+          # Enables detailed logging of the action
+          verbose: false
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.7'
