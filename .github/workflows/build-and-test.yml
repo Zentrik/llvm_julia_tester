@@ -24,7 +24,7 @@ jobs:
         id: fetch
         run: |
           set -o xtrace
-          if [-z "$LLVM_VERSION" ]; then
+          if [ -z "$LLVM_VERSION" ]; then
             LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
           fi
           LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')
