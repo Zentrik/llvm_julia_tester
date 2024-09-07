@@ -238,7 +238,7 @@ jobs:
       - name: Download a single artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: llvm-assert-${{ inputs.target }}
+          name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
       - name: "Build Julia Assert"
         run: |
           set -o xtrace
