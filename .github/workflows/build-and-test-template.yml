@@ -22,6 +22,7 @@ jobs:
         BINARYBUILDER_USE_CCACHE: true
         BINARYBUILDER_AUTOMATIC_APPLE: true
         BINARYBUILDER_STORAGE_DIR: ${{ github.workspace }}/binarybuilder_storage
+        BINARYBUILDER_CCACHE_DIR: ${{ github.workspace }}/binarybuilder_ccache
         LLVM_VERSION: ${{ inputs.LLVM_VERSION }}
         LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
@@ -55,13 +56,27 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/binarybuilder_storage
-          key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
-          restore-keys: ${{ inputs.target }}
+          key: binarybuilder_storage-${{ inputs.LLVM_VERSION }}
+          restore-keys: binarybuilder_storage
       - name: Restore Cached BinaryBuilder Storage Directory
         if: ${{ !inputs.save_cache }}
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/binarybuilder_storage
+          key: binarybuilder_storage-${{ inputs.LLVM_VERSION }}
+          restore-keys: binarybuilder_storage
+      - name: Cache BinaryBuilder ccache Directory
+        if: github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == ''
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/binarybuilder_ccache
+          key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          restore-keys: ${{ inputs.target }}
+      - name: Restore Cached BinaryBuilder ccache Directory
+        if: github.ref != 'refs/heads/master' || github.event.inputs.LLVM_VERSION != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/binarybuilder_ccache
           key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
           restore-keys: ${{ inputs.target }}
       - name: Build LLVM assert on ${{ inputs.target }}
