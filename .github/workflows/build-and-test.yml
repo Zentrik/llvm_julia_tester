@@ -22,7 +22,7 @@ jobs:
       LLVM_VERSION: ${{ steps.fetch.outputs.LLVM_VERSION }}
       LLVM_VERSION_MAJOR: ${{ steps.fetch.outputs.LLVM_VERSION_MAJOR }}
     env:
-      LLVM_VERSION: ${{ github.event.inputs.LLVM_VERSION }}
+      LLVM_VERSION: '23a26e7120df474f37f7369e8e06fd90f21a58b5' # ${{ github.event.inputs.LLVM_VERSION }}
     steps:
       - name: "Fetch"
         id: fetch
@@ -48,4 +48,4 @@ jobs:
       target: ${{ matrix.target }}
       LLVM_VERSION: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION }}
       LLVM_VERSION_MAJOR: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION_MAJOR }}
-      save_cache: ${{ (github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == '') || github.event.inputs.save_cache }}
+      save_cache: ${{ github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == '' }}
