@@ -79,6 +79,7 @@ jobs:
           path: ${{ github.workspace }}/binarybuilder_ccache
           key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
           restore-keys: ${{ inputs.target }}
+      - uses: actions/checkout@v4
       - name: Build LLVM assert on ${{ inputs.target }}
         id: build
         run: |
@@ -87,114 +88,13 @@ jobs:
           cd Yggdrasil
           git fetch
           git switch llvm-19-llvm
-          echo '
-          diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
-          index a649c4d3..fc74fcf4 100644
-          --- a/L/LLVM/common.jl
-          +++ b/L/LLVM/common.jl
-          @@ -48,12 +48,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
-               cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
-           fi
-
-          -if [[ ${target} == *mingw32* ]]; then
-          -    # Build system for Windows is plagued by race conditions.
-          -    # We disable Ccache for this platform to avoid caching
-          -    # possibly badly compiled racey code.
-          -    export CCACHE_DISABLE=true
-          -fi
-
-           cd ${WORKSPACE}/srcdir/llvm-project/llvm
-           LLVM_SRCDIR=$(pwd)
-          ' | git apply
+          git apply $GITHUB_WORKSPACE/yggy-patches/*
           cd L/LLVM/LLVM_full@19
-          mkdir -p bundled/patches
-          echo '
-          From 7c4cffd9d8be424e9e9542be9aec3b5a6f69073e Mon Sep 17 00:00:00 2001
-          From: David CARLIER <devnexen@gmail.com>
-          Date: Sun, 1 Sep 2024 13:35:10 +0100
-          Subject: [PATCH] [compiler-rt][fuzzer] SetThreadName build fix for Mingwin
-           attempt (#106902)
-
-          ---
-           compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp | 4 ++++
-           1 file changed, 4 insertions(+)
-
-          diff --git a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
-          index e0210aa0ac3651..7252d99dd375df 100644
-          --- a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
-          +++ b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
-          @@ -239,6 +239,7 @@ size_t PageSize() {
-           }
-
-           void SetThreadName(std::thread &thread, const std::string &name) {
-          +#if !defined(__MINGW32__)
-             typedef HRESULT(WINAPI * proc)(HANDLE, PCWSTR);
-             HMODULE kbase = GetModuleHandleA("KernelBase.dll");
-             proc ThreadNameProc = reinterpret_cast<proc>(
-          @@ -253,6 +254,9 @@ void SetThreadName(std::thread &thread, const std::string &name) {
-                 }
-               }
-             }
-          +#else
-          +  (void)pthread_setname_np(thread.native_handle(), name.c_str());
-          +#endif
-           }
-
-           } // namespace fuzzer
-          ' > bundled/patches/fix_setthreadname.patch
-          echo '
-          From fc64a5899f1c7be92ce4a71a4bffa7753cc67623 Mon Sep 17 00:00:00 2001
-          From: Zentrik <Zentrik@users.noreply.github.com>
-          Date: Sun, 1 Sep 2024 16:59:49 +0100
-          Subject: [PATCH] Revert "[MLIR][ExecutionEngine] Introduce shared library
-           (#87067)"
-
-          This reverts commit 631ae59d301496f86a8d46d28f7b12afbd12a3c1.
-          ---
-           mlir/lib/ExecutionEngine/CMakeLists.txt | 23 -----------------------
-           1 file changed, 23 deletions(-)
-
-          diff --git a/mlir/lib/ExecutionEngine/CMakeLists.txt b/mlir/lib/ExecutionEngine/CMakeLists.txt
-          index a091944b9ee7df..b7e448d5417ea9 100644
-          --- a/mlir/lib/ExecutionEngine/CMakeLists.txt
-          +++ b/mlir/lib/ExecutionEngine/CMakeLists.txt
-          @@ -97,29 +97,6 @@ add_mlir_library(MLIRExecutionEngine
-             MLIRTargetLLVMIRExport
-             )
-
-          -if(LLVM_BUILD_LLVM_DYLIB)
-          -  # Build a shared library for the execution engine. Some downstream projects
-          -  # use this library to build their own CPU runners while preserving dynamic
-          -  # linkage.
-          -  add_mlir_library(MLIRExecutionEngineShared
-          -    ExecutionEngine.cpp
-          -    SHARED
-          -
-          -    EXCLUDE_FROM_LIBMLIR
-          -
-          -    ADDITIONAL_HEADER_DIRS
-          -    ${MLIR_MAIN_INCLUDE_DIR}/mlir/ExecutionEngine
-          -
-          -    # Ensures that all necessary dependencies are resolved.
-          -    DEPENDS
-          -    MLIRExecutionEngine
-          -
-          -    LINK_LIBS PUBLIC
-          -    LLVM
-          -    MLIR
-          -    )
-          -endif()
-          -
-           get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
-           add_mlir_library(MLIRJitRunner
-             JitRunner.cpp
-          ' > bundled/patches/remove_mlir_shlib.patch
-          mkdir -p ${{ github.workspace }}/binarybuilder_storage
+          cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
           julia -e '
-            using Pkg  
-            Pkg.add("BinaryBuilder")
-            Pkg.add("LibGit2")
-            Pkg.add(PackageSpec(name="BinaryBuilderBase", version=v"1.30.1"))  
+            using Pkg
+            Pkg.activate(ENV["GITHUB_WORKSPACE"])
+            Pkg.instantiate(verbose=true)
 
             version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
 
@@ -238,6 +138,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+      - uses: actions/checkout@v4
       - name: "Build Julia Assert"
         run: |
           set -o xtrace
@@ -248,6 +149,7 @@ jobs:
           cd julia
           git fetch
           git switch llvm-19
+          git apply $GITHUB_WORKSPACE/julia-patches/*
           mkdir -p deps/srccache
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v18.1.7+2.${{ inputs.target }}.tar.gz
           make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl
