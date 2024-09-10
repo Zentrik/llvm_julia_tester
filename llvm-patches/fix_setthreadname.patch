@@ -2,31 +2,32 @@ From 7c4cffd9d8be424e9e9542be9aec3b5a6f69073e Mon Sep 17 00:00:00 2001
 From: David CARLIER <devnexen@gmail.com>
 Date: Sun, 1 Sep 2024 13:35:10 +0100
 Subject: [PATCH] [compiler-rt][fuzzer] SetThreadName build fix for Mingwin
-  attempt (#106902)
+ attempt (#106902)
 
 ---
-  compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp | 4 ++++
-  1 file changed, 4 insertions(+)
+ compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
 index e0210aa0ac3651..7252d99dd375df 100644
 --- a/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
 +++ b/compiler-rt/lib/fuzzer/FuzzerUtilWindows.cpp
 @@ -239,6 +239,7 @@ size_t PageSize() {
-  }
-
-  void SetThreadName(std::thread &thread, const std::string &name) {
+ }
+ 
+ void SetThreadName(std::thread &thread, const std::string &name) {
 +#if !defined(__MINGW32__)
-    typedef HRESULT(WINAPI * proc)(HANDLE, PCWSTR);
-    HMODULE kbase = GetModuleHandleA("KernelBase.dll");
-    proc ThreadNameProc = reinterpret_cast<proc>(
+   typedef HRESULT(WINAPI * proc)(HANDLE, PCWSTR);
+   HMODULE kbase = GetModuleHandleA("KernelBase.dll");
+   proc ThreadNameProc = reinterpret_cast<proc>(
 @@ -253,6 +254,9 @@ void SetThreadName(std::thread &thread, const std::string &name) {
-        }
-      }
-    }
+       }
+     }
+   }
 +#else
 +  (void)pthread_setname_np(thread.native_handle(), name.c_str());
 +#endif
-  }
-
-  } // namespace fuzzer
+ }
+ 
+ } // namespace fuzzer
+ 
