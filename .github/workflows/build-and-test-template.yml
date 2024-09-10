@@ -26,6 +26,7 @@ jobs:
         LLVM_VERSION: ${{ inputs.LLVM_VERSION }}
         LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
+      - uses: actions/checkout@v4
       - name: Maximize build disk space (Only remove unwanted software)
           # You may pin to the exact commit or the version.
           # uses: AdityaGarg8/remove-unwanted-software@8831c82abf29b34eb2caac48d5f999ecfc0d8eef
@@ -79,7 +80,6 @@ jobs:
           path: ${{ github.workspace }}/binarybuilder_ccache
           key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
           restore-keys: ${{ inputs.target }}
-      - uses: actions/checkout@v4
       - name: Build LLVM assert on ${{ inputs.target }}
         id: build
         run: |
@@ -118,6 +118,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
+      - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -138,7 +139,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
-      - uses: actions/checkout@v4
       - name: "Build Julia Assert"
         run: |
           set -o xtrace
