@@ -16,7 +16,7 @@ index a091944b9ee7df..b7e448d5417ea9 100644
 @@ -97,29 +97,6 @@ add_mlir_library(MLIRExecutionEngine
    MLIRTargetLLVMIRExport
    )
-
+ 
 -if(LLVM_BUILD_LLVM_DYLIB)
 -  # Build a shared library for the execution engine. Some downstream projects
 -  # use this library to build their own CPU runners while preserving dynamic
@@ -43,4 +43,3 @@ index a091944b9ee7df..b7e448d5417ea9 100644
  get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
  add_mlir_library(MLIRJitRunner
    JitRunner.cpp
- 
