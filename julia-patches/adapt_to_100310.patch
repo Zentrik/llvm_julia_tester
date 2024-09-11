@@ -1,0 +1,33 @@
+diff --git a/src/codegen.cpp b/src/codegen.cpp
+index 9184e4895a..02f91f705f 100644
+--- a/src/codegen.cpp
++++ b/src/codegen.cpp
+@@ -79,6 +79,7 @@
+ #include "llvm/Support/Path.h" // for llvm::sys::path
+ #include <llvm/Bitcode/BitcodeReader.h>
+ #include <llvm/Linker/Linker.h>
++#include <llvm/CodeGen/MachineModuleInfo.h>
+ 
+ using namespace llvm;
+ 
+@@ -10350,15 +10351,17 @@ namespace llvm {
+     class MachineBasicBlock;
+     class MachineFunction;
+     raw_ostream& operator<<(raw_ostream &OS, const MachineBasicBlock &MBB);
+-    void printMIR(raw_ostream &OS, const MachineFunction &MF);
++    void printMIR(raw_ostream &OS, const MachineModuleInfo &MMI,
++                const MachineFunction &MF);
+ }
+ extern "C" void jl_dump_llvm_mbb(void *v)
+ {
+     errs() << *(llvm::MachineBasicBlock*)v;
+ }
+-extern "C" void jl_dump_llvm_mfunction(void *v)
++extern "C" void jl_dump_llvm_mfunction(void *m, void *v)
+ {
+-    llvm::printMIR(errs(), *(llvm::MachineFunction*)v);
++    llvm::printMIR(errs(), *(llvm::MachineModuleInfo*)v,
++                *(llvm::MachineFunction*)v);
+ }
+ 
+ 
