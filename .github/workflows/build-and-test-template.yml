@@ -100,7 +100,7 @@ jobs:
 
             include("../common.jl")
 
-            build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
+            build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6")
           '
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
