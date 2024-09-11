@@ -114,9 +114,6 @@ jobs:
     needs: build_llvm_assert
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
-    defaults:
-      run:
-        shell: msys2 {0}
     steps:
       - run: |
           set -o xtrace
@@ -144,6 +141,7 @@ jobs:
         with:
           name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
       - name: "Build Julia Assert"
+        shell: msys2 {0}
         run: |
           set -o xtrace
           export MSYS=winsymlinks:sysfile
