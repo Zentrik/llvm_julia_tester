@@ -1,5 +1,14 @@
+From b5a23507f0e8b1017d6065156947ea514999ea11 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Wed, 11 Sep 2024 09:59:55 +0100
+Subject: [PATCH] Adapt to https://github.com/llvm/llvm-project/pull/102993
+
+---
+ src/jitlayers.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index 442103c91b..3fb10a7484 100644
+index 442103c91be0f..3fb10a74841f7 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
 @@ -1558,7 +1558,7 @@ void SetOpaquePointer(LLVMContext &ctx) {
@@ -10,3 +19,4 @@ index 442103c91b..3fb10a7484 100644
 +    jl_data_layout = DataLayout(jl_data_layout.getStringRepresentation() + "-ni:10:11:12:13");
      return jl_data_layout;
  }
+ 
