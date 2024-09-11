@@ -10,4 +10,3 @@ index 442103c91b..3fb10a7484 100644
 +    jl_data_layout = DataLayout(jl_data_layout.getStringRepresentation() + "-ni:10:11:12:13");
      return jl_data_layout;
  }
-
