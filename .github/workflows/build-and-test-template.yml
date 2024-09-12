@@ -110,7 +110,6 @@ jobs:
           set -o xtrace
           cd binarybuilder_storage/downloads/clones/llvm-project.git-1df819a03ecf6890e3787b27bfd4f160aeeeeacd50a98d003be8b0893f11a9be # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/b77c32e367f6db32517967d2b3c41f2c9850806b/src/Sources.jl#L209
           git fetch
-          git switch --detach $LLVM_VERSION
 
           JULIA_PATCHES_TO_APPLY=()
           for patch in $GITHUB_WORKSPACE/julia-patches/*; do
