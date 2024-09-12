@@ -126,7 +126,7 @@ jobs:
           path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
           if-no-files-found: warn
   build_julia_assert:
-    if: inputs.target == 'x86_64-w64-mingw32-cxx11'
+    if: inputs.target == 'x86_64-w64-mingw32-cxx11' || inputs.target == 'i686-w64-mingw32-cxx11'
     runs-on: windows-latest
     needs: build_llvm_assert
     env:
@@ -138,7 +138,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: ${{ inputs.target == 'x86_64-w64-mingw32-cxx11' && 'MINGW64' || 'MINGW32' }}
           update: true
           install: >-
             cmake
@@ -151,7 +151,7 @@ jobs:
             p7zip
             curl
             python
-            mingw-w64-x86_64-gcc
+          pacboy: gcc:p
       - name: Download a single artifact
         uses: actions/download-artifact@v4
         with:
