@@ -104,21 +104,21 @@ jobs:
 
             build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
           '
-        - name: Work out which julia patches to apply
-          id: julia_patches
-          run: |
-            set -o xtrace
-            cd binarybuilder_storage/downloads/clones/llvm-project.git-1df819a03ecf6890e3787b27bfd4f160aeeeeacd50a98d003be8b0893f11a9be # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/b77c32e367f6db32517967d2b3c41f2c9850806b/src/Sources.jl#L209
+      - name: Work out which julia patches to apply
+        id: julia_patches
+        run: |
+          set -o xtrace
+          cd binarybuilder_storage/downloads/clones/llvm-project.git-1df819a03ecf6890e3787b27bfd4f160aeeeeacd50a98d003be8b0893f11a9be # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/b77c32e367f6db32517967d2b3c41f2c9850806b/src/Sources.jl#L209
 
-            JULIA_PATCHES_TO_APPLY=()
-            for patch in $GITHUB_WORKSPACE/julia-patches/*; do
-              patch=$(basename "$patch")
-              if git merge-base --is-ancestor "$patch" "$LLVM_VERSION"; then
-                JULIA_PATCHES_TO_APPLY+=( "$patch" )
-              fi
-            done
+          JULIA_PATCHES_TO_APPLY=()
+          for patch in $GITHUB_WORKSPACE/julia-patches/*; do
+            patch=$(basename "$patch")
+            if git merge-base --is-ancestor "$patch" "$LLVM_VERSION"; then
+              JULIA_PATCHES_TO_APPLY+=( "$patch" )
+            fi
+          done
 
-            echo "JULIA_PATCHES_TO_APPLY=${JULIA_PATCHES_TO_APPLY[*]}" >> "$GITHUB_OUTPUT"
+          echo "JULIA_PATCHES_TO_APPLY=${JULIA_PATCHES_TO_APPLY[*]}" >> "$GITHUB_OUTPUT"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
