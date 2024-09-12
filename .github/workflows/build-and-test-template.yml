@@ -125,7 +125,7 @@ jobs:
           name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
           path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
           if-no-files-found: warn
-  build_julia_assert:
+  build_julia_assert_windows:
     if: inputs.target == 'x86_64-w64-mingw32-cxx11' || inputs.target == 'i686-w64-mingw32-cxx11'
     runs-on: windows-latest
     needs: build_llvm_assert
@@ -161,6 +161,35 @@ jobs:
         run: |
           set -o xtrace
           export MSYS=winsymlinks:sysfile
+          git clone https://github.com/Zentrik/julia
+          cd julia
+          git fetch
+          git switch llvm-19
+
+          for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
+            git apply $GITHUB_WORKSPACE/julia-patches/$patch -v
+          done
+
+          mkdir -p deps/srccache
+          mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v18.1.7+2.${{ inputs.target }}.tar.gz
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl
+  build_julia_assert_linux:
+    if: inputs.target == 'x86_64-linux-gnu-cxx11'
+    runs-on: ubuntu-latest
+    needs: build_llvm_assert
+    env:
+      LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+      - name: "Build Julia Assert"
+        run: |
+          set -o xtrace
+          sudo apt install build-essential libatomic1 python gfortran perl wget m4 cmake pkg-config curl
+
           git clone https://github.com/Zentrik/julia
           cd julia
           git fetch
