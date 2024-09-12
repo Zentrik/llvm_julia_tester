@@ -82,28 +82,28 @@ jobs:
           path: ${{ github.workspace }}/binarybuilder_ccache
           key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
           restore-keys: ${{ inputs.target }}
-      - name: Build LLVM assert on ${{ inputs.target }}
-        id: build
-        run: |
-          set -o xtrace
-          git clone https://github.com/Zentrik/Yggdrasil.git
-          cd Yggdrasil
-          git fetch
-          git switch llvm-19-llvm
-          git apply $GITHUB_WORKSPACE/yggy-patches/*
-          cd L/LLVM/LLVM_full@19
-          cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
-          julia -e '
-            using Pkg
-            Pkg.activate(ENV["GITHUB_WORKSPACE"])
-            Pkg.instantiate(verbose=true)
+      # - name: Build LLVM assert on ${{ inputs.target }}
+      #   id: build
+      #   run: |
+      #     set -o xtrace
+      #     git clone https://github.com/Zentrik/Yggdrasil.git
+      #     cd Yggdrasil
+      #     git fetch
+      #     git switch llvm-19-llvm
+      #     git apply $GITHUB_WORKSPACE/yggy-patches/*
+      #     cd L/LLVM/LLVM_full@19
+      #     cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
+      #     julia -e '
+      #       using Pkg
+      #       Pkg.activate(ENV["GITHUB_WORKSPACE"])
+      #       Pkg.instantiate(verbose=true)
 
-            version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
+      #       version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
 
-            include("../common.jl")
+      #       include("../common.jl")
 
-            build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
-          '
+      #       build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
+      #     '
       - name: Work out which julia patches to apply
         id: julia_patches
         run: |
