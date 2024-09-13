@@ -188,7 +188,8 @@ jobs:
       - name: "Build Julia Assert"
         run: |
           set -o xtrace
-          sudo apt install build-essential libatomic1 python gfortran perl wget m4 cmake pkg-config curl
+          sudo apt update
+          sudo apt install -y build-essential libatomic1 python3 gfortran perl wget m4 cmake pkg-config curl
 
           git clone https://github.com/Zentrik/julia
           cd julia
