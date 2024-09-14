@@ -14,6 +14,9 @@ on:
       save_cache:
         type: boolean
         required: true
+      MINIMAL_LLVM_BUILD:
+        type: boolean
+        required: true
 
 jobs:
   build_llvm_assert:
@@ -91,6 +94,10 @@ jobs:
           git fetch
           git switch llvm-19-llvm
           git apply $GITHUB_WORKSPACE/yggy-patches/*
+          if $MINIMAL_LLVM_BUILD; then
+            git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
+          fi
+
           cd L/LLVM/LLVM_full@19
           cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
           julia -e '
