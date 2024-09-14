@@ -8,11 +8,12 @@ on:
         description: 'LLVM sha to build'
         required: false
         type: string
+        default: '1e9d0028d35ae69263aa848b4cb02245f442eb5c'
       MINIMAL_LLVM_BUILD:
         description: 'Build minimal LLVM needed to get Julia working'
         required: true
         type: boolean
-        default: false
+        default: true
       # save_cache:
       #   required: true
       #   type: boolean
