@@ -94,7 +94,7 @@ jobs:
           git fetch
           git switch llvm-19-llvm
           git apply $GITHUB_WORKSPACE/yggy-patches/*
-          if [[ $MINIMAL_LLVM_BUILD == 'true' ]]; then
+          if [[ "${{ inputs.MINIMAL_LLVM_BUILD }}" == "true" ]]; then
             git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
           fi
 
