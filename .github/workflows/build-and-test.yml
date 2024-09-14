@@ -12,6 +12,7 @@ on:
         description: 'Build minimal LLVM needed to get Julia working'
         required: true
         type: boolean
+        default: false
       # save_cache:
       #   required: true
       #   type: boolean
