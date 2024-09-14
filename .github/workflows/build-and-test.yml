@@ -55,4 +55,4 @@ jobs:
       LLVM_VERSION: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION }}
       LLVM_VERSION_MAJOR: ${{ needs.fetch_llvm_version.outputs.LLVM_VERSION_MAJOR }}
       save_cache: ${{ github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == '' }}
-      MINIMAL_LLVM_BUILD: ${{ github.event.inputs.MINIMAL_LLVM_BUILD }}
+      MINIMAL_LLVM_BUILD: ${{ github.event.inputs.MINIMAL_LLVM_BUILD || false }}
