@@ -6,7 +6,7 @@ index ec638a78..f4ef1070 100644
  if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
      PROJECTS+=(mlir)
  fi
-+PROJECTS=(llvm)
++PROJECTS=(llvm lld)
  LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
  CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
