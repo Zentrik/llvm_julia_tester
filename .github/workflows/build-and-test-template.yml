@@ -129,6 +129,7 @@ jobs:
     if: inputs.target == 'x86_64-w64-mingw32-cxx11' || inputs.target == 'i686-w64-mingw32-cxx11'
     runs-on: windows-latest
     needs: build_llvm_assert
+    timeout-minutes: 60
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
@@ -165,6 +166,7 @@ jobs:
           cd julia
           git fetch
           git switch llvm-19
+          echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v
@@ -172,11 +174,21 @@ jobs:
 
           mkdir -p deps/srccache
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v18.1.7+2.${{ inputs.target }}.tar.gz
-          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl
+
+          MAKE_FLAGS='FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl'
+          make -j4 $MAKE_FLAGS
+          make $MAKE_FLAGS binary-dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          path: ${{ github.workspace }}/julia/*.tar.gz
+          if-no-files-found: warn
   build_julia_assert_linux:
     if: inputs.target == 'x86_64-linux-gnu-cxx11'
     runs-on: ubuntu-latest
     needs: build_llvm_assert
+    timeout-minutes: 60
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
@@ -195,6 +207,7 @@ jobs:
           cd julia
           git fetch
           git switch llvm-19
+          echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v
@@ -202,4 +215,13 @@ jobs:
 
           mkdir -p deps/srccache
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v18.1.7+2.${{ inputs.target }}.tar.gz
-          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl
+
+          MAKE_FLAGS='FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl'
+          make -j4 $MAKE_FLAGS
+          make $MAKE_FLAGS binary-dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          path: ${{ github.workspace }}/julia/*.tar.gz
+          if-no-files-found: warn
