@@ -8,7 +8,6 @@ on:
         description: 'LLVM sha to build'
         required: false
         type: string
-        default: '1e9d0028d35ae69263aa848b4cb02245f442eb5c'
       MINIMAL_LLVM_BUILD:
         description: 'Build minimal LLVM needed to get Julia working'
         required: true
@@ -25,7 +24,7 @@ jobs:
   fetch_llvm_version:
     runs-on: ubuntu-latest
     outputs:
-      LLVM_VERSION: ${{ steps.fetch.outputs.LLVM_VERSION }}
+      LLVM_VERSION: ${{ steps.fetch.outputs.LLVM_VERSION || '1e9d0028d35ae69263aa848b4cb02245f442eb5c'}}
       LLVM_VERSION_MAJOR: ${{ steps.fetch.outputs.LLVM_VERSION_MAJOR }}
     env:
       LLVM_VERSION: ${{ github.event.inputs.LLVM_VERSION }}
