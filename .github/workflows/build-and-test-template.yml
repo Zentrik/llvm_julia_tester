@@ -184,9 +184,8 @@ jobs:
           mkdir -p deps/srccache
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v18.1.7+2.${{ inputs.target }}.tar.gz
 
-          MAKE_FLAGS='FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl'
-          make -j4 $MAKE_FLAGS
-          make $MAKE_FLAGS binary-dist
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl
+          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -225,9 +224,8 @@ jobs:
           mkdir -p deps/srccache
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v18.1.7+2.${{ inputs.target }}.tar.gz
 
-          MAKE_FLAGS='FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl'
-          make -j4 $MAKE_FLAGS
-          make $MAKE_FLAGS binary-dist
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl
+          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
