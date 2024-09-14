@@ -24,7 +24,7 @@ jobs:
   fetch_llvm_version:
     runs-on: ubuntu-latest
     outputs:
-      LLVM_VERSION: ${{ steps.fetch.outputs.LLVM_VERSION || '1e9d0028d35ae69263aa848b4cb02245f442eb5c'}}
+      LLVM_VERSION: '1e9d0028d35ae69263aa848b4cb02245f442eb5c'
       LLVM_VERSION_MAJOR: ${{ steps.fetch.outputs.LLVM_VERSION_MAJOR }}
     env:
       LLVM_VERSION: ${{ github.event.inputs.LLVM_VERSION }}
