@@ -109,7 +109,9 @@ jobs:
 
             include("../common.jl")
 
-            build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])...; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
+            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])
+            products = []
+            build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], src_name, src_version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
           '
       - name: Work out which julia patches to apply
         id: julia_patches
