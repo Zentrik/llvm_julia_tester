@@ -1,0 +1,154 @@
+diff --git a/llvm/include/llvm/SandboxIR/SandboxIR.h b/llvm/include/llvm/SandboxIR/SandboxIR.h
+index 0cc0f3a4c870..a01cd9e2c417 100644
+--- a/llvm/include/llvm/SandboxIR/SandboxIR.h
++++ b/llvm/include/llvm/SandboxIR/SandboxIR.h
+@@ -1981,7 +1981,9 @@ public:
+   static Constant *convertShuffleMaskForBitcode(ArrayRef<int> Mask,
+                                                 Type *ResultTy);
+
+-  void setShuffleMask(ArrayRef<int> Mask);
++  void setShuffleMask(ArrayRef<int> Mask) {
++    cast<llvm::ShuffleVectorInst>(Val)->setShuffleMask(Mask);
++  }
+
+   ArrayRef<int> getShuffleMask() const {
+     return cast<llvm::ShuffleVectorInst>(Val)->getShuffleMask();
+diff --git a/llvm/include/llvm/SandboxIR/Tracker.h b/llvm/include/llvm/SandboxIR/Tracker.h
+index 5fc43db82bd7..6db78f215cad 100644
+--- a/llvm/include/llvm/SandboxIR/Tracker.h
++++ b/llvm/include/llvm/SandboxIR/Tracker.h
+@@ -62,7 +62,6 @@ class AllocaInst;
+ class CatchSwitchInst;
+ class SwitchInst;
+ class ConstantInt;
+-class ShuffleVectorInst;
+ class CmpInst;
+ /// The base class for IR Change classes.
+ class IRChangeBase {
+@@ -369,20 +368,6 @@ public:
+ #endif
+ };
+
+-class ShuffleVectorSetMask final : public IRChangeBase {
+-  ShuffleVectorInst *SVI;
+-  SmallVector<int, 8> PrevMask;
+-
+-public:
+-  ShuffleVectorSetMask(ShuffleVectorInst *SVI);
+-  void revert(Tracker &Tracker) final;
+-  void accept() final {}
+-#ifndef NDEBUG
+-  void dump(raw_ostream &OS) const final { OS << "ShuffleVectorSetMask"; }
+-  LLVM_DUMP_METHOD void dump() const final;
+-#endif
+-};
+-
+ /// The tracker collects all the change objects and implements the main API for
+ /// saving / reverting / accepting.
+ class Tracker {
+diff --git a/llvm/lib/SandboxIR/SandboxIR.cpp b/llvm/lib/SandboxIR/SandboxIR.cpp
+index 03d3e9e607f0..7ef5ada50707 100644
+--- a/llvm/lib/SandboxIR/SandboxIR.cpp
++++ b/llvm/lib/SandboxIR/SandboxIR.cpp
+@@ -2181,11 +2181,6 @@ Value *ShuffleVectorInst::create(Value *V1, Value *V2, ArrayRef<int> Mask,
+   return Ctx.getOrCreateConstant(cast<llvm::Constant>(NewV));
+ }
+
+-void ShuffleVectorInst::setShuffleMask(ArrayRef<int> Mask) {
+-  Ctx.getTracker().emplaceIfTracking<ShuffleVectorSetMask>(this);
+-  cast<llvm::ShuffleVectorInst>(Val)->setShuffleMask(Mask);
+-}
+-
+ VectorType *ShuffleVectorInst::getType() const {
+   return cast<VectorType>(
+       Ctx.getType(cast<llvm::ShuffleVectorInst>(Val)->getType()));
+diff --git a/llvm/lib/SandboxIR/Tracker.cpp b/llvm/lib/SandboxIR/Tracker.cpp
+index b1f472d7928f..78e04504eaf8 100644
+--- a/llvm/lib/SandboxIR/Tracker.cpp
++++ b/llvm/lib/SandboxIR/Tracker.cpp
+@@ -234,20 +234,6 @@ void CreateAndInsertInst::dump() const {
+ }
+ #endif
+
+-ShuffleVectorSetMask::ShuffleVectorSetMask(ShuffleVectorInst *SVI)
+-    : SVI(SVI), PrevMask(SVI->getShuffleMask()) {}
+-
+-void ShuffleVectorSetMask::revert(Tracker &Tracker) {
+-  SVI->setShuffleMask(PrevMask);
+-}
+-
+-#ifndef NDEBUG
+-void ShuffleVectorSetMask::dump() const {
+-  dump(dbgs());
+-  dbgs() << "\n";
+-}
+-#endif
+-
+ CmpSwapOperands::CmpSwapOperands(CmpInst *Cmp) : Cmp(Cmp) {}
+
+ void CmpSwapOperands::revert(Tracker &Tracker) { Cmp->swapOperands(); }
+@@ -258,8 +244,6 @@ void CmpSwapOperands::dump() const {
+ }
+ #endif
+
+-void Tracker::save() { State = TrackerState::Record; }
+-
+ void Tracker::revert() {
+   assert(State == TrackerState::Record && "Forgot to save()!");
+   State = TrackerState::Disabled;
+diff --git a/llvm/unittests/SandboxIR/TrackerTest.cpp b/llvm/unittests/SandboxIR/TrackerTest.cpp
+index d4ff4fd6464e..8ff37ec7b7fd 100644
+--- a/llvm/unittests/SandboxIR/TrackerTest.cpp
++++ b/llvm/unittests/SandboxIR/TrackerTest.cpp
+@@ -13,7 +13,6 @@
+ #include "llvm/IR/Module.h"
+ #include "llvm/SandboxIR/SandboxIR.h"
+ #include "llvm/Support/SourceMgr.h"
+-#include "gmock/gmock-matchers.h"
+ #include "gtest/gtest.h"
+
+ using namespace llvm;
+@@ -990,43 +989,6 @@ define void @foo(i1 %c0, i8 %v0, i8 %v1) {
+   EXPECT_EQ(Select->getFalseValue(), V1);
+ }
+
+-TEST_F(TrackerTest, ShuffleVectorInst) {
+-  parseIR(C, R"IR(
+-define void @foo(<2 x i8> %v1, <2 x i8> %v2) {
+-  %shuf = shufflevector <2 x i8> %v1, <2 x i8> %v2, <2 x i32> <i32 1, i32 2>
+-  ret void
+-}
+-)IR");
+-  Function &LLVMF = *M->getFunction("foo");
+-  sandboxir::Context Ctx(C);
+-
+-  auto *F = Ctx.createFunction(&LLVMF);
+-  auto *BB = &*F->begin();
+-  auto It = BB->begin();
+-  auto *SVI = cast<sandboxir::ShuffleVectorInst>(&*It++);
+-
+-  // Check setShuffleMask.
+-  SmallVector<int, 2> OrigMask(SVI->getShuffleMask());
+-  Ctx.save();
+-  SVI->setShuffleMask(ArrayRef<int>({0, 0}));
+-  EXPECT_NE(SVI->getShuffleMask(), ArrayRef<int>(OrigMask));
+-  Ctx.revert();
+-  EXPECT_EQ(SVI->getShuffleMask(), ArrayRef<int>(OrigMask));
+-
+-  // Check commute.
+-  auto *Op0 = SVI->getOperand(0);
+-  auto *Op1 = SVI->getOperand(1);
+-  Ctx.save();
+-  SVI->commute();
+-  EXPECT_EQ(SVI->getOperand(0), Op1);
+-  EXPECT_EQ(SVI->getOperand(1), Op0);
+-  EXPECT_NE(SVI->getShuffleMask(), ArrayRef<int>(OrigMask));
+-  Ctx.revert();
+-  EXPECT_EQ(SVI->getOperand(0), Op0);
+-  EXPECT_EQ(SVI->getOperand(1), Op1);
+-  EXPECT_EQ(SVI->getShuffleMask(), ArrayRef<int>(OrigMask));
+-}
+-
+ TEST_F(TrackerTest, PossiblyDisjointInstSetters) {
+   parseIR(C, R"IR(
+ define void @foo(i8 %arg0, i8 %arg1) {
