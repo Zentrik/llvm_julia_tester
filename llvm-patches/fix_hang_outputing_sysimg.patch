@@ -55,7 +55,7 @@ index 03d3e9e607f0..7ef5ada50707 100644
    return cast<VectorType>(
        Ctx.getType(cast<llvm::ShuffleVectorInst>(Val)->getType()));
 diff --git a/llvm/lib/SandboxIR/Tracker.cpp b/llvm/lib/SandboxIR/Tracker.cpp
-index b1f472d7928f..78e04504eaf8 100644
+index b1f472d7928f..f93d2ece0d59 100644
 --- a/llvm/lib/SandboxIR/Tracker.cpp
 +++ b/llvm/lib/SandboxIR/Tracker.cpp
 @@ -234,20 +234,6 @@ void CreateAndInsertInst::dump() const {
@@ -79,15 +79,6 @@ index b1f472d7928f..78e04504eaf8 100644
  CmpSwapOperands::CmpSwapOperands(CmpInst *Cmp) : Cmp(Cmp) {}
 
  void CmpSwapOperands::revert(Tracker &Tracker) { Cmp->swapOperands(); }
-@@ -258,8 +244,6 @@ void CmpSwapOperands::dump() const {
- }
- #endif
-
--void Tracker::save() { State = TrackerState::Record; }
--
- void Tracker::revert() {
-   assert(State == TrackerState::Record && "Forgot to save()!");
-   State = TrackerState::Disabled;
 diff --git a/llvm/unittests/SandboxIR/TrackerTest.cpp b/llvm/unittests/SandboxIR/TrackerTest.cpp
 index d4ff4fd6464e..8ff37ec7b7fd 100644
 --- a/llvm/unittests/SandboxIR/TrackerTest.cpp
