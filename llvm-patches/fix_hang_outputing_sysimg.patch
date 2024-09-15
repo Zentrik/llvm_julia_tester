@@ -14,18 +14,10 @@ index 0cc0f3a4c870..a01cd9e2c417 100644
    ArrayRef<int> getShuffleMask() const {
      return cast<llvm::ShuffleVectorInst>(Val)->getShuffleMask();
 diff --git a/llvm/include/llvm/SandboxIR/Tracker.h b/llvm/include/llvm/SandboxIR/Tracker.h
-index 5fc43db82bd7..6db78f215cad 100644
+index 5fc43db82bd7..23887f278856 100644
 --- a/llvm/include/llvm/SandboxIR/Tracker.h
 +++ b/llvm/include/llvm/SandboxIR/Tracker.h
-@@ -62,7 +62,6 @@ class AllocaInst;
- class CatchSwitchInst;
- class SwitchInst;
- class ConstantInt;
--class ShuffleVectorInst;
- class CmpInst;
- /// The base class for IR Change classes.
- class IRChangeBase {
-@@ -369,20 +368,6 @@ public:
+@@ -369,20 +369,6 @@ public:
  #endif
  };
 
