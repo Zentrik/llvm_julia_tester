@@ -9,7 +9,7 @@ index a649c4d3..3243d034 100644
 -    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
 +    ninja -j${nproc} clang-tidy-confusable-chars-gen mlir-pdll
 +fi
-+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "20" ]]; then
++if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
 +    ninja -j${nproc} clang-pseudo-gen
  fi
  if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
@@ -21,7 +21,7 @@ index a649c4d3..3243d034 100644
 -    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
      CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
  fi
-+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "20" ]]; then
++if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
 +    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
 +fi
  if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
