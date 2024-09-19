@@ -1,15 +1,5 @@
-From e1e6bbd4f92ca7c4e60d9ad86955c6889d2eb27c Mon Sep 17 00:00:00 2001
-From: Zentrik <llvm.zentrik@gmail.com>
-Date: Thu, 19 Sep 2024 18:42:09 +0100
-Subject: [PATCH] [LLVM] Adapt to clang pseudo being removed
-
-https://github.com/llvm/llvm-project/pull/109154
----
- L/LLVM/common.jl | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
 diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
-index 52ffc703da..9810d085ee 100644
+index a649c4d3..3243d034 100644
 --- a/L/LLVM/common.jl
 +++ b/L/LLVM/common.jl
 @@ -139,7 +139,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
@@ -23,5 +13,17 @@ index 52ffc703da..9810d085ee 100644
 +    ninja -j${nproc} clang-pseudo-gen
  fi
  if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
-     ninja -j${nproc} mlir-src-shard
-     er
+     ninja -j${nproc} mlir-src-sharder
+@@ -272,9 +275,11 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+ fi
+ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+     CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
+-    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
+     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+ fi
++if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "20" ]]; then
++    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
++fi
+ if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+     CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
+ fi
