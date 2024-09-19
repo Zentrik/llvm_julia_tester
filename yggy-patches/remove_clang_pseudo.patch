@@ -1,0 +1,27 @@
+From 82ec1c42ffc54444751671c17a557206ca3602e1 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Thu, 19 Sep 2024 18:25:34 +0100
+Subject: [PATCH] [LLVM] Adapt to clang pseudo being removed
+
+https://github.com/llvm/llvm-project/pull/109154
+---
+ L/LLVM/common.jl | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
+index 833eacefe62..983f2d6fa6c 100644
+--- a/L/LLVM/common.jl
++++ b/L/LLVM/common.jl
+@@ -138,7 +138,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+     ninja -j${nproc} mlir-linalg-ods-yaml-gen
+ fi
+ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+-    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
++    ninja -j${nproc} clang-tidy-confusable-chars-gen mlir-pdll
++fi
++if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "20" ]]; then
++    ninja -j${nproc} clang-pseudo-gen
+ fi
+ popd
+ 
+ 
