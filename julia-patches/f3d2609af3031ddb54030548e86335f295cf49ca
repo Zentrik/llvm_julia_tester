@@ -1,0 +1,11 @@
+diff --git a/sysimage.mk b/sysimage.mk
+index d0e106d4ce..670ff27d40 100644
+--- a/sysimage.mk
++++ b/sysimage.mk
+@@ -93,5 +93,5 @@ $$(build_private_libdir)/sys$1-o.a $$(build_private_libdir)/sys$1-bc.a : $$(buil
+ 	@mv $$@.tmp $$@
+ .SECONDARY: $$(build_private_libdir)/sys$1-o.a $(build_private_libdir)/sys$1-bc.a # request Make to keep these files around
+ endef
+-$(eval $(call sysimg_builder,,-O3,$(JULIA_EXECUTABLE_release)))
++$(eval $(call sysimg_builder,,-O1,$(JULIA_EXECUTABLE_release)))
+ $(eval $(call sysimg_builder,-debug,-O0,$(JULIA_EXECUTABLE_debug)))
