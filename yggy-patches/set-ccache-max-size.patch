@@ -6,7 +6,7 @@ index c0d41ee0..7c2d5d01 100644
  # We want to exit the program if errors occur.
  set -o errexit
 
-+ccache -M 1.5G
++ccache -M 2G
 +
  # Increase max file descriptors
  fd_lim=$(ulimit -n -H)
