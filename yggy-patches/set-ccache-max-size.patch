@@ -1,0 +1,13 @@
+diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
+index c0d41ee0..7c2d5d01 100644
+--- a/L/LLVM/common.jl
++++ b/L/LLVM/common.jl
+@@ -27,6 +27,8 @@ const buildscript = raw"""
+ # We want to exit the program if errors occur.
+ set -o errexit
+
++ccache -M 1.5G
++
+ # Increase max file descriptors
+ fd_lim=$(ulimit -n -H)
+ ulimit -n $fd_lim
