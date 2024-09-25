@@ -1,0 +1,96 @@
+From 4843847315f9f6e6df1843b7eb14f6f17156f3db Mon Sep 17 00:00:00 2001
+From: Gabriel Baraldi <baraldigabriel@gmail.com>
+Date: Wed, 25 Sep 2024 00:09:05 -0300
+Subject: [PATCH] Fix late gc lowering pass for vector intrinsics
+
+---
+ src/llvm-late-gc-lowering.cpp    | 27 ++++++++++++++++++++++++++-
+ test/llvmpasses/late-lower-gc.ll | 15 +++++++++++++++
+ 2 files changed, 41 insertions(+), 1 deletion(-)
+
+diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
+index 8d1d5ff73b261..87fe9bf1f93b8 100644
+--- a/src/llvm-late-gc-lowering.cpp
++++ b/src/llvm-late-gc-lowering.cpp
+@@ -1,6 +1,7 @@
+ // This file is a part of Julia. License is MIT: https://julialang.org/license
+ 
+ #include "llvm-gc-interface-passes.h"
++#include "llvm/IR/Intrinsics.h"
+ 
+ #define DEBUG_TYPE "late_lower_gcroot"
+ 
+@@ -204,7 +205,17 @@ static std::pair<Value*,int> FindBaseValue(const State &S, Value *V, bool UseCac
+                 }
+                 // In general a load terminates a walk
+                 break;
+-            }
++            } else if (II->getIntrinsicID() == Intrinsic::vector_extract) {
++                if (auto VTy = dyn_cast<VectorType>(II->getType())) {
++                    if (hasLoadedTy(VTy->getElementType())) {
++                        // TODO: For now, only support constant index.
++                        auto IdxOp = cast<ConstantInt>(II->getOperand(1));
++                        fld_idx = IdxOp->getLimitedValue(INT_MAX);
++                        CurrentV = II->getOperand(0);
++                    }
++                }
++            } else
++                break;
+         }
+         else if (auto CI = dyn_cast<CallInst>(CurrentV)) {
+             auto callee = CI->getCalledFunction();
+@@ -518,6 +529,16 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
+         Numbers = NumberAll(S, IEI->getOperand(0));
+         int ElNumber = Number(S, IEI->getOperand(1));
+         Numbers[idx] = ElNumber;
++    } else if (auto * VII = dyn_cast<IntrinsicInst>(CurrentV)) {
++        if (VII->getIntrinsicID() == Intrinsic::vector_insert) {
++            Numbers = NumberAll(S, VII->getOperand(0));
++            int first_idx = cast<ConstantInt>(VII->getOperand(2))->getZExtValue();
++            SmallVector<int, 0> Numbers2 = NumberAll(S, VII->getOperand(1));
++            for (unsigned i = 0; i < Numbers2.size(); ++i) {
++                dbgs() << Numbers2[i] << " "<< first_idx + i << "\n";
++                Numbers[first_idx + i] = Numbers2[i];
++            }
++        }
+     } else if (auto *IVI = dyn_cast<InsertValueInst>(CurrentV)) {
+         Numbers = NumberAll(S, IVI->getAggregateOperand());
+         auto Tracked = TrackCompositeType(IVI->getType());
+@@ -1143,6 +1164,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
+                             }
+                         }
+                     }
++                    if (II->getIntrinsicID() == Intrinsic::vector_extract || II->getIntrinsicID() == Intrinsic::vector_insert) {
++                        // These are not real defs
++                        continue;
++                    }
+                 }
+                 auto callee = CI->getCalledFunction();
+                 if (callee && callee == typeof_func) {
+diff --git a/test/llvmpasses/late-lower-gc.ll b/test/llvmpasses/late-lower-gc.ll
+index d294847db8f9d..c66c25562cc16 100644
+--- a/test/llvmpasses/late-lower-gc.ll
++++ b/test/llvmpasses/late-lower-gc.ll
+@@ -150,6 +150,21 @@ define {} addrspace(10)* @gclift_switch({} addrspace(13)* addrspace(10)* %input,
+   ret {} addrspace(10)* %ret
+ }
+ 
++; Shouldn't hang 
++define void @vector_insert(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
++top:
++  %pgcstack = call ptr @julia.get_pgcstack()
++  %2 = call <4 x {} addrspace(10)*> @llvm.vector.insert.v4p10.v2p10(<4 x {} addrspace(10)*> %0, <2 x {} addrspace(10)*> %1, i64 2)
++  ret void
++}
++
++define void @vector_extract(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
++top:
++  %pgcstack = call ptr @julia.get_pgcstack()
++  %2 = call <2 x {} addrspace(10)*> @llvm.vector.extract.v2p10.v4p10(<4 x {} addrspace(10)* > %0, i64 2)
++  ret void
++}
++
+ define void @decayar([2 x {} addrspace(10)* addrspace(11)*] %ar) {
+   %v2 = call {}*** @julia.get_pgcstack()
+   %e0 = extractvalue [2 x {} addrspace(10)* addrspace(11)*] %ar,
+0
