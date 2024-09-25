@@ -249,7 +249,8 @@ jobs:
         run: |
           set -o xtrace
 
-          tar xzf *.tar.gz .
+          tar xzf *.tar.gz
+          cd julia-*
 
           julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
 
@@ -260,7 +261,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}-test-results
-          path: ${{ github.workspace }}/share/julia/test/results*.json
+          path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
           if-no-files-found: warn
   test_julia_assert_linux:
     if: inputs.target == 'x86_64-linux-gnu-cxx11'
@@ -279,7 +280,8 @@ jobs:
         run: |
           set -o xtrace
 
-          tar xzf *.tar.gz .
+          tar xzf *.tar.gz
+          cd julia-*
 
           julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
 
@@ -290,5 +292,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}-test-results
-          path: ${{ github.workspace }}/share/julia/test/results*.json
+          path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
           if-no-files-found: warn
