@@ -92,5 +92,4 @@ index d294847db8f9d..c66c25562cc16 100644
 +
  define void @decayar([2 x {} addrspace(10)* addrspace(11)*] %ar) {
    %v2 = call {}*** @julia.get_pgcstack()
-   %e0 = extractvalue [2 x {} addrspace(10)* addrspace(11)*] %ar,
-0
+   %e0 = extractvalue [2 x {} addrspace(10)* addrspace(11)*] %ar, 0
