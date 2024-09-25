@@ -1,45 +1,23 @@
-From fc64a5899f1c7be92ce4a71a4bffa7753cc67623 Mon Sep 17 00:00:00 2001
-From: Zentrik <Zentrik@users.noreply.github.com>
-Date: Sun, 1 Sep 2024 16:59:49 +0100
-Subject: [PATCH] Revert "[MLIR][ExecutionEngine] Introduce shared library
- (#87067)"
+From b6f9e3c802fa49b5e3313d7e45d3f25f3037308f Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sat, 21 Sep 2024 10:07:15 +0100
+Subject: [PATCH] Don't build MLIRExecutionEngineShared on Windows
 
-This reverts commit 631ae59d301496f86a8d46d28f7b12afbd12a3c1.
+It doesn't currently build on windows, see https://github.com/llvm/llvm-project/issues/106859.
 ---
- mlir/lib/ExecutionEngine/CMakeLists.txt | 23 -----------------------
- 1 file changed, 23 deletions(-)
+ mlir/lib/ExecutionEngine/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/mlir/lib/ExecutionEngine/CMakeLists.txt b/mlir/lib/ExecutionEngine/CMakeLists.txt
-index a091944b9ee7df..b7e448d5417ea9 100644
+index a091944b9ee7df..81ebc05e9eba59 100644
 --- a/mlir/lib/ExecutionEngine/CMakeLists.txt
 +++ b/mlir/lib/ExecutionEngine/CMakeLists.txt
-@@ -97,29 +97,6 @@ add_mlir_library(MLIRExecutionEngine
+@@ -97,7 +97,7 @@ add_mlir_library(MLIRExecutionEngine
    MLIRTargetLLVMIRExport
    )
- 
+
 -if(LLVM_BUILD_LLVM_DYLIB)
--  # Build a shared library for the execution engine. Some downstream projects
--  # use this library to build their own CPU runners while preserving dynamic
--  # linkage.
--  add_mlir_library(MLIRExecutionEngineShared
--    ExecutionEngine.cpp
--    SHARED
--
--    EXCLUDE_FROM_LIBMLIR
--
--    ADDITIONAL_HEADER_DIRS
--    ${MLIR_MAIN_INCLUDE_DIR}/mlir/ExecutionEngine
--
--    # Ensures that all necessary dependencies are resolved.
--    DEPENDS
--    MLIRExecutionEngine
--
--    LINK_LIBS PUBLIC
--    LLVM
--    MLIR
--    )
--endif()
--
- get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
- add_mlir_library(MLIRJitRunner
-   JitRunner.cpp
++if(LLVM_BUILD_LLVM_DYLIB AND NOT (WIN32 OR MINGW OR CYGWIN))
+   # Build a shared library for the execution engine. Some downstream projects
+   # use this library to build their own CPU runners while preserving dynamic
+   # linkage.
