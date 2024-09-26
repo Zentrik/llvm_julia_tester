@@ -250,7 +250,7 @@ jobs:
           set -o xtrace
 
           tar xzf *.tar.gz
-          cd julia-*
+          cd julia-*/
 
           julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
 
@@ -281,7 +281,7 @@ jobs:
           set -o xtrace
 
           tar xzf *.tar.gz
-          cd julia-*
+          cd julia-*/
 
           julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
 
