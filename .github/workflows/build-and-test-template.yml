@@ -236,7 +236,6 @@ jobs:
     if: inputs.target == 'x86_64-w64-mingw32-cxx11' || inputs.target == 'i686-w64-mingw32-cxx11'
     runs-on: windows-latest
     needs: build_julia_assert_windows
-    timeout-minutes: 120
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
@@ -267,7 +266,6 @@ jobs:
     if: inputs.target == 'x86_64-linux-gnu-cxx11'
     runs-on: ubuntu-latest
     needs: build_julia_assert_linux
-    timeout-minutes: 120
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
