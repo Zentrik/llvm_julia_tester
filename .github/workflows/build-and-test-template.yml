@@ -252,11 +252,11 @@ jobs:
           tar xzf *.tar.gz
           cd julia-*/
 
-          ./julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
+          ./julia.exe -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
 
           export JULIA_TEST_MAXRSS_MB=3800
 
-          ./julia -e "Base.runtests(; ncores=4)"
+          ./julia.exe -e "Base.runtests(; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -271,7 +271,6 @@ jobs:
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
-      - uses: actions/checkout@v4
       - name: Download a single artifact
         uses: actions/download-artifact@v4
         with:
