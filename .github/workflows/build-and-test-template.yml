@@ -258,6 +258,7 @@ jobs:
           bin/julia.exe -e "Base.runtests(; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}-test-results
           path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
@@ -287,6 +288,7 @@ jobs:
           bin/julia -e "Base.runtests(; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}-test-results
           path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
