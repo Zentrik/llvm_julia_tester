@@ -1,0 +1,396 @@
+diff --git a/src/codegen.cpp b/src/codegen.cpp
+index a452e0fccd..4469c673a3 100644
+--- a/src/codegen.cpp
++++ b/src/codegen.cpp
+@@ -79,6 +79,7 @@
+ #include "llvm/Support/Path.h" // for llvm::sys::path
+ #include <llvm/Bitcode/BitcodeReader.h>
+ #include <llvm/Linker/Linker.h>
++#include <llvm/CodeGen/MachineModuleInfo.h>
+ 
+ using namespace llvm;
+ 
+@@ -2226,7 +2227,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
+ static AllocaInst *emit_static_alloca(jl_codectx_t &ctx, Type *lty, Align align)
+ {
+     ++EmittedAllocas;
+-    return new AllocaInst(lty, ctx.topalloca->getModule()->getDataLayout().getAllocaAddrSpace(), nullptr, align, "", /*InsertBefore=*/ctx.topalloca);
++    return new AllocaInst(lty, ctx.topalloca->getModule()->getDataLayout().getAllocaAddrSpace(), nullptr, align, "", /*InsertBefore=*/ctx.topalloca->getIterator());
+ }
+ 
+ static AllocaInst *emit_static_alloca(jl_codectx_t &ctx, unsigned nb, Align align)
+@@ -9627,10 +9628,10 @@ static jl_llvm_functions_t
+                     // TODO: inference is invalid if this has any effect (which it often does)
+                     LoadInst *world = new LoadInst(ctx.types().T_size,
+                         prepare_global_in(jl_Module, jlgetworld_global), Twine(),
+-                        /*isVolatile*/false, ctx.types().alignof_ptr, /*insertBefore*/&I);
++                        /*isVolatile*/false, ctx.types().alignof_ptr, /*insertBefore*/I.getIterator());
+                     world->setOrdering(AtomicOrdering::Acquire);
+                     StoreInst *store_world = new StoreInst(world, world_age_field,
+-                        /*isVolatile*/false, ctx.types().alignof_ptr, /*insertBefore*/&I);
++                        /*isVolatile*/false, ctx.types().alignof_ptr, /*insertBefore*/I.getIterator());
+                     (void)store_world;
+                 }
+             }
+@@ -10298,15 +10299,17 @@ namespace llvm {
+     class MachineBasicBlock;
+     class MachineFunction;
+     raw_ostream& operator<<(raw_ostream &OS, const MachineBasicBlock &MBB);
+-    void printMIR(raw_ostream &OS, const MachineFunction &MF);
++    void printMIR(raw_ostream &OS, const MachineModuleInfo &MMI,
++                const MachineFunction &MF);
+ }
+ extern "C" void jl_dump_llvm_mbb(void *v)
+ {
+     errs() << *(llvm::MachineBasicBlock*)v;
+ }
+-extern "C" void jl_dump_llvm_mfunction(void *v)
++extern "C" void jl_dump_llvm_mfunction(void *m, void *v)
+ {
+-    llvm::printMIR(errs(), *(llvm::MachineFunction*)v);
++    llvm::printMIR(errs(), *(llvm::MachineModuleInfo*)v,
++                *(llvm::MachineFunction*)v);
+ }
+ 
+ 
+diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
+index 442103c91b..3fb10a7484 100644
+--- a/src/jitlayers.cpp
++++ b/src/jitlayers.cpp
+@@ -1558,7 +1558,7 @@ void SetOpaquePointer(LLVMContext &ctx) {
+ llvm::DataLayout jl_create_datalayout(TargetMachine &TM) {
+     // Mark our address spaces as non-integral
+     auto jl_data_layout = TM.createDataLayout();
+-    jl_data_layout.reset(jl_data_layout.getStringRepresentation() + "-ni:10:11:12:13");
++    jl_data_layout = DataLayout(jl_data_layout.getStringRepresentation() + "-ni:10:11:12:13");
+     return jl_data_layout;
+ }
+ 
+diff --git a/src/llvm-alloc-opt.cpp b/src/llvm-alloc-opt.cpp
+index 188955fd50..4299f17a72 100644
+--- a/src/llvm-alloc-opt.cpp
++++ b/src/llvm-alloc-opt.cpp
+@@ -403,12 +403,12 @@ void Optimizer::insertLifetimeEnd(Value *ptr, Constant *sz, Instruction *insert)
+         }
+         break;
+     }
+-    CallInst::Create(pass.lifetime_end, {sz, ptr}, "", insert);
++    CallInst::Create(pass.lifetime_end, {sz, ptr}, "", insert->getIterator());
+ }
+ 
+ void Optimizer::insertLifetime(Value *ptr, Constant *sz, Instruction *orig)
+ {
+-    CallInst::Create(pass.lifetime_start, {sz, ptr}, "", orig);
++    CallInst::Create(pass.lifetime_start, {sz, ptr}, "", orig->getIterator());
+     BasicBlock *def_bb = orig->getParent();
+     std::set<BasicBlock*> bbs{def_bb};
+     auto &DT = getDomTree();
+@@ -606,7 +606,7 @@ void Optimizer::replaceIntrinsicUseWith(IntrinsicInst *call, Intrinsic::ID ID,
+     auto newF = Intrinsic::getDeclaration(call->getModule(), ID, overloadTys);
+     assert(newF->getFunctionType() == newfType);
+     newF->setCallingConv(call->getCallingConv());
+-    auto newCall = CallInst::Create(newF, args, "", call);
++    auto newCall = CallInst::Create(newF, args, "", call->getIterator());
+     newCall->setTailCallKind(call->getTailCallKind());
+     auto old_attrs = call->getAttributes();
+     newCall->setAttributes(AttributeList::get(pass.getLLVMContext(), getFnAttrs(old_attrs),
+@@ -776,7 +776,7 @@ void Optimizer::moveToStack(CallInst *orig_inst, size_t sz, bool has_ref, AllocF
+             SmallVector<Value *, 4> IdxOperands(gep->idx_begin(), gep->idx_end());
+             auto new_gep = GetElementPtrInst::Create(gep->getSourceElementType(),
+                                                      new_i, IdxOperands,
+-                                                     gep->getName(), gep);
++                                                     gep->getName(), gep->getIterator());
+             new_gep->setIsInBounds(gep->isInBounds());
+             new_gep->takeName(gep);
+             new_gep->copyMetadata(*gep);
+@@ -1216,7 +1216,7 @@ void Optimizer::splitOnStack(CallInst *orig_inst)
+                 bundle = OperandBundleDef("jl_roots", std::move(operands));
+                 break;
+             }
+-            auto new_call = CallInst::Create(call, bundles, call);
++            auto new_call = CallInst::Create(call, bundles, call->getIterator());
+             new_call->takeName(call);
+             call->replaceAllUsesWith(new_call);
+             call->eraseFromParent();
+diff --git a/src/llvm-julia-licm.cpp b/src/llvm-julia-licm.cpp
+index 8d80f7fd54..07440ce1fc 100644
+--- a/src/llvm-julia-licm.cpp
++++ b/src/llvm-julia-licm.cpp
+@@ -238,7 +238,7 @@ struct JuliaLICM : public JuliaPassContext {
+                     });
+                     for (unsigned i = 1; i < exit_pts.size(); i++) {
+                         // Clone exit
+-                        auto CI = CallInst::Create(call, {}, exit_pts[i]);
++                        auto CI = CallInst::Create(call, {}, exit_pts[i]->getIterator());
+                         exit_pts[i] = CI;
+                         createNewInstruction(CI, call, MSSAU);
+                         LLVM_DEBUG(dbgs() << "Cloned and sunk gc_preserve_end: " << *CI << "\n");
+diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
+index 1d390a5115..7792c85db5 100644
+--- a/src/llvm-late-gc-lowering.cpp
++++ b/src/llvm-late-gc-lowering.cpp
+@@ -1,6 +1,7 @@
+ // This file is a part of Julia. License is MIT: https://julialang.org/license
+ 
+ #include "llvm-gc-interface-passes.h"
++#include "llvm/IR/Intrinsics.h"
+ 
+ #define DEBUG_TYPE "late_lower_gcroot"
+ 
+@@ -204,7 +205,17 @@ static std::pair<Value*,int> FindBaseValue(const State &S, Value *V, bool UseCac
+                 }
+                 // In general a load terminates a walk
+                 break;
+-            }
++            } else if (II->getIntrinsicID() == Intrinsic::vector_extract) {
++                if (auto VTy = dyn_cast<VectorType>(II->getType())) {
++                    if (hasLoadedTy(VTy->getElementType())) {
++                        // TODO: For now, only support constant index.
++                        auto IdxOp = cast<ConstantInt>(II->getOperand(1));
++                        fld_idx = IdxOp->getLimitedValue(INT_MAX);
++                        CurrentV = II->getOperand(0);
++                    }
++                }
++            } else
++                break;
+         }
+         else if (auto CI = dyn_cast<CallInst>(CurrentV)) {
+             auto callee = CI->getCalledFunction();
+@@ -348,10 +359,10 @@ void LateLowerGCFrame::LiftSelect(State &S, SelectInst *SI) {
+         if (isa<VectorType>(Cond->getType())) {
+             Cond = ExtractElementInst::Create(Cond,
+                     ConstantInt::get(Type::getInt32Ty(Cond->getContext()), i),
+-                    "", SI);
++                    "", SI->getIterator());
+         }
+         assert(FalseElem->getType() == TrueElem->getType());
+-        SelectInst *SelectBase = SelectInst::Create(Cond, TrueElem, FalseElem, "gclift", SI);
++        SelectInst *SelectBase = SelectInst::Create(Cond, TrueElem, FalseElem, "gclift", SI->getIterator());
+         int Number = ++S.MaxPtrNumber;
+         S.AllPtrNumbering[SelectBase] = Number;
+         S.ReversePtrNumbering[Number] = SelectBase;
+@@ -389,7 +400,7 @@ void LateLowerGCFrame::LiftPhi(State &S, PHINode *Phi) {
+         Numbers.resize(NumRoots);
+     }
+     for (unsigned i = 0; i < NumRoots; ++i) {
+-        PHINode *lift = PHINode::Create(T_prjlvalue, Phi->getNumIncomingValues(), "gclift", Phi);
++        PHINode *lift = PHINode::Create(T_prjlvalue, Phi->getNumIncomingValues(), "gclift", Phi->getIterator());
+         int Number = ++S.MaxPtrNumber;
+         S.AllPtrNumbering[lift] = Number;
+         S.ReversePtrNumbering[Number] = lift;
+@@ -518,6 +529,16 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
+         Numbers = NumberAll(S, IEI->getOperand(0));
+         int ElNumber = Number(S, IEI->getOperand(1));
+         Numbers[idx] = ElNumber;
++    } else if (auto * VII = dyn_cast<IntrinsicInst>(CurrentV)) {
++        if (VII->getIntrinsicID() == Intrinsic::vector_insert) {
++            Numbers = NumberAll(S, VII->getOperand(0));
++            int first_idx = cast<ConstantInt>(VII->getOperand(2))->getZExtValue();
++            SmallVector<int, 0> Numbers2 = NumberAll(S, VII->getOperand(1));
++            for (unsigned i = 0; i < Numbers2.size(); ++i) {
++                dbgs() << Numbers2[i] << " "<< first_idx + i << "\n";
++                Numbers[first_idx + i] = Numbers2[i];
++            }
++        }
+     } else if (auto *IVI = dyn_cast<InsertValueInst>(CurrentV)) {
+         Numbers = NumberAll(S, IVI->getAggregateOperand());
+         auto Tracked = TrackCompositeType(IVI->getType());
+@@ -1150,6 +1171,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
+                             }
+                         }
+                     }
++                    if (II->getIntrinsicID() == Intrinsic::vector_extract || II->getIntrinsicID() == Intrinsic::vector_insert) {
++                        // These are not real defs
++                        continue;
++                    }
+                 }
+                 auto callee = CI->getCalledFunction();
+                 if (callee && callee == typeof_func) {
+@@ -2000,7 +2025,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+     if (T_prjlvalue) {
+         T_pprjlvalue = T_prjlvalue->getPointerTo();
+         Frame = new AllocaInst(T_prjlvalue, allocaAddressSpace,
+-            ConstantInt::get(T_int32, maxframeargs), "jlcallframe", StartOff);
++            ConstantInt::get(T_int32, maxframeargs), "jlcallframe", StartOff->getIterator());
+     }
+     SmallVector<CallInst*, 0> write_barriers;
+     for (BasicBlock &BB : F) {
+@@ -2041,13 +2066,13 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+                 /* No replacement */
+             } else if (pointer_from_objref_func != nullptr && callee == pointer_from_objref_func) {
+                 auto *obj = CI->getOperand(0);
+-                auto *ASCI = new AddrSpaceCastInst(obj, CI->getType(), "", CI);
++                auto *ASCI = new AddrSpaceCastInst(obj, CI->getType(), "", CI->getIterator());
+                 ASCI->takeName(CI);
+                 CI->replaceAllUsesWith(ASCI);
+                 UpdatePtrNumbering(CI, ASCI, S);
+             } else if (gc_loaded_func != nullptr && callee == gc_loaded_func) {
+                 auto *obj = CI->getOperand(1);
+-                auto *ASCI = new AddrSpaceCastInst(obj, CI->getType(), "", CI);
++                auto *ASCI = new AddrSpaceCastInst(obj, CI->getType(), "", CI->getIterator());
+                 ASCI->takeName(CI);
+                 CI->replaceAllUsesWith(ASCI);
+                 UpdatePtrNumbering(CI, ASCI, S);
+@@ -2200,7 +2225,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+                 FunctionType *FTy = callee == call3_func ? JuliaType::get_jlfunc3_ty(CI->getContext()) :
+                                     callee == call2_func ? JuliaType::get_jlfunc2_ty(CI->getContext()) :
+                                                            JuliaType::get_jlfunc_ty(CI->getContext());
+-                CallInst *NewCall = CallInst::Create(FTy, new_callee, ReplacementArgs, "", CI);
++                CallInst *NewCall = CallInst::Create(FTy, new_callee, ReplacementArgs, "", CI->getIterator());
+                 NewCall->setTailCallKind(CI->getTailCallKind());
+                 auto callattrs = CI->getAttributes();
+                 callattrs = AttributeList::get(CI->getContext(), getFnAttrs(callattrs), getRetAttrs(callattrs), {});
+@@ -2216,7 +2241,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+                 ++it;
+                 continue;
+             } else {
+-                CallInst *NewCall = CallInst::Create(CI, None, CI);
++                CallInst *NewCall = CallInst::Create(CI, None, CI->getIterator());
+                 NewCall->takeName(CI);
+                 NewCall->copyMetadata(*CI);
+                 CI->replaceAllUsesWith(NewCall);
+@@ -2282,14 +2307,14 @@ void LateLowerGCFrame::PlaceGCFrameStore(State &S, unsigned R, unsigned MinColor
+     auto slotAddress = CallInst::Create(
+         getOrDeclare(jl_intrinsics::getGCFrameSlot),
+         {GCFrame, ConstantInt::get(Type::getInt32Ty(InsertBefore->getContext()), Colors[R] + MinColorRoot)},
+-        "gc_slot_addr_" + StringRef(std::to_string(Colors[R] + MinColorRoot)), InsertBefore);
++        "gc_slot_addr_" + StringRef(std::to_string(Colors[R] + MinColorRoot)), InsertBefore->getIterator());
+ 
+     Value *Val = GetPtrForNumber(S, R, InsertBefore);
+     // Pointee types don't have semantics, so the optimizer is
+     // free to rewrite them if convenient. We need to change
+     // it back here for the store.
+     assert(Val->getType() == T_prjlvalue);
+-    new StoreInst(Val, slotAddress, InsertBefore);
++    new StoreInst(Val, slotAddress, InsertBefore->getIterator());
+ }
+ 
+ void LateLowerGCFrame::PlaceGCFrameStores(State &S, unsigned MinColorRoot,
+@@ -2428,7 +2453,7 @@ void LateLowerGCFrame::PlaceRootsAndUpdateCalls(SmallVectorImpl<int> &Colors, St
+                 assert(Elem->getType() == T_prjlvalue);
+                 //auto Idxs = ArrayRef<unsigned>(Tracked[i]);
+                 //Value *Elem = ExtractScalar(Base, true, Idxs, SI);
+-                Value *shadowStore = new StoreInst(Elem, slotAddress, SI);
++                Value *shadowStore = new StoreInst(Elem, slotAddress, SI->getIterator());
+                 (void)shadowStore;
+                 // TODO: shadowStore->setMetadata(LLVMContext::MD_tbaa, tbaa_gcframe);
+                 AllocaSlot++;
+diff --git a/src/llvm-lower-handlers.cpp b/src/llvm-lower-handlers.cpp
+index e09ea892ee..9f837a590b 100644
+--- a/src/llvm-lower-handlers.cpp
++++ b/src/llvm-lower-handlers.cpp
+@@ -175,7 +175,7 @@ static bool lowerExcHandlers(Function &F) {
+     unsigned allocaAddressSpace = F.getParent()->getDataLayout().getAllocaAddrSpace();
+     for (int i = 0; i < MaxDepth; ++i) {
+         auto *buff = new AllocaInst(Type::getInt8Ty(F.getContext()), allocaAddressSpace,
+-                handler_sz, Align(16), "", firstInst);
++                handler_sz, Align(16), "", firstInst->getIterator());
+         if (allocaAddressSpace) {
+             AddrSpaceCastInst *buff_casted = new AddrSpaceCastInst(buff, PointerType::get(F.getContext(), AddressSpace::Generic));
+             buff_casted->insertAfter(buff);
+@@ -190,17 +190,17 @@ static bool lowerExcHandlers(Function &F) {
+         assert(it.second >= 0);
+         Instruction *buff = buffs[it.second];
+         CallInst *enter = it.first;
+-        auto new_enter = CallInst::Create(jlenter_func, {enter->getArgOperand(0), buff}, "", enter);
++        auto new_enter = CallInst::Create(jlenter_func, {enter->getArgOperand(0), buff}, "", enter->getIterator());
+         Value *lifetime_args[] = {
+             handler_sz64,
+             buff
+         };
+-        CallInst::Create(lifetime_start, lifetime_args, "", new_enter);
++        CallInst::Create(lifetime_start, lifetime_args, "", new_enter->getIterator());
+         CallInst *sj;
+         if (!TT.isOSWindows()) {
+-            sj = CallInst::Create(setjmp_func, {buff, ConstantInt::get(Type::getInt32Ty(F.getContext()), 0)}, "", enter);
++            sj = CallInst::Create(setjmp_func, {buff, ConstantInt::get(Type::getInt32Ty(F.getContext()), 0)}, "", enter->getIterator());
+         } else {
+-            sj = CallInst::Create(setjmp_func, buff, "", enter);
++            sj = CallInst::Create(setjmp_func, buff, "", enter->getIterator());
+         }
+         // We need to mark this on the call site as well. See issue #6757
+         sj->setCanReturnTwice();
+@@ -223,8 +223,8 @@ static bool lowerExcHandlers(Function &F) {
+         for (auto *EEI : ToErase)
+             EEI->eraseFromParent();
+         if (!enter->use_empty()) {
+-            Value *agg = InsertValueInst::Create(UndefValue::get(enter->getType()), sj, ArrayRef<unsigned>(0), "", enter);
+-            agg = InsertValueInst::Create(agg, buff, ArrayRef<unsigned>(1), "", enter);
++            Value *agg = InsertValueInst::Create(UndefValue::get(enter->getType()), sj, ArrayRef<unsigned>(0), "", enter->getIterator());
++            agg = InsertValueInst::Create(agg, buff, ArrayRef<unsigned>(1), "", enter->getIterator());
+             enter->replaceAllUsesWith(agg);
+         }
+         enter->eraseFromParent();
+diff --git a/src/llvm-multiversioning.cpp b/src/llvm-multiversioning.cpp
+index 22ef973dec..8fc0a1ac9d 100644
+--- a/src/llvm-multiversioning.cpp
++++ b/src/llvm-multiversioning.cpp
+@@ -771,7 +771,7 @@ std::pair<uint32_t,GlobalVariable*> CloneCtx::get_reloc_slot(Function *F) const
+ }
+ 
+ template<typename Stack>
+-static Value *rewrite_inst_use(const Stack& stack, Type *T_size, Value *replace, Instruction *insert_before)
++static Value *rewrite_inst_use(const Stack& stack, Type *T_size, Value *replace, InsertPosition& insert_before)
+ {
+     SmallVector<Constant*, 8> args;
+     uint32_t nlevel = stack.size();
+@@ -832,9 +832,9 @@ static void replaceUsesWithLoad(Function &F, Type *T_size, I2GV should_replace,
+             GlobalVariable *slot = should_replace(*use_i);
+             if (!slot)
+                 continue;
+-            Instruction *insert_before = use_i;
++            InsertPosition insert_before = use_i->getIterator();
+             if (auto phi = dyn_cast<PHINode>(use_i))
+-                insert_before = phi->getIncomingBlock(*info.use)->getTerminator();
++                insert_before = phi->getIncomingBlock(*info.use)->getTerminator()->getIterator();
+             Instruction *ptr = new LoadInst(F.getType(), slot, "", false, insert_before);
+             ptr->setMetadata(llvm::LLVMContext::MD_tbaa, tbaa_const);
+             ptr->setMetadata(llvm::LLVMContext::MD_invariant_load, MDNode::get(ptr->getContext(), None));
+diff --git a/src/llvm-ptls.cpp b/src/llvm-ptls.cpp
+index 488dd46cad..5a4afe49cd 100644
+--- a/src/llvm-ptls.cpp
++++ b/src/llvm-ptls.cpp
+@@ -196,7 +196,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
+         phi->addIncoming(pgcstack, fastTerm->getParent());
+         // emit pre-return cleanup
+         if (CountTrackedPointers(pgcstack->getParent()->getParent()->getReturnType()).count == 0) {
+-            auto last_gc_state = PHINode::Create(Type::getInt8Ty(pgcstack->getContext()), 2, "", phi);
++            auto last_gc_state = PHINode::Create(Type::getInt8Ty(pgcstack->getContext()), 2, "", phi->getIterator());
+             // if we called jl_adopt_thread, we must end this cfunction back in the safe-state
+             last_gc_state->addIncoming(ConstantInt::get(Type::getInt8Ty(M->getContext()), JL_GC_STATE_SAFE), slowTerm->getParent());
+             last_gc_state->addIncoming(prior, fastTerm->getParent());
+@@ -283,7 +283,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
+         if (TargetTriple.isOSDarwin()) {
+             assert(sizeof(k) == sizeof(uintptr_t));
+             Constant *key = ConstantInt::get(T_size, (uintptr_t)k);
+-            auto new_pgcstack = CallInst::Create(FT_pgcstack_getter, val, {key}, "", pgcstack);
++            auto new_pgcstack = CallInst::Create(FT_pgcstack_getter, val, {key}, "", pgcstack->getIterator());
+             new_pgcstack->takeName(pgcstack);
+             pgcstack->replaceAllUsesWith(new_pgcstack);
+             pgcstack->eraseFromParent();
+diff --git a/test/llvmpasses/late-lower-gc.ll b/test/llvmpasses/late-lower-gc.ll
+index d294847db8..c66c25562c 100644
+--- a/test/llvmpasses/late-lower-gc.ll
++++ b/test/llvmpasses/late-lower-gc.ll
+@@ -150,6 +150,21 @@ define {} addrspace(10)* @gclift_switch({} addrspace(13)* addrspace(10)* %input,
+   ret {} addrspace(10)* %ret
+ }
+ 
++; Shouldn't hang 
++define void @vector_insert(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
++top:
++  %pgcstack = call ptr @julia.get_pgcstack()
++  %2 = call <4 x {} addrspace(10)*> @llvm.vector.insert.v4p10.v2p10(<4 x {} addrspace(10)*> %0, <2 x {} addrspace(10)*> %1, i64 2)
++  ret void
++}
++
++define void @vector_extract(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
++top:
++  %pgcstack = call ptr @julia.get_pgcstack()
++  %2 = call <2 x {} addrspace(10)*> @llvm.vector.extract.v2p10.v4p10(<4 x {} addrspace(10)* > %0, i64 2)
++  ret void
++}
++
+ define void @decayar([2 x {} addrspace(10)* addrspace(11)*] %ar) {
+   %v2 = call {}*** @julia.get_pgcstack()
+   %e0 = extractvalue [2 x {} addrspace(10)* addrspace(11)*] %ar, 0
