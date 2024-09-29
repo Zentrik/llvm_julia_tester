@@ -173,10 +173,10 @@ jobs:
           set -o xtrace
 
           if [[ "${{ inputs.target }}" == "x86_64-w64-mingw32-cxx11" ]]; then
-            pacman -S mingw-w64-x86_64-gcc
+            pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-gcc
           else
-            curl -L "https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev0/i686-12.2.0-release-posix-sjlj-rt_v10-rev0.7z"
-            7z x i686-12.2.0-release-posix-sjlj-rt_v10-rev0.7z -o/msys64
+            curl -L "https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev0/i686-12.2.0-release-posix-sjlj-rt_v10-rev0.7z" -o gcc.7z
+            7z x gcc.7z -o/msys64
           fi
 
           export MSYS=winsymlinks:sysfile
