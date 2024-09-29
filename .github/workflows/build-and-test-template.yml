@@ -163,7 +163,6 @@ jobs:
             p7zip
             curl
             python
-          pacboy: gcc:p
       - name: Download a single artifact
         uses: actions/download-artifact@v4
         with:
@@ -172,6 +171,14 @@ jobs:
         shell: msys2 {0}
         run: |
           set -o xtrace
+
+          if [[ "${{ inputs.target }}" == "x86_64-w64-mingw32-cxx11" ]]; then
+            pacman -S mingw-w64-x86_64-gcc
+          else
+            curl -L https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev0/i686-12.2.0-release-posix-sjlj-rt_v10-rev0.7z
+            7z x i686-12.2.0-release-posix-sjlj-rt_v10-rev0.7z -o/msys64
+          fi
+
           export MSYS=winsymlinks:sysfile
           git clone https://github.com/Zentrik/julia
           cd julia
