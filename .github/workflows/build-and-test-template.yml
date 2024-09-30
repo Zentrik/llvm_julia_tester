@@ -176,7 +176,7 @@ jobs:
             pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-gcc
           else
             curl -L "https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev0/i686-12.2.0-release-posix-sjlj-rt_v10-rev0.7z" -o gcc.7z
-            7z x gcc.7z -o/msys64
+            7z x gcc.7z -o'${{ steps.msys2.outputs.msys2-location }}'
           fi
 
           export MSYS=winsymlinks:sysfile
