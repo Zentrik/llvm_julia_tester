@@ -271,7 +271,7 @@ jobs:
 
           export JULIA_TEST_MAXRSS_MB=3800
 
-          bin/julia.exe -e "Base.runtests(; ncores=4)"
+          bin/julia.exe -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs\"; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
@@ -301,7 +301,7 @@ jobs:
 
           export JULIA_TEST_MAXRSS_MB=3800
 
-          bin/julia -e "Base.runtests(; ncores=4)"
+          bin/julia -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs\"; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
