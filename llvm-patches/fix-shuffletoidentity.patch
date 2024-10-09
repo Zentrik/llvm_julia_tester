@@ -1,0 +1,50 @@
+From 7e526b4e1356dbdf3861e937b85dc33460e3654b Mon Sep 17 00:00:00 2001
+From: David Green <david.green@arm.com>
+Date: Wed, 9 Oct 2024 06:55:34 +0100
+Subject: [PATCH] [VectorCombine] Do not try to operate on OperandBundles.
+
+This bails out if we see an intrinsic with an operand bundle on it, to make
+sure we don't process the bundles incorrectly.
+
+Fixes #110382.
+---
+ llvm/lib/Transforms/Vectorize/VectorCombine.cpp    |  2 ++
+ .../VectorCombine/AArch64/shuffletoidentity.ll     | 14 ++++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/llvm/lib/Transforms/Vectorize/VectorCombine.cpp b/llvm/lib/Transforms/Vectorize/VectorCombine.cpp
+index a2ab5d96664078..05f3daa549ee6f 100644
+--- a/llvm/lib/Transforms/Vectorize/VectorCombine.cpp
++++ b/llvm/lib/Transforms/Vectorize/VectorCombine.cpp
+@@ -2039,6 +2039,8 @@ bool VectorCombine::foldShuffleToIdentity(Instruction &I) {
+         continue;
+       } else if (auto *II = dyn_cast<IntrinsicInst>(FrontU);
+                  II && isTriviallyVectorizable(II->getIntrinsicID())) {
++        if (II->hasOperandBundles())
++          return false;
+         for (unsigned Op = 0, E = II->getNumOperands() - 1; Op < E; Op++) {
+           if (isVectorIntrinsicWithScalarOpAtArg(II->getIntrinsicID(), Op)) {
+             if (!all_of(drop_begin(Item), [Item, Op](InstLane &IL) {
+diff --git a/llvm/test/Transforms/VectorCombine/AArch64/shuffletoidentity.ll b/llvm/test/Transforms/VectorCombine/AArch64/shuffletoidentity.ll
+index af04fb0ab4621b..43095459358d17 100644
+--- a/llvm/test/Transforms/VectorCombine/AArch64/shuffletoidentity.ll
++++ b/llvm/test/Transforms/VectorCombine/AArch64/shuffletoidentity.ll
+@@ -1066,4 +1066,18 @@ entry:
+   ret <2 x float> %4
+ }
+ 
++define <16 x i64> @operandbundles(<4 x i64> %a, <4 x i64> %b, <4 x i64> %c) {
++; CHECK-LABEL: @operandbundles(
++; CHECK-NEXT:    [[CALL:%.*]] = call <4 x i64> @llvm.fshl.v4i64(<4 x i64> [[A:%.*]], <4 x i64> [[B:%.*]], <4 x i64> [[C:%.*]]) [ "jl_roots"(ptr addrspace(10) null, ptr addrspace(10) null) ]
++; CHECK-NEXT:    [[SHUFFLEVECTOR:%.*]] = shufflevector <4 x i64> [[CALL]], <4 x i64> poison, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison>
++; CHECK-NEXT:    [[SHUFFLEVECTOR1:%.*]] = shufflevector <16 x i64> [[SHUFFLEVECTOR]], <16 x i64> undef, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 20, i32 21, i32 22, i32 23, i32 24, i32 25, i32 26, i32 27, i32 28, i32 29, i32 30, i32 31>
++; CHECK-NEXT:    ret <16 x i64> [[SHUFFLEVECTOR1]]
++;
++  %call = call <4 x i64> @llvm.fshl.v4i64(<4 x i64> %a, <4 x i64> %b, <4 x i64> %c) [ "jl_roots"(ptr addrspace(10) null, ptr addrspace(10) null) ]
++  %shufflevector = shufflevector <4 x i64> %call, <4 x i64> poison, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison, i32 poison>
++  %shufflevector1 = shufflevector <16 x i64> %shufflevector, <16 x i64> undef, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 20, i32 21, i32 22, i32 23, i32 24, i32 25, i32 26, i32 27, i32 28, i32 29, i32 30, i32 31>
++  ret <16 x i64> %shufflevector1
++}
++
++declare <4 x i64> @llvm.fshl.v4i64(<4 x i64>, <4 x i64>, <4 x i64>)
+ declare void @use(<4 x i8>)
