@@ -92,7 +92,7 @@ jobs:
           git clone https://github.com/Zentrik/Yggdrasil.git
           cd Yggdrasil
           git fetch
-          git switch llvm-19-llvm
+          git switch llvm-19
           git apply $GITHUB_WORKSPACE/yggy-patches/*
           if [[ "${{ inputs.MINIMAL_LLVM_BUILD }}" == "true" ]]; then
             git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
@@ -111,7 +111,7 @@ jobs:
 
             include("../common.jl")
 
-            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_ver=ENV["LLVM_VERSION"])
+            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_path=git_path=git_path="https://github.com/llvm/llvm-project.git", git_ver=ENV["LLVM_VERSION"])
             products = Product[]
             build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], src_name, src_version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
           '
