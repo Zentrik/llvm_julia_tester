@@ -99,7 +99,9 @@ jobs:
           fi
 
           cd L/LLVM/LLVM_full@19
-          cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
+          if [ "$(ls -A $GITHUB_WORKSPACE/llvm-patches)" ]; then
+              cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
+          fi
           julia -e '
             using Pkg
             Pkg.activate(ENV["GITHUB_WORKSPACE"])
