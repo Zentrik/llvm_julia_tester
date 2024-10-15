@@ -89,10 +89,8 @@ jobs:
         id: build
         run: |
           set -o xtrace
-          git clone https://github.com/Zentrik/Yggdrasil.git
+          git clone https://github.com/JuliaPackaging/Yggdrasil.git
           cd Yggdrasil
-          git fetch
-          git switch llvm-19
           git apply $GITHUB_WORKSPACE/yggy-patches/*
           if [[ "${{ inputs.MINIMAL_LLVM_BUILD }}" == "true" ]]; then
             git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
@@ -183,10 +181,8 @@ jobs:
           fi
 
           export MSYS=winsymlinks:sysfile
-          git clone https://github.com/Zentrik/julia
+          git clone https://github.com/JuliaLang/julia
           cd julia
-          git fetch
-          git switch llvm-19
           echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
@@ -229,10 +225,8 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential libatomic1 python3 gfortran perl wget m4 cmake pkg-config curl
 
-          git clone https://github.com/Zentrik/julia
+          git clone https://github.com/JuliaLang/julia
           cd julia
-          git fetch
-          git switch llvm-19
           echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
