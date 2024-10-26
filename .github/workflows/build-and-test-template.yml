@@ -166,10 +166,6 @@ jobs:
             p7zip
             curl
             python
-      - name: Download a single artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
       - name: "Build Julia Assert"
         shell: msys2 {0}
         run: |
