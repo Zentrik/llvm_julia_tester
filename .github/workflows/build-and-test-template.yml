@@ -181,10 +181,8 @@ jobs:
           fi
 
           export MSYS=winsymlinks:sysfile
-          git clone https://github.com/Zentrik/julia
+          git clone https://github.com/JuliaLang/julia
           cd julia
-          git fetch
-          git switch llvm-19
           echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
@@ -227,10 +225,8 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential libatomic1 python3 gfortran perl wget m4 cmake pkg-config curl
 
-          git clone https://github.com/Zentrik/julia
+          git clone https://github.com/JuliaLang/julia
           cd julia
-          git fetch
-          git switch llvm-19
           echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
