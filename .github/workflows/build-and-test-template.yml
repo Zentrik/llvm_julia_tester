@@ -203,8 +203,7 @@ jobs:
           fi
 
           contrib/asan/build.sh asan -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET
-          cd asan/asan
-          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET binary-dist
+          contrib/asan/build.sh asan -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -244,8 +243,7 @@ jobs:
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v18.1.7+2.${{ inputs.target }}.tar.gz
 
           contrib/asan/build.sh asan -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)"
-          cd asan/asan
-          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)" binary-dist
+          contrib/asan/build.sh asan -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)" binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
