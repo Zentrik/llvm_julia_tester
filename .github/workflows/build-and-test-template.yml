@@ -89,10 +89,8 @@ jobs:
         id: build
         run: |
           set -o xtrace
-          git clone https://github.com/Zentrik/Yggdrasil.git
+          git clone https://github.com/JuliaPackaging/Yggdrasil.git
           cd Yggdrasil
-          git fetch
-          git switch llvm-19
           git apply $GITHUB_WORKSPACE/yggy-patches/*
           if [[ "${{ inputs.MINIMAL_LLVM_BUILD }}" == "true" ]]; then
             git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
