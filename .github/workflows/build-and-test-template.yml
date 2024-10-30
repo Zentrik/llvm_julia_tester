@@ -251,7 +251,8 @@ jobs:
     runs-on: windows-latest
     needs: build_julia_assert_windows
     env:
-      LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
+      JULIA_TEST_CHECK_MUTATED_ENV: "false"
+      JULIA_TEST_MAXRSS_MB: "3800"
     steps:
       - name: Download a single artifact
         uses: actions/download-artifact@v4
@@ -266,9 +267,6 @@ jobs:
           cd julia-*/
 
           bin/julia.exe -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
-
-          export JULIA_TEST_MAXRSS_MB=3800
-
           bin/julia.exe -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs\"; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -282,7 +280,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_julia_assert_linux
     env:
-      LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
+      JULIA_TEST_MAXRSS_MB: "3800"
     steps:
       - name: Download a single artifact
         uses: actions/download-artifact@v4
@@ -296,9 +294,6 @@ jobs:
           cd julia-*/
 
           bin/julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
-
-          export JULIA_TEST_MAXRSS_MB=3800
-
           bin/julia -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs\"; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
