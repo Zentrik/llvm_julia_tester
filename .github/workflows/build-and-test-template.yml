@@ -191,7 +191,7 @@ jobs:
 
           mkdir -p deps/srccache
           JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
-          mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
+          mv ../LLVM_full.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
 
           if [[ "${{ inputs.target }}" == "x86_64-w64-mingw32-cxx11" ]]; then
             JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)"
@@ -236,7 +236,7 @@ jobs:
 
           mkdir -p deps/srccache
           JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')  
-          mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
+          mv ../LLVM_full.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
 
           make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)"
           make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)" binary-dist
