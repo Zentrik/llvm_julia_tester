@@ -253,6 +253,7 @@ jobs:
     env:
       JULIA_TEST_CHECK_MUTATED_ENV: "false"
       JULIA_TEST_MAXRSS_MB: "3800"
+      JULIA_NUM_THREADS: "1"
     steps:
       - name: Download a single artifact
         uses: actions/download-artifact@v4
