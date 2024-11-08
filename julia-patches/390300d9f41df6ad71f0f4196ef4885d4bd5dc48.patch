@@ -1,0 +1,35 @@
+From b6e97e75825283b6ca802193a92fe688c0f0a2b2 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Fri, 8 Nov 2024 21:33:31 +0000
+Subject: [PATCH] Adapt to "Add ThinOrFullLTOPhase to optimizer pipeline"
+ 390300d9f41df6ad71f0f4196ef4885d4bd5dc48
+
+---
+ src/pipeline.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/pipeline.cpp b/src/pipeline.cpp
+index cff11fd2b9..7efcdd89b0 100644
+--- a/src/pipeline.cpp
++++ b/src/pipeline.cpp
+@@ -256,7 +256,7 @@ namespace {
+     std::enable_if_t<decltype(hasInvokeCallbacks_helper<PB_t>(nullptr))::value, void> invokeOptimizerEarlyCallbacks(ModulePassManager &MPM, PB_t *PB, OptimizationLevel O) JL_NOTSAFEPOINT {
+         static_assert(std::is_same<PassBuilder, PB_t>::value, "Expected PassBuilder as second argument!");
+         if (!PB) return;
+-        PB->invokeOptimizerEarlyEPCallbacks(MPM, O);
++        PB->invokeOptimizerEarlyEPCallbacks(MPM, O, ThinOrFullLTOPhase::None);
+     }
+     template<typename PB_t>
+     std::enable_if_t<decltype(hasInvokeCallbacks_helper<PB_t>(nullptr))::value, void> invokeLateLoopOptimizationCallbacks(LoopPassManager &LPM, PB_t *PB, OptimizationLevel O) JL_NOTSAFEPOINT {
+@@ -286,7 +286,7 @@ namespace {
+     std::enable_if_t<decltype(hasInvokeCallbacks_helper<PB_t>(nullptr))::value, void> invokeOptimizerLastCallbacks(ModulePassManager &MPM, PB_t *PB, OptimizationLevel O) JL_NOTSAFEPOINT {
+         static_assert(std::is_same<PassBuilder, PB_t>::value, "Expected PassBuilder as second argument!");
+         if (!PB) return;
+-        PB->invokeOptimizerLastEPCallbacks(MPM, O);
++        PB->invokeOptimizerLastEPCallbacks(MPM, O, ThinOrFullLTOPhase::None);
+     }
+
+     // Fallbacks
+--
+2.34.1
+
