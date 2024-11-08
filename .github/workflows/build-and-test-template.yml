@@ -186,7 +186,7 @@ jobs:
           echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
-            git apply $GITHUB_WORKSPACE/julia-patches/$patch -v
+            git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
           done
 
           mkdir -p deps/srccache
@@ -231,7 +231,7 @@ jobs:
           echo $(git rev-parse HEAD)
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
-            git apply $GITHUB_WORKSPACE/julia-patches/$patch -v
+            git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
           done
 
           mkdir -p deps/srccache
