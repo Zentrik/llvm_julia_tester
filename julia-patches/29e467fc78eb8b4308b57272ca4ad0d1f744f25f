@@ -1,6 +1,6 @@
-From 4553f6a18e11e528f66cd79e69df8ea9fcfdbe8e Mon Sep 17 00:00:00 2001
+From b46c8f8ead9a5f8e95175a7dea24356a750e93ea Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Sat, 9 Nov 2024 14:06:31 +0000
+Date: Sat, 9 Nov 2024 16:01:01 +0000
 Subject: [PATCH] Adapt to "Deprecate Type::getPointerTo()"
  29e467fc78eb8b4308b57272ca4ad0d1f744f25f
 
@@ -111,7 +111,7 @@ index ed389bb7fb..52e3f7dee5 100644
          setName(ctx.emission_context, llvmf, "ccall_fptr");
          if (ctx.emission_context.imaging_mode)
 diff --git a/src/cgutils.cpp b/src/cgutils.cpp
-index c7c15ac19c..dff2bc06ef 100644
+index c7c15ac19c..c9383703d4 100644
 --- a/src/cgutils.cpp
 +++ b/src/cgutils.cpp
 @@ -131,7 +131,7 @@ static Value *stringConstPtr(
@@ -119,7 +119,7 @@ index c7c15ac19c..dff2bc06ef 100644
      GlobalVariable *gv = get_pointer_to_constant(emission_context, Data, Align(1), "_j_str_" + StringRef(ctxt.data(), ctxt.size()), *M);
      // AddrSpaceCast in case globals are in non-0 AS
 -    return irbuilder.CreateAddrSpaceCast(gv, gv->getValueType()->getPointerTo(0));
-+    return irbuilder.CreateAddrSpaceCast(gv, PointerType::get(gv->getContext()));
++    return irbuilder.CreateAddrSpaceCast(gv, PointerType::getUnqual(gv->getContext()));
  }
 
 
