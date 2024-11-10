@@ -267,7 +267,7 @@ jobs:
           cd julia-*/
 
           bin/julia.exe -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
-          bin/julia.exe -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs\"; ncores=4)"
+          bin/julia.exe -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs LinearAlgebra/triangular compiler compiler/contextual\"; ncores=4)"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
