@@ -1,0 +1,23 @@
+From 355b802a600b71e70a545cd3a775a3d75ab96398 Mon Sep 17 00:00:00 2001
+From: Zentrik <Zentrik@users.noreply.github.com>
+Date: Mon, 11 Nov 2024 21:03:05 +0000
+Subject: [PATCH] Adapt to move of `absoluteSymbols`
+ dc11c0601577afb8f67513d041ee25dabe3555b9
+
+---
+ src/jitlayers.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
+index d010ff4d144e1..0faf3b65e0075 100644
+--- a/src/jitlayers.cpp
++++ b/src/jitlayers.cpp
+@@ -14,6 +14,7 @@
+ #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+ #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
+ #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
++#include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
+ #if JL_LLVM_VERSION >= 180000
+ #include <llvm/ExecutionEngine/Orc/Debugging/DebugInfoSupport.h>
+ #include <llvm/ExecutionEngine/Orc/Debugging/PerfSupportPlugin.h>
+
