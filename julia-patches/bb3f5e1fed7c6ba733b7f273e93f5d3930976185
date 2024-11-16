@@ -1,0 +1,40 @@
+Date: Sat, 16 Nov 2024 14:56:05 +0000
+Subject: [PATCH] Rename `LLVMTargetMachine` to `CodeGenCommonTMImpl` to adapt
+ to bb3f5e1fed7c6ba733b7f273e93f5d3930976185
+
+---
+ src/disasm.cpp | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/disasm.cpp b/src/disasm.cpp
+index b944e48430..8b2c2f7aa6 100644
+--- a/src/disasm.cpp
++++ b/src/disasm.cpp
+@@ -1143,7 +1143,7 @@ static void jl_dump_asm_internal(
+ 
+ /// addPassesToX helper drives creation and initialization of TargetPassConfig.
+ static MCContext *
+-addPassesToGenerateCode(LLVMTargetMachine *TM, PassManagerBase &PM) {
++addPassesToGenerateCode(CodeGenTargetMachineImpl *TM, PassManagerBase &PM) {
+     TargetPassConfig *PassConfig = TM->createPassConfig(PM);
+     PassConfig->setDisableVerify(false);
+     PM.add(PassConfig);
+@@ -1244,7 +1244,7 @@ jl_value_t *jl_dump_function_asm_impl(jl_llvmf_dump_t* dump, char emit_mc, const
+                 f->addFnAttr(Attribute::NoUnwind);
+         });
+         auto TMBase = jl_ExecutionEngine->cloneTargetMachine();
+-        LLVMTargetMachine *TM = static_cast<LLVMTargetMachine*>(TMBase.get());
++        CodeGenTargetMachineImpl *TM = static_cast<CodeGenTargetMachineImpl*>(TMBase.get());
+         legacy::PassManager PM;
+         addTargetPasses(&PM, TM->getTargetTriple(), TM->getTargetIRAnalysis());
+         if (emit_mc) {
+@@ -1262,7 +1262,7 @@ jl_value_t *jl_dump_function_asm_impl(jl_llvmf_dump_t* dump, char emit_mc, const
+             if (!Context)
+                 return jl_an_empty_string;
+             Context->setGenDwarfForAssembly(false);
+-            // Duplicate LLVMTargetMachine::addAsmPrinter here so we can set the asm dialect and add the custom annotation printer
++            // Duplicate CodeGenTargetMachineImpl::addAsmPrinter here so we can set the asm dialect and add the custom annotation printer
+             const MCSubtargetInfo &STI = *TM->getMCSubtargetInfo();
+             const MCAsmInfo &MAI = *TM->getMCAsmInfo();
+             const MCRegisterInfo &MRI = *TM->getMCRegisterInfo();
+
