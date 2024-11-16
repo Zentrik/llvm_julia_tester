@@ -46,4 +46,5 @@ index b944e48430..3f033d0184 100644
 +            // Duplicate CodeGenTargetMachineImpl::addAsmPrinter here so we can set the asm dialect and add the custom annotation printer
              const MCSubtargetInfo &STI = *TM->getMCSubtargetInfo();
              const MCAsmInfo &MAI = *TM->getMCAsmInfo();
+             const MCRegisterInfo &MRI = *TM->getMCRegisterInfo();
 
