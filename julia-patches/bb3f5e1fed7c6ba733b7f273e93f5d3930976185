@@ -1,16 +1,26 @@
-Date: Sat, 16 Nov 2024 14:56:05 +0000
+From e5131c882beba5454339152787173a3627823cdb Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sat, 16 Nov 2024 15:30:41 +0000
 Subject: [PATCH] Rename `LLVMTargetMachine` to `CodeGenCommonTMImpl` to adapt
  to bb3f5e1fed7c6ba733b7f273e93f5d3930976185
 
 ---
- src/disasm.cpp | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ src/disasm.cpp | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/src/disasm.cpp b/src/disasm.cpp
-index b944e48430..8b2c2f7aa6 100644
+index b944e48430..3f033d0184 100644
 --- a/src/disasm.cpp
 +++ b/src/disasm.cpp
-@@ -1143,7 +1143,7 @@ static void jl_dump_asm_internal(
+@@ -103,6 +103,7 @@
+ // for outputting assembly
+ #include <llvm/CodeGen/AsmPrinter.h>
+ #include <llvm/CodeGen/AsmPrinterHandler.h>
++#include <llvm/CodeGen/CodeGenTargetMachineImpl.h>
+ #include <llvm/CodeGen/DebugHandlerBase.h>
+ #include <llvm/CodeGen/MachineModuleInfo.h>
+ #include <llvm/CodeGen/Passes.h>
+@@ -1143,7 +1144,7 @@ static void jl_dump_asm_internal(
  
  /// addPassesToX helper drives creation and initialization of TargetPassConfig.
  static MCContext *
@@ -19,7 +29,7 @@ index b944e48430..8b2c2f7aa6 100644
      TargetPassConfig *PassConfig = TM->createPassConfig(PM);
      PassConfig->setDisableVerify(false);
      PM.add(PassConfig);
-@@ -1244,7 +1244,7 @@ jl_value_t *jl_dump_function_asm_impl(jl_llvmf_dump_t* dump, char emit_mc, const
+@@ -1244,7 +1245,7 @@ jl_value_t *jl_dump_function_asm_impl(jl_llvmf_dump_t* dump, char emit_mc, const
                  f->addFnAttr(Attribute::NoUnwind);
          });
          auto TMBase = jl_ExecutionEngine->cloneTargetMachine();
@@ -28,7 +38,7 @@ index b944e48430..8b2c2f7aa6 100644
          legacy::PassManager PM;
          addTargetPasses(&PM, TM->getTargetTriple(), TM->getTargetIRAnalysis());
          if (emit_mc) {
-@@ -1262,7 +1262,7 @@ jl_value_t *jl_dump_function_asm_impl(jl_llvmf_dump_t* dump, char emit_mc, const
+@@ -1262,7 +1263,7 @@ jl_value_t *jl_dump_function_asm_impl(jl_llvmf_dump_t* dump, char emit_mc, const
              if (!Context)
                  return jl_an_empty_string;
              Context->setGenDwarfForAssembly(false);
@@ -36,5 +46,4 @@ index b944e48430..8b2c2f7aa6 100644
 +            // Duplicate CodeGenTargetMachineImpl::addAsmPrinter here so we can set the asm dialect and add the custom annotation printer
              const MCSubtargetInfo &STI = *TM->getMCSubtargetInfo();
              const MCAsmInfo &MAI = *TM->getMCAsmInfo();
-             const MCRegisterInfo &MRI = *TM->getMCRegisterInfo();
 
