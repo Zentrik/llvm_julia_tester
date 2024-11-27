@@ -1,0 +1,36 @@
+From 10ef98abfab25ec81d4f720c5a20597bb032370b Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Wed, 27 Nov 2024 21:24:17 +0000
+Subject: [PATCH] [Orc] Fix build error in JITLoaderVTune
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Revert removal of `#include <map>` in https://github.com/llvm/llvm-project/commit/1f4d91ecb8529678a3d3919d7523743bd21942ca#diff-c76b4e403936f869d0254d51dbbe95b21bb136d21d07cd94fc840817f8185833R14.
+
+I've been getting the following error since that commit
+```
+ [18:34:04] /workspace/srcdir/llvm-project/llvm/lib/ExecutionEngine/Orc/TargetProcess/JITLoaderVTune.cpp:115:28: error: ‘map’ in namespace ‘std’ does not name a template type
+[18:34:04]   115 | using NativeCodeMap = std::map<uint64_t, SourceLocations>;
+[18:34:04]       |                            ^~~
+[18:34:04] /workspace/srcdir/llvm-project/llvm/lib/ExecutionEngine/Orc/TargetProcess/JITLoaderVTune.cpp:18:1: note: ‘std::map’ is defined in header ‘<map>’; did you forget to ‘#include <map>’?
+[18:34:04]    17 | #include "ittnotify.h"
+[18:34:04]   +++ |+#include <map>
+[18:34:04]    18 |
+```
+---
+ llvm/lib/ExecutionEngine/Orc/TargetProcess/JITLoaderVTune.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/llvm/lib/ExecutionEngine/Orc/TargetProcess/JITLoaderVTune.cpp b/llvm/lib/ExecutionEngine/Orc/TargetProcess/JITLoaderVTune.cpp
+index fb7cf94fa0654a..5a4698f0fa68d5 100644
+--- a/llvm/lib/ExecutionEngine/Orc/TargetProcess/JITLoaderVTune.cpp
++++ b/llvm/lib/ExecutionEngine/Orc/TargetProcess/JITLoaderVTune.cpp
+@@ -15,6 +15,7 @@
+ #if LLVM_USE_INTEL_JITEVENTS
+ #include "IntelJITEventsWrapper.h"
+ #include "ittnotify.h"
++#include <map>
+ 
+ using namespace llvm;
+ using namespace llvm::orc;
