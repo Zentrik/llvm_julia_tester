@@ -46,6 +46,7 @@ jobs:
       matrix:
         target:
           - x86_64-linux-gnu-cxx11
+          - x86_64-linux-musl-cxx11
           - x86_64-w64-mingw32-cxx11
           - aarch64-apple-darwin
           - i686-w64-mingw32-cxx11
