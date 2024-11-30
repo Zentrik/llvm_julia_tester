@@ -97,7 +97,7 @@ jobs:
           fi
 
           cd L/LLVM/LLVM_full@19
-          rm bundled/libcxx_patches/7005_libcxx_musl.patch
+          rm -rf bundled/libcxx_patches
           if [ "$(ls -A $GITHUB_WORKSPACE/llvm-patches)" ]; then
               cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
           fi
