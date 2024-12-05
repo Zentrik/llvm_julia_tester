@@ -1,31 +1,46 @@
-From c3344625c3ae3cf41476c1d2ab8f86e3b6aabcb9 Mon Sep 17 00:00:00 2001
+From 78733ad3089d1b04c2bc6db2addb6bab6f067c0f Mon Sep 17 00:00:00 2001
 From: David Carlier <devnexen@gmail.com>
 Date: Thu, 5 Dec 2024 08:41:03 +0000
 Subject: [PATCH] [compiler-rt] fix __sanitizer::struct_sock_fprog_sz
  availability
 
 ---
- .../lib/sanitizer_common/sanitizer_platform_limits_posix.cpp    | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../lib/sanitizer_common/sanitizer_common_interceptors.inc      | 2 +-
+ .../lib/sanitizer_common/sanitizer_platform_limits_posix.h      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
-index c87d5ef42c9242..e0da2ac4fd303e 100644
---- a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
-+++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
-@@ -491,6 +491,7 @@ unsigned struct_ElfW_Phdr_sz = sizeof(Elf_Phdr);
-   unsigned struct_vt_consize_sz = sizeof(struct vt_consize);
-   unsigned struct_vt_sizes_sz = sizeof(struct vt_sizes);
-   unsigned struct_vt_stat_sz = sizeof(struct vt_stat);
-+  unsigned struct_sock_fprog_sz = sizeof(struct sock_fprog);
- #endif // SANITIZER_LINUX
+diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_common_interceptors.inc b/compiler-rt/lib/sanitizer_common/sanitizer_common_interceptors.inc
+index ba3693dbd11f63..3cdd73f07092dc 100644
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_common_interceptors.inc
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_common_interceptors.inc
+@@ -1313,7 +1313,7 @@ INTERCEPTOR(int, prctl, int option, unsigned long arg2, unsigned long arg3,
+     COMMON_INTERCEPTOR_WRITE_RANGE(ctx, (u64 *)(arg5), sizeof(u64));
+   } else if (res != -1 && option == PR_GET_PDEATHSIG) {
+     COMMON_INTERCEPTOR_WRITE_RANGE(ctx, (u64 *)(arg2), sizeof(int));
+-#  if !SANITIZER_ANDROID
++#  if !SANITIZER_ANDROID && !SANITIZER_MUSL
+   } else if (res != -1 && option == PR_SET_SECCOMP &&
+              arg2 == SECCOMP_MODE_FILTER) {
+     COMMON_INTERCEPTOR_WRITE_RANGE(ctx, (u64 *)(arg3), struct_sock_fprog_sz);
+diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h
+index 7d98f8e9a9d801..aaaff56119e9aa 100644
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.h
+@@ -523,6 +523,7 @@ struct __sanitizer_dirent64 {
+   unsigned short d_reclen;
+   // more fields that we don't care about
+ };
++extern unsigned struct_sock_fprog_sz;
+ #endif
  
- #if SANITIZER_LINUX
-@@ -537,7 +538,6 @@ unsigned struct_ElfW_Phdr_sz = sizeof(Elf_Phdr);
+ #if defined(__x86_64__) && !defined(_LP64)
+@@ -1076,7 +1077,6 @@ extern unsigned struct_serial_struct_sz;
+ extern unsigned struct_sockaddr_ax25_sz;
+ extern unsigned struct_unimapdesc_sz;
+ extern unsigned struct_unimapinit_sz;
+-extern unsigned struct_sock_fprog_sz;
+ #  endif  // SANITIZER_LINUX && !SANITIZER_ANDROID
  
-   unsigned struct_audio_buf_info_sz = sizeof(struct audio_buf_info);
-   unsigned struct_ppp_stats_sz = sizeof(struct ppp_stats);
--  unsigned struct_sock_fprog_sz = sizeof(struct sock_fprog);
- #  endif  // SANITIZER_GLIBC
- 
- #  if !SANITIZER_ANDROID && !SANITIZER_APPLE
+ extern const unsigned long __sanitizer_bufsiz;
+
 
