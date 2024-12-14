@@ -1,0 +1,397 @@
+From d07f1d9ca60a9164e487ca937aaead81525e2da3 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <npopov@redhat.com>
+Date: Fri, 13 Dec 2024 11:49:11 +0100
+Subject: [PATCH] [mlir] Use mlir_target_link_libraries for unit tests
+
+This is a followup to https://github.com/llvm/llvm-project/pull/119408,
+which switches unit test binaries to also use
+mlir_target_link_libraries() where necessary. This allows them
+to link against against the MLIR dylib.
+---
+ mlir/unittests/Analysis/Presburger/CMakeLists.txt       | 2 +-
+ mlir/unittests/Bytecode/CMakeLists.txt                  | 2 +-
+ mlir/unittests/Conversion/PDLToPDLInterp/CMakeLists.txt | 2 +-
+ mlir/unittests/Debug/CMakeLists.txt                     | 2 +-
+ mlir/unittests/Dialect/AMDGPU/CMakeLists.txt            | 2 +-
+ mlir/unittests/Dialect/ArmSME/CMakeLists.txt            | 2 +-
+ mlir/unittests/Dialect/CMakeLists.txt                   | 2 +-
+ mlir/unittests/Dialect/Index/CMakeLists.txt             | 2 +-
+ mlir/unittests/Dialect/LLVMIR/CMakeLists.txt            | 2 +-
+ mlir/unittests/Dialect/MemRef/CMakeLists.txt            | 2 +-
+ mlir/unittests/Dialect/OpenACC/CMakeLists.txt           | 2 +-
+ mlir/unittests/Dialect/Polynomial/CMakeLists.txt        | 2 +-
+ mlir/unittests/Dialect/SCF/CMakeLists.txt               | 2 +-
+ mlir/unittests/Dialect/SPIRV/CMakeLists.txt             | 2 +-
+ mlir/unittests/Dialect/SparseTensor/CMakeLists.txt      | 2 +-
+ mlir/unittests/Dialect/Transform/CMakeLists.txt         | 2 +-
+ mlir/unittests/Dialect/Utils/CMakeLists.txt             | 2 +-
+ mlir/unittests/ExecutionEngine/CMakeLists.txt           | 8 +++++---
+ mlir/unittests/IR/CMakeLists.txt                        | 6 ++----
+ mlir/unittests/Interfaces/CMakeLists.txt                | 2 +-
+ mlir/unittests/Parser/CMakeLists.txt                    | 4 ++--
+ mlir/unittests/Pass/CMakeLists.txt                      | 2 +-
+ mlir/unittests/Rewrite/CMakeLists.txt                   | 2 +-
+ mlir/unittests/Support/CMakeLists.txt                   | 2 +-
+ mlir/unittests/Target/LLVM/CMakeLists.txt               | 2 +-
+ mlir/unittests/Tools/lsp-server-support/CMakeLists.txt  | 2 +-
+ mlir/unittests/Transforms/CMakeLists.txt                | 2 +-
+ 27 files changed, 33 insertions(+), 33 deletions(-)
+
+diff --git a/mlir/unittests/Analysis/Presburger/CMakeLists.txt b/mlir/unittests/Analysis/Presburger/CMakeLists.txt
+index b69f514711337b..c7d6dafbd84c95 100644
+--- a/mlir/unittests/Analysis/Presburger/CMakeLists.txt
++++ b/mlir/unittests/Analysis/Presburger/CMakeLists.txt
+@@ -17,7 +17,7 @@ add_mlir_unittest(MLIRPresburgerTests
+   UtilsTest.cpp
+ )
+ 
+-target_link_libraries(MLIRPresburgerTests
++mlir_target_link_libraries(MLIRPresburgerTests
+   PRIVATE MLIRPresburger
+   MLIRAffineAnalysis
+   MLIRParser
+diff --git a/mlir/unittests/Bytecode/CMakeLists.txt b/mlir/unittests/Bytecode/CMakeLists.txt
+index 82f7ee60e9c525..92bb5fe3c158de 100644
+--- a/mlir/unittests/Bytecode/CMakeLists.txt
++++ b/mlir/unittests/Bytecode/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRBytecodeTests
+   BytecodeTest.cpp
+ )
+-target_link_libraries(MLIRBytecodeTests
++mlir_target_link_libraries(MLIRBytecodeTests
+   PRIVATE
+   MLIRBytecodeReader
+   MLIRBytecodeWriter
+diff --git a/mlir/unittests/Conversion/PDLToPDLInterp/CMakeLists.txt b/mlir/unittests/Conversion/PDLToPDLInterp/CMakeLists.txt
+index 02b3835efc8262..cc5d3eef9a797d 100644
+--- a/mlir/unittests/Conversion/PDLToPDLInterp/CMakeLists.txt
++++ b/mlir/unittests/Conversion/PDLToPDLInterp/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRPDLToPDLInterpTests
+   RootOrderingTest.cpp
+ )
+-target_link_libraries(MLIRPDLToPDLInterpTests
++mlir_target_link_libraries(MLIRPDLToPDLInterpTests
+   PRIVATE
+   MLIRArithDialect
+   MLIRPDLToPDLInterp
+diff --git a/mlir/unittests/Debug/CMakeLists.txt b/mlir/unittests/Debug/CMakeLists.txt
+index 59728bc819d9a0..d55282937956a9 100644
+--- a/mlir/unittests/Debug/CMakeLists.txt
++++ b/mlir/unittests/Debug/CMakeLists.txt
+@@ -4,5 +4,5 @@ add_mlir_unittest(MLIRDebugTests
+   FileLineColLocBreakpointManagerTest.cpp
+ )
+ 
+-target_link_libraries(MLIRDebugTests
++mlir_target_link_libraries(MLIRDebugTests
+   PRIVATE MLIRDebug)
+diff --git a/mlir/unittests/Dialect/AMDGPU/CMakeLists.txt b/mlir/unittests/Dialect/AMDGPU/CMakeLists.txt
+index d9a699e96288e8..a5acbe60349af4 100644
+--- a/mlir/unittests/Dialect/AMDGPU/CMakeLists.txt
++++ b/mlir/unittests/Dialect/AMDGPU/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRAMDGPUTests
+   AMDGPUUtilsTest.cpp
+ )
+-target_link_libraries(MLIRAMDGPUTests
++mlir_target_link_libraries(MLIRAMDGPUTests
+   PRIVATE
+   MLIRAMDGPUUtils
+ )
+diff --git a/mlir/unittests/Dialect/ArmSME/CMakeLists.txt b/mlir/unittests/Dialect/ArmSME/CMakeLists.txt
+index affd435ef7bfc2..38bc0238d86a54 100644
+--- a/mlir/unittests/Dialect/ArmSME/CMakeLists.txt
++++ b/mlir/unittests/Dialect/ArmSME/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ add_mlir_unittest(MLIRArmSMETests
+   TileTypeConversionTest.cpp)
+-target_link_libraries(MLIRArmSMETests
++mlir_target_link_libraries(MLIRArmSMETests
+   PRIVATE
+   MLIRArmSMEToLLVM)
+diff --git a/mlir/unittests/Dialect/CMakeLists.txt b/mlir/unittests/Dialect/CMakeLists.txt
+index a5d4c48546e650..73904ceabb7104 100644
+--- a/mlir/unittests/Dialect/CMakeLists.txt
++++ b/mlir/unittests/Dialect/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRDialectTests
+   BroadcastShapeTest.cpp
+ )
+-target_link_libraries(MLIRDialectTests
++mlir_target_link_libraries(MLIRDialectTests
+   PRIVATE
+   MLIRIR
+   MLIRDialect)
+diff --git a/mlir/unittests/Dialect/Index/CMakeLists.txt b/mlir/unittests/Dialect/Index/CMakeLists.txt
+index c4bac2371e52fb..34afa75861f955 100644
+--- a/mlir/unittests/Dialect/Index/CMakeLists.txt
++++ b/mlir/unittests/Dialect/Index/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRIndexOpsTests
+   IndexOpsFoldersTest.cpp
+ )
+-target_link_libraries(MLIRIndexOpsTests
++mlir_target_link_libraries(MLIRIndexOpsTests
+   PRIVATE
+   MLIRIndexDialect
+ )
+diff --git a/mlir/unittests/Dialect/LLVMIR/CMakeLists.txt b/mlir/unittests/Dialect/LLVMIR/CMakeLists.txt
+index 92af1856c68e01..7cc130d02ad743 100644
+--- a/mlir/unittests/Dialect/LLVMIR/CMakeLists.txt
++++ b/mlir/unittests/Dialect/LLVMIR/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRLLVMIRTests
+   LLVMTypeTest.cpp
+ )
+-target_link_libraries(MLIRLLVMIRTests
++mlir_target_link_libraries(MLIRLLVMIRTests
+   PRIVATE
+   MLIRLLVMDialect
+   )
+diff --git a/mlir/unittests/Dialect/MemRef/CMakeLists.txt b/mlir/unittests/Dialect/MemRef/CMakeLists.txt
+index c3f349ad8ec554..dede3ba0a885c9 100644
+--- a/mlir/unittests/Dialect/MemRef/CMakeLists.txt
++++ b/mlir/unittests/Dialect/MemRef/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRMemRefTests
+   InferShapeTest.cpp
+ )
+-target_link_libraries(MLIRMemRefTests
++mlir_target_link_libraries(MLIRMemRefTests
+   PRIVATE
+   MLIRMemRefDialect
+   )
+diff --git a/mlir/unittests/Dialect/OpenACC/CMakeLists.txt b/mlir/unittests/Dialect/OpenACC/CMakeLists.txt
+index 5133d7fc38296c..d5f40a44f8cc6e 100644
+--- a/mlir/unittests/Dialect/OpenACC/CMakeLists.txt
++++ b/mlir/unittests/Dialect/OpenACC/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIROpenACCTests
+   OpenACCOpsTest.cpp
+ )
+-target_link_libraries(MLIROpenACCTests
++mlir_target_link_libraries(MLIROpenACCTests
+   PRIVATE
+   MLIRIR
+   MLIROpenACCDialect
+diff --git a/mlir/unittests/Dialect/Polynomial/CMakeLists.txt b/mlir/unittests/Dialect/Polynomial/CMakeLists.txt
+index 807deeca41c062..97f5b890ab4fbd 100644
+--- a/mlir/unittests/Dialect/Polynomial/CMakeLists.txt
++++ b/mlir/unittests/Dialect/Polynomial/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRPolynomialTests
+   PolynomialMathTest.cpp
+ )
+-target_link_libraries(MLIRPolynomialTests
++mlir_target_link_libraries(MLIRPolynomialTests
+   PRIVATE
+   MLIRIR
+   MLIRPolynomialDialect
+diff --git a/mlir/unittests/Dialect/SCF/CMakeLists.txt b/mlir/unittests/Dialect/SCF/CMakeLists.txt
+index 4d23392af1f88d..c0c1757b80fb5b 100644
+--- a/mlir/unittests/Dialect/SCF/CMakeLists.txt
++++ b/mlir/unittests/Dialect/SCF/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRSCFTests
+   LoopLikeSCFOpsTest.cpp
+ )
+-target_link_libraries(MLIRSCFTests
++mlir_target_link_libraries(MLIRSCFTests
+   PRIVATE
+   MLIRIR
+   MLIRSCFDialect
+diff --git a/mlir/unittests/Dialect/SPIRV/CMakeLists.txt b/mlir/unittests/Dialect/SPIRV/CMakeLists.txt
+index 19100b9110177d..3aa0512459f210 100644
+--- a/mlir/unittests/Dialect/SPIRV/CMakeLists.txt
++++ b/mlir/unittests/Dialect/SPIRV/CMakeLists.txt
+@@ -2,7 +2,7 @@ add_mlir_unittest(MLIRSPIRVImportExportTests
+   DeserializationTest.cpp
+   SerializationTest.cpp
+ )
+-target_link_libraries(MLIRSPIRVImportExportTests
++mlir_target_link_libraries(MLIRSPIRVImportExportTests
+   PRIVATE
+   MLIRIR
+   MLIRSPIRVDialect
+diff --git a/mlir/unittests/Dialect/SparseTensor/CMakeLists.txt b/mlir/unittests/Dialect/SparseTensor/CMakeLists.txt
+index f9594aab3bbc6f..15a61492a8bb21 100644
+--- a/mlir/unittests/Dialect/SparseTensor/CMakeLists.txt
++++ b/mlir/unittests/Dialect/SparseTensor/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRSparseTensorTests
+   MergerTest.cpp
+ )
+-target_link_libraries(MLIRSparseTensorTests
++mlir_target_link_libraries(MLIRSparseTensorTests
+   PRIVATE
+   MLIRSparseTensorUtils
+ )
+diff --git a/mlir/unittests/Dialect/Transform/CMakeLists.txt b/mlir/unittests/Dialect/Transform/CMakeLists.txt
+index c5a7aadcf8a52e..20cdc63966ec0b 100644
+--- a/mlir/unittests/Dialect/Transform/CMakeLists.txt
++++ b/mlir/unittests/Dialect/Transform/CMakeLists.txt
+@@ -2,7 +2,7 @@ add_mlir_unittest(MLIRTransformDialectTests
+   BuildOnlyExtensionTest.cpp
+   Preload.cpp
+ )
+-target_link_libraries(MLIRTransformDialectTests
++mlir_target_link_libraries(MLIRTransformDialectTests
+   PRIVATE
+   MLIRFuncDialect
+   MLIRTestTransformDialect
+diff --git a/mlir/unittests/Dialect/Utils/CMakeLists.txt b/mlir/unittests/Dialect/Utils/CMakeLists.txt
+index 116e094e7706ab..61b9cdcb3b8f39 100644
+--- a/mlir/unittests/Dialect/Utils/CMakeLists.txt
++++ b/mlir/unittests/Dialect/Utils/CMakeLists.txt
+@@ -2,6 +2,6 @@ add_mlir_unittest(MLIRDialectUtilsTests
+   StructuredOpsUtilsTest.cpp
+   IndexingUtilsTest.cpp
+ )
+-target_link_libraries(MLIRDialectUtilsTests
++mlir_target_link_libraries(MLIRDialectUtilsTests
+   PRIVATE
+   MLIRDialectUtils)
+diff --git a/mlir/unittests/ExecutionEngine/CMakeLists.txt b/mlir/unittests/ExecutionEngine/CMakeLists.txt
+index 383e172aa3f667..8aee46f261b567 100644
+--- a/mlir/unittests/ExecutionEngine/CMakeLists.txt
++++ b/mlir/unittests/ExecutionEngine/CMakeLists.txt
+@@ -5,12 +5,14 @@ add_mlir_unittest(MLIRExecutionEngineTests
+ )
+ get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
+ 
+-target_link_libraries(MLIRExecutionEngineTests
++mlir_target_link_libraries(MLIRExecutionEngineTests
+   PRIVATE
+   MLIRArithToLLVM
+-  MLIRExecutionEngine
+   MLIRMemRefToLLVM
+   MLIRReconcileUnrealizedCasts
+   ${dialect_libs}
+-
++)
++target_link_libraries(MLIRExecutionEngineTests
++  PRIVATE
++  MLIRExecutionEngine
+ )
+diff --git a/mlir/unittests/IR/CMakeLists.txt b/mlir/unittests/IR/CMakeLists.txt
+index 384116ba5c457e..821ff7d14dabda 100644
+--- a/mlir/unittests/IR/CMakeLists.txt
++++ b/mlir/unittests/IR/CMakeLists.txt
+@@ -22,7 +22,5 @@ add_mlir_unittest(MLIRIRTests
+   MLIRTestInterfaceIncGen
+ )
+ target_include_directories(MLIRIRTests PRIVATE "${MLIR_BINARY_DIR}/test/lib/Dialect/Test")
+-target_link_libraries(MLIRIRTests
+-  PRIVATE
+-  MLIRIR
+-  MLIRTestDialect)
++mlir_target_link_libraries(MLIRIRTests PRIVATE MLIRIR)
++target_link_libraries(MLIRIRTests PRIVATE MLIRTestDialect)
+diff --git a/mlir/unittests/Interfaces/CMakeLists.txt b/mlir/unittests/Interfaces/CMakeLists.txt
+index d192b2922d6b9d..f40864d1756298 100644
+--- a/mlir/unittests/Interfaces/CMakeLists.txt
++++ b/mlir/unittests/Interfaces/CMakeLists.txt
+@@ -5,7 +5,7 @@ add_mlir_unittest(MLIRInterfacesTests
+   InferTypeOpInterfaceTest.cpp
+ )
+ 
+-target_link_libraries(MLIRInterfacesTests
++mlir_target_link_libraries(MLIRInterfacesTests
+   PRIVATE
+   MLIRArithDialect
+   MLIRControlFlowInterfaces
+diff --git a/mlir/unittests/Parser/CMakeLists.txt b/mlir/unittests/Parser/CMakeLists.txt
+index a5e2da56ffb57e..4b3fedbb638c0b 100644
+--- a/mlir/unittests/Parser/CMakeLists.txt
++++ b/mlir/unittests/Parser/CMakeLists.txt
+@@ -7,10 +7,10 @@ add_mlir_unittest(MLIRParserTests
+ )
+ target_include_directories(MLIRParserTests PRIVATE "${MLIR_BINARY_DIR}/test/lib/Dialect/Test")
+ 
+-target_link_libraries(MLIRParserTests PRIVATE
++mlir_target_link_libraries(MLIRParserTests PRIVATE
+   MLIRFuncDialect
+   MLIRLLVMDialect
+   MLIRIR
+   MLIRParser
+-  MLIRTestDialect
+ )
++target_link_libraries(MLIRParserTests PRIVATE MLIRTestDialect)
+diff --git a/mlir/unittests/Pass/CMakeLists.txt b/mlir/unittests/Pass/CMakeLists.txt
+index 802b3bbc6c6352..a47d2eead61804 100644
+--- a/mlir/unittests/Pass/CMakeLists.txt
++++ b/mlir/unittests/Pass/CMakeLists.txt
+@@ -3,7 +3,7 @@ add_mlir_unittest(MLIRPassTests
+   PassManagerTest.cpp
+   PassPipelineParserTest.cpp
+ )
+-target_link_libraries(MLIRPassTests
++mlir_target_link_libraries(MLIRPassTests
+   PRIVATE
+   MLIRDebug
+   MLIRFuncDialect
+diff --git a/mlir/unittests/Rewrite/CMakeLists.txt b/mlir/unittests/Rewrite/CMakeLists.txt
+index c0df7d4eee8557..c9db1a86a39fcf 100644
+--- a/mlir/unittests/Rewrite/CMakeLists.txt
++++ b/mlir/unittests/Rewrite/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ add_mlir_unittest(MLIRRewriteTests
+   PatternBenefit.cpp
+ )
+-target_link_libraries(MLIRRewriteTests
++mlir_target_link_libraries(MLIRRewriteTests
+   PRIVATE
+   MLIRRewrite
+   MLIRTransformUtils)
+diff --git a/mlir/unittests/Support/CMakeLists.txt b/mlir/unittests/Support/CMakeLists.txt
+index ec79a1c6409092..3a6365b401d499 100644
+--- a/mlir/unittests/Support/CMakeLists.txt
++++ b/mlir/unittests/Support/CMakeLists.txt
+@@ -4,5 +4,5 @@ add_mlir_unittest(MLIRSupportTests
+   StorageUniquerTest.cpp
+ )
+ 
+-target_link_libraries(MLIRSupportTests
++mlir_target_link_libraries(MLIRSupportTests
+   PRIVATE MLIRSupport)
+diff --git a/mlir/unittests/Target/LLVM/CMakeLists.txt b/mlir/unittests/Target/LLVM/CMakeLists.txt
+index 0c61d222dedf42..4dcbc9653fa059 100644
+--- a/mlir/unittests/Target/LLVM/CMakeLists.txt
++++ b/mlir/unittests/Target/LLVM/CMakeLists.txt
+@@ -6,7 +6,7 @@ add_mlir_unittest(MLIRTargetLLVMTests
+   SerializeToLLVMBitcode.cpp
+ )
+ 
+-target_link_libraries(MLIRTargetLLVMTests
++mlir_target_link_libraries(MLIRTargetLLVMTests
+   PRIVATE
+   MLIRTargetLLVM
+   MLIRNVVMTarget
+diff --git a/mlir/unittests/Tools/lsp-server-support/CMakeLists.txt b/mlir/unittests/Tools/lsp-server-support/CMakeLists.txt
+index f777873ff7c65b..c539c9bc5101fe 100644
+--- a/mlir/unittests/Tools/lsp-server-support/CMakeLists.txt
++++ b/mlir/unittests/Tools/lsp-server-support/CMakeLists.txt
+@@ -2,6 +2,6 @@ add_mlir_unittest(MLIRLspServerSupportTests
+   Protocol.cpp
+   Transport.cpp
+ )
+-target_link_libraries(MLIRLspServerSupportTests
++mlir_target_link_libraries(MLIRLspServerSupportTests
+   PRIVATE
+   MLIRLspServerSupportLib)
+diff --git a/mlir/unittests/Transforms/CMakeLists.txt b/mlir/unittests/Transforms/CMakeLists.txt
+index 3b08c8ecffbe01..dc5920087b505e 100644
+--- a/mlir/unittests/Transforms/CMakeLists.txt
++++ b/mlir/unittests/Transforms/CMakeLists.txt
+@@ -2,7 +2,7 @@ add_mlir_unittest(MLIRTransformsTests
+   Canonicalizer.cpp
+   DialectConversion.cpp
+ )
+-target_link_libraries(MLIRTransformsTests
++mlir_target_link_libraries(MLIRTransformsTests
+   PRIVATE
+   MLIRParser
+   MLIRTransforms)
+
