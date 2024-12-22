@@ -1,0 +1,24 @@
+From 117be56262304369302404a63693c1a03c3bfca9 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sun, 22 Dec 2024 15:50:12 +0000
+Subject: [PATCH] Don't enable MLIR_LINK_MLIR_DYLIB
+
+---
+ mlir/CMakeLists.txt | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/mlir/CMakeLists.txt b/mlir/CMakeLists.txt
+index 0608eef15c5a4b..82bfbe56f08395 100644
+--- a/mlir/CMakeLists.txt
++++ b/mlir/CMakeLists.txt
+@@ -153,9 +153,6 @@ set(MLIR_INSTALL_AGGREGATE_OBJECTS 1 CACHE BOOL
+ 
+ set(MLIR_BUILD_MLIR_C_DYLIB 0 CACHE BOOL "Builds libMLIR-C shared library.")
+ 
+-set(MLIR_LINK_MLIR_DYLIB ${LLVM_LINK_LLVM_DYLIB} CACHE BOOL
+-    "Link tools against libMLIR.so")
+-
+ configure_file(
+   ${MLIR_MAIN_INCLUDE_DIR}/mlir/Config/mlir-config.h.cmake
+   ${MLIR_INCLUDE_DIR}/mlir/Config/mlir-config.h)
+
