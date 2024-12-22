@@ -1,0 +1,35 @@
+From 89ffae8d3bcf5f4d90752e4ec8a24098c189bd38 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sun, 22 Dec 2024 14:13:08 +0000
+Subject: [PATCH] Partially revert "[mlir] Add support for MLIR_LINK_MLIR_DYLIB
+ (#119408)"
+
+This partial reverts commit 10ef20f6a629797d81252de143117e2a0bc6556d.
+---
+
+diff --git a/mlir/tools/mlir-rewrite/CMakeLists.txt b/mlir/tools/mlir-rewrite/CMakeLists.txt
+index 216491eb432af0..5b8c1cd4553997 100644
+--- a/mlir/tools/mlir-rewrite/CMakeLists.txt
++++ b/mlir/tools/mlir-rewrite/CMakeLists.txt
+@@ -5,6 +5,7 @@ set(LLVM_LINK_COMPONENTS
+ 
+ set(LIBS
+   ${dialect_libs}
++  ${test_libs}
+ 
+   MLIRAffineAnalysis
+   MLIRAnalysis
+@@ -23,9 +24,11 @@ include_directories(../../../clang/include)
+ add_mlir_tool(mlir-rewrite
+   mlir-rewrite.cpp
+ 
++  DEPENDS
++  ${LIBS}
+   SUPPORT_PLUGINS
+   )
+-mlir_target_link_libraries(mlir-rewrite PRIVATE ${LIBS})
++target_link_libraries(mlir-rewrite PRIVATE ${LIBS})
+ llvm_update_compile_flags(mlir-rewrite)
+ 
+ mlir_check_all_link_libraries(mlir-rewrite)
+
