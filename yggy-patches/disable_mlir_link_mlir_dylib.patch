@@ -1,0 +1,31 @@
+From cd67fa9ac48d837810cbce3811e2e0249c83fd3b Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sun, 22 Dec 2024 15:33:11 +0000
+Subject: [PATCH] Set  MLIR_LINK_MLIR_DYLIB to OFF
+
+---
+ L/LLVM/common.jl | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
+index 08ffc47129a..7ca7bca054a 100644
+--- a/L/LLVM/common.jl
++++ b/L/LLVM/common.jl
+@@ -122,6 +122,7 @@ else
+ fi
+ if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
+     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
++    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
+ fi
+ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
+ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+@@ -188,6 +189,7 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
+ 
+ if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
+     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
++    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
+ fi
+ 
+ # We want a build with no bindings
+
+ 
