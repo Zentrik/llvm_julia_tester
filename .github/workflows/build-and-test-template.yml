@@ -200,7 +200,7 @@ jobs:
             JULIA_CPU_TARGET="pentium4"
           fi
 
-          export USE_BINARYBUILDER_CSL=0 # https://github.com/JuliaLang/julia/issues/56840
+          export USE_BINARYBUILDER_CSL=0 USE_SYSTEM_CSL=1 # https://github.com/JuliaLang/julia/issues/56840
           make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET
           make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET binary-dist
       - name: Upload artifacts
