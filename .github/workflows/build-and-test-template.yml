@@ -185,6 +185,8 @@ jobs:
           git clone https://github.com/JuliaLang/julia
           cd julia
           echo $(git rev-parse HEAD)
+          git remote add fork https://github.com/Zentrik/julia
+          git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
@@ -230,6 +232,8 @@ jobs:
           git clone https://github.com/JuliaLang/julia
           cd julia
           echo $(git rev-parse HEAD)
+          git remote add fork https://github.com/Zentrik/julia
+          git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
