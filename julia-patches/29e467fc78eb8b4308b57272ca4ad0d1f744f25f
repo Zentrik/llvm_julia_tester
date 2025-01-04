@@ -1,29 +1,29 @@
-From b46c8f8ead9a5f8e95175a7dea24356a750e93ea Mon Sep 17 00:00:00 2001
+From 0089f7731235f9e0b29e6657694b70526e391183 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Sat, 9 Nov 2024 16:01:01 +0000
-Subject: [PATCH] Adapt to "Deprecate Type::getPointerTo()"
- 29e467fc78eb8b4308b57272ca4ad0d1f744f25f
+Date: Sat, 9 Nov 2024 12:49:55 +0000
+Subject: [PATCH] 29e467fc78eb8b4308b57272ca4ad0d1f744f25f
 
+Adapt to "Deprecate Type::getPointerTo()"
 ---
  src/aotcompile.cpp             | 10 +++++-----
  src/ccall.cpp                  | 10 +++++-----
  src/cgutils.cpp                |  4 ++--
- src/codegen.cpp                | 28 +++++++++++++---------------
+ src/codegen.cpp                | 24 ++++++++++++------------
  src/intrinsics.cpp             |  6 +++---
- src/llvm-codegen-shared.h      | 22 +++++++++-------------
+ src/llvm-codegen-shared.h      |  6 +-----
  src/llvm-final-gc-lowering.cpp |  2 +-
  src/llvm-late-gc-lowering.cpp  |  4 ++--
  src/llvm-multiversioning.cpp   |  6 +++---
  src/llvm-pass-helpers.cpp      |  2 +-
  src/llvm-ptls.cpp              |  2 +-
- 11 files changed, 45 insertions(+), 51 deletions(-)
+ 11 files changed, 36 insertions(+), 40 deletions(-)
 
 diff --git a/src/aotcompile.cpp b/src/aotcompile.cpp
-index a3ffdf1d05..d64971039c 100644
+index 0600106c41..3583b4916b 100644
 --- a/src/aotcompile.cpp
 +++ b/src/aotcompile.cpp
-@@ -1473,7 +1473,7 @@ static void construct_vars(Module &M, Partition &partition, StringRef suffix) {
-
+@@ -1553,7 +1553,7 @@ static void construct_vars(Module &M, Partition &partition, StringRef suffix) {
+ 
      // Now commit the fvars, gvars, and idxs
      auto T_size = M.getDataLayout().getIntPtrType(M.getContext());
 -    emit_table(M, fvars, "jl_fvars", T_size->getPointerTo());
@@ -31,28 +31,28 @@ index a3ffdf1d05..d64971039c 100644
      emit_offset_table(M, T_size, gvars, "jl_gvar", suffix);
      auto fidxs = ConstantDataArray::get(M.getContext(), fvar_idxs);
      auto fidxs_var = new GlobalVariable(M, fidxs->getType(), true,
-@@ -1857,7 +1857,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -1932,7 +1932,7 @@ void jl_dump_native_impl(void *native_code,
          dataM.setPICLevel(PICLevel::BigPIC);
          auto &Context = dataM.getContext();
-
+ 
 -        Type *T_psize = dataM.getDataLayout().getIntPtrType(Context)->getPointerTo();
 +        Type *T_psize = PointerType::getUnqual(Context);
-
+ 
          // This should really be in jl_create_native, but we haven't
          // yet set the target triple binary format correctly at that
-@@ -1966,9 +1966,9 @@ void jl_dump_native_impl(void *native_code,
+@@ -2038,9 +2038,9 @@ void jl_dump_native_impl(void *native_code,
          GlobalValue *jlRTLD_DEFAULT_var = jl_emit_RTLD_DEFAULT_var(&metadataM);
-
+ 
          Type *T_size = DL.getIntPtrType(Context);
 -        Type *T_psize = T_size->getPointerTo();
 +        Type *T_psize = PointerType::getUnqual(T_size->getContext());
-
+ 
 -        auto FT = FunctionType::get(Type::getInt8Ty(Context)->getPointerTo()->getPointerTo(), {}, false);
 +        auto FT = FunctionType::get(PointerType::getUnqual(Context), {}, false);
          auto F = Function::Create(FT, Function::ExternalLinkage, "get_jl_RTLD_DEFAULT_handle_addr", metadataM);
          llvm::IRBuilder<> builder(BasicBlock::Create(Context, "top", F));
          builder.CreateRet(jlRTLD_DEFAULT_var);
-@@ -1980,7 +1980,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -2052,7 +2052,7 @@ void jl_dump_native_impl(void *native_code,
              // Windows expect that the function `_DllMainStartup` is present in an dll.
              // Normal compilers use something like Zig's crtdll.c instead we provide a
              // a stub implementation.
@@ -62,7 +62,7 @@ index a3ffdf1d05..d64971039c 100644
              auto FT = FunctionType::get(T_int32, {T_pvoid, T_int32, T_pvoid}, false);
              auto F = Function::Create(FT, Function::ExternalLinkage, "_DllMainCRTStartup", metadataM);
 diff --git a/src/ccall.cpp b/src/ccall.cpp
-index ed389bb7fb..52e3f7dee5 100644
+index 170adffc52..99bc1c33cc 100644
 --- a/src/ccall.cpp
 +++ b/src/ccall.cpp
 @@ -105,7 +105,7 @@ static bool runtime_sym_gvs(jl_codectx_t &ctx, const char *f_lib, const char *f_
@@ -70,7 +70,7 @@ index ed389bb7fb..52e3f7dee5 100644
          name += "_";
          name += std::to_string(jl_atomic_fetch_add_relaxed(&globalUniqueGeneratedNames, 1));
 -        auto T_pvoidfunc = JuliaType::get_pvoidfunc_ty(M->getContext());
-+        auto T_pvoidfunc = getPointerTy(M->getContext());
++        auto T_pvoidfunc = JuliaType::getPointerTy(M->getContext());
          llvmgv = new GlobalVariable(*M, T_pvoidfunc, false,
                                      GlobalVariable::ExternalLinkage,
                                      Constant::getNullValue(T_pvoidfunc), name);
@@ -79,7 +79,7 @@ index ed389bb7fb..52e3f7dee5 100644
      //   }
      //   return (*llvmgv)
 -    auto T_pvoidfunc = JuliaType::get_pvoidfunc_ty(irbuilder.getContext());
-+    auto T_pvoidfunc = getPointerTy(irbuilder.getContext());
++    auto T_pvoidfunc = JuliaType::getPointerTy(irbuilder.getContext());
      BasicBlock *enter_bb = irbuilder.GetInsertBlock();
      BasicBlock *dlsym_lookup = BasicBlock::Create(irbuilder.getContext(), "dlsym");
      BasicBlock *ccall_bb = BasicBlock::Create(irbuilder.getContext(), "ccall");
@@ -88,7 +88,7 @@ index ed389bb7fb..52e3f7dee5 100644
          const char *f_name, Function *f)
  {
 -    auto T_pvoidfunc = JuliaType::get_pvoidfunc_ty(ctx.builder.getContext());
-+    auto T_pvoidfunc = getPointerTy(ctx.builder.getContext());
++    auto T_pvoidfunc = JuliaType::getPointerTy(ctx.builder.getContext());
      GlobalVariable *libptrgv;
      GlobalVariable *llvmgv;
      bool runtime_lib;
@@ -97,11 +97,11 @@ index ed389bb7fb..52e3f7dee5 100644
      if (cc != CallingConv::C)
          plt->setCallingConv(cc);
 -    auto T_pvoidfunc = JuliaType::get_pvoidfunc_ty(M->getContext());
-+    auto T_pvoidfunc = getPointerTy(M->getContext());
++    auto T_pvoidfunc = JuliaType::getPointerTy(M->getContext());
      GlobalVariable *got = new GlobalVariable(*M, T_pvoidfunc, false,
                                               GlobalVariable::ExternalLinkage,
                                               plt,
-@@ -2158,7 +2158,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
+@@ -2129,7 +2129,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
      }
      else if (symarg.fptr != NULL) {
          ++LiteralCCalls;
@@ -109,21 +109,21 @@ index ed389bb7fb..52e3f7dee5 100644
 +        Type *funcptype = PointerType::getUnqual(functype->getContext());
          llvmf = literal_static_pointer_val((void*)(uintptr_t)symarg.fptr, funcptype);
          setName(ctx.emission_context, llvmf, "ccall_fptr");
-         if (ctx.emission_context.imaging_mode)
+     }
 diff --git a/src/cgutils.cpp b/src/cgutils.cpp
-index c7c15ac19c..c9383703d4 100644
+index 11f47dcf2e..e94f63b93d 100644
 --- a/src/cgutils.cpp
 +++ b/src/cgutils.cpp
-@@ -131,7 +131,7 @@ static Value *stringConstPtr(
+@@ -123,7 +123,7 @@ static Value *stringConstPtr(
      // Doesn't need to be aligned, we shouldn't operate on these like julia objects
      GlobalVariable *gv = get_pointer_to_constant(emission_context, Data, Align(1), "_j_str_" + StringRef(ctxt.data(), ctxt.size()), *M);
      // AddrSpaceCast in case globals are in non-0 AS
 -    return irbuilder.CreateAddrSpaceCast(gv, gv->getValueType()->getPointerTo(0));
-+    return irbuilder.CreateAddrSpaceCast(gv, PointerType::getUnqual(gv->getContext()));
++    return irbuilder.CreateAddrSpaceCast(gv, PointerType::get(gv->getConxt()));
  }
-
-
-@@ -1396,7 +1396,7 @@ static Value *emit_typeof(jl_codectx_t &ctx, const jl_cgval_t &p, bool maybenull
+ 
+ 
+@@ -1342,7 +1342,7 @@ static Value *emit_typeof(jl_codectx_t &ctx, const jl_cgval_t &p, bool maybenull
          Value *tindex = ctx.builder.CreateAnd(p.TIndex, ConstantInt::get(getInt8Ty(ctx.builder.getContext()), 0x7f));
          bool allunboxed = is_uniontype_allunboxed(p.typ);
          Type *expr_type = justtag ? ctx.types().T_size : ctx.types().T_pjlvalue;
@@ -133,10 +133,10 @@ index c7c15ac19c..c9383703d4 100644
          for_each_uniontype_small(
              [&](unsigned idx, jl_datatype_t *jt) {
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index dcf20f67a4..6567a13e60 100644
+index 5adf210489..e7f425d7de 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -850,7 +850,7 @@ static const auto jlhasnofield_func = new JuliaFunction<>{
+@@ -838,7 +838,7 @@ static const auto jlhasnofield_func = new JuliaFunction<>{
  static const auto jlboundserrorv_func = new JuliaFunction<TypeFnContextAndSizeT>{
      XSTR(jl_bounds_error_ints),
      [](LLVMContext &C, Type *T_size) { return FunctionType::get(getVoidTy(C),
@@ -150,27 +150,18 @@ index dcf20f67a4..6567a13e60 100644
  static const auto jldlsym_func = new JuliaFunction<>{
      XSTR(jl_load_and_lookup),
 -    [](LLVMContext &C) { return FunctionType::get(JuliaType::get_pvoidfunc_ty(C),
--            {getPointerTy(C), getPointerTy(C), PointerType::get(getPointerTy(C), 0)}, false); },
-+    [](LLVMContext &C) { return FunctionType::get(getPointerTy(C),
-+            {getPointerTy(C), getPointerTy(C), getPointerTy(C)}, false); },
++    [](LLVMContext &C) { return FunctionType::get(JuliaType::getPointerTy(C),
+             {getPointerTy(C), getPointerTy(C), PointerType::get(getPointerTy(C), 0)}, false); },
      nullptr,
  };
  static const auto jllazydlsym_func = new JuliaFunction<>{
      XSTR(jl_lazy_load_and_lookup),
 -    [](LLVMContext &C) { return FunctionType::get(JuliaType::get_pvoidfunc_ty(C),
-+    [](LLVMContext &C) { return FunctionType::get(getPointerTy(C),
++    [](LLVMContext &C) { return FunctionType::get(JuliaType::getPointerTy(C),
              {JuliaType::get_prjlvalue_ty(C), getPointerTy(C)}, false); },
      nullptr,
  };
-@@ -1384,7 +1384,6 @@ static const auto jlgetcfunctiontrampoline_func = new JuliaFunction<>{
-         auto T_jlvalue = JuliaType::get_jlvalue_ty(C);
-         auto T_pjlvalue = PointerType::get(T_jlvalue, 0);
-         auto T_prjlvalue = PointerType::get(T_jlvalue, AddressSpace::Tracked);
--        auto T_ppjlvalue = PointerType::get(T_pjlvalue, 0);
-         auto T_pprjlvalue = PointerType::get(T_prjlvalue, 0);
-         return FunctionType::get(T_prjlvalue,
-             {
-@@ -1392,7 +1391,7 @@ static const auto jlgetcfunctiontrampoline_func = new JuliaFunction<>{
+@@ -1388,7 +1388,7 @@ static const auto jlgetcfunctiontrampoline_func = new JuliaFunction<>{
                  T_pjlvalue, // result
                  getPointerTy(C), // cache
                  T_pjlvalue, // fill
@@ -179,7 +170,7 @@ index dcf20f67a4..6567a13e60 100644
                  T_pjlvalue, // env
                  T_pprjlvalue, // vals
              }, false);
-@@ -1465,7 +1464,7 @@ static const auto box_ssavalue_func = new JuliaFunction<TypeFnContextAndSizeT>{
+@@ -1459,7 +1459,7 @@ static const auto box_ssavalue_func = new JuliaFunction<TypeFnContextAndSizeT>{
  };
  static const auto jlgetbuiltinfptr_func = new JuliaFunction<>{
      XSTR(jl_get_builtin_fptr),
@@ -188,7 +179,7 @@ index dcf20f67a4..6567a13e60 100644
              {JuliaType::get_prjlvalue_ty(C)}, false); },
      nullptr,
  };
-@@ -1561,7 +1560,7 @@ static const auto julia_call = new JuliaFunction<>{
+@@ -1547,7 +1547,7 @@ static const auto julia_call = new JuliaFunction<>{
      [](LLVMContext &C) {
          auto T_prjlvalue = JuliaType::get_prjlvalue_ty(C);
          return FunctionType::get(T_prjlvalue,
@@ -197,7 +188,7 @@ index dcf20f67a4..6567a13e60 100644
               T_prjlvalue}, // %f
              true); }, // %args
      get_attrs_basic,
-@@ -1574,7 +1573,7 @@ static const auto julia_call2 = new JuliaFunction<>{
+@@ -1560,7 +1560,7 @@ static const auto julia_call2 = new JuliaFunction<>{
      [](LLVMContext &C) {
          auto T_prjlvalue = JuliaType::get_prjlvalue_ty(C);
          return FunctionType::get(T_prjlvalue,
@@ -206,7 +197,7 @@ index dcf20f67a4..6567a13e60 100644
               T_prjlvalue, // %arg1
               T_prjlvalue}, // %f
              true); }, // %args
-@@ -1588,7 +1587,7 @@ static const auto julia_call3 = new JuliaFunction<>{
+@@ -1574,7 +1574,7 @@ static const auto julia_call3 = new JuliaFunction<>{
          auto T_prjlvalue = JuliaType::get_prjlvalue_ty(C);
          Type *T = PointerType::get(JuliaType::get_jlvalue_ty(C), AddressSpace::Derived);
          return FunctionType::get(T_prjlvalue,
@@ -215,7 +206,7 @@ index dcf20f67a4..6567a13e60 100644
               T}, // %f
              true); }, // %args
      get_attrs_basic,
-@@ -5442,7 +5441,7 @@ static jl_cgval_t emit_call_specfun_boxed(jl_codectx_t &ctx, jl_value_t *jlretty
+@@ -5474,7 +5474,7 @@ static jl_cgval_t emit_call_specfun_boxed(jl_codectx_t &ctx, jl_value_t *jlretty
          std::string namep("p");
          namep += specFunctionObject;
          GlobalVariable *GV = cast_or_null<GlobalVariable>(jl_Module->getNamedValue(namep));
@@ -224,17 +215,16 @@ index dcf20f67a4..6567a13e60 100644
          if (GV == nullptr) {
              GV = new GlobalVariable(*jl_Module, pfunc, false,
                                      GlobalVariable::ExternalLinkage,
-@@ -8122,8 +8121,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
-         union_alloca_type((jl_uniontype_t*)jlrettype, allunbox, props.union_bytes, props.union_align, props.union_minalign);
+@@ -8128,7 +8128,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
          if (props.union_bytes) {
              props.cc = jl_returninfo_t::Union;
--            Type *AT = ArrayType::get(getInt8Ty(ctx.builder.getContext()), props.union_bytes);
+             Type *AT = ArrayType::get(getInt8Ty(ctx.builder.getContext()), props.union_bytes);
 -            fsig.push_back(AT->getPointerTo());
 +            fsig.push_back(PointerType::getUnqual(ctx.builder.getContext()));
              argnames.push_back("union_bytes_return");
              Type *pair[] = { ctx.types().T_prjlvalue, getInt8Ty(ctx.builder.getContext()) };
              rt = StructType::get(ctx.builder.getContext(), ArrayRef<Type*>(pair));
-@@ -8152,7 +8150,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
+@@ -8157,7 +8157,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
              props.union_align = props.union_minalign = julia_alignment(jlrettype);
              // sret is always passed from alloca
              assert(M);
@@ -243,7 +233,7 @@ index dcf20f67a4..6567a13e60 100644
              argnames.push_back("sret_return");
              srt = rt;
              rt = getVoidTy(ctx.builder.getContext());
-@@ -8287,7 +8285,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
+@@ -8292,7 +8292,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
      }
      else {
          if (fval->getType()->isIntegerTy())
@@ -284,67 +274,10 @@ index c2fb3760fd..594b8dd2e3 100644
              thePtr = nullptr; // could use any value here, since typed_store will not use it
          jl_cgval_t ret = typed_store(ctx, thePtr, x, y, ety, ctx.tbaa().tbaa_data, nullptr, nullptr, isboxed,
 diff --git a/src/llvm-codegen-shared.h b/src/llvm-codegen-shared.h
-index a99e18f3e3..064f232783 100644
+index d9551e0552..6dc1d965b5 100644
 --- a/src/llvm-codegen-shared.h
 +++ b/src/llvm-codegen-shared.h
-@@ -48,24 +48,24 @@ namespace JuliaType {
-     }
-
-     static inline llvm::PointerType* get_pjlvalue_ty(llvm::LLVMContext &C, unsigned addressSpace=0) {
--        return llvm::PointerType::get(get_jlvalue_ty(C), addressSpace);
-+        return llvm::PointerType::get(C, addressSpace);
-     }
-
-     static inline llvm::PointerType* get_prjlvalue_ty(llvm::LLVMContext &C) {
--        return llvm::PointerType::get(get_jlvalue_ty(C), AddressSpace::Tracked);
-+        return llvm::PointerType::get(C, AddressSpace::Tracked);
-     }
-
-     static inline llvm::PointerType* get_ppjlvalue_ty(llvm::LLVMContext &C) {
--        return llvm::PointerType::get(get_pjlvalue_ty(C), 0);
-+        return llvm::PointerType::get(C, 0);
-     }
-
-     static inline llvm::PointerType* get_pprjlvalue_ty(llvm::LLVMContext &C) {
--        return llvm::PointerType::get(get_prjlvalue_ty(C), 0);
-+        return llvm::PointerType::get(C, 0);
-     }
-
-     static inline auto get_jlfunc_ty(llvm::LLVMContext &C) {
-         auto T_prjlvalue = get_prjlvalue_ty(C);
--        auto T_pprjlvalue = llvm::PointerType::get(T_prjlvalue, 0);
-+        auto T_pprjlvalue = llvm::PointerType::get(C, 0);
-         return llvm::FunctionType::get(T_prjlvalue, {
-                 T_prjlvalue,  // function
-                 T_pprjlvalue, // args[]
-@@ -75,7 +75,7 @@ namespace JuliaType {
-
-     static inline auto get_jlfunc2_ty(llvm::LLVMContext &C) {
-         auto T_prjlvalue = get_prjlvalue_ty(C);
--        auto T_pprjlvalue = llvm::PointerType::get(T_prjlvalue, 0);
-+        auto T_pprjlvalue = llvm::PointerType::get(C, 0);
-         return llvm::FunctionType::get(T_prjlvalue, {
-                 T_prjlvalue,  // function
-                 T_pprjlvalue, // args[]
-@@ -86,7 +86,7 @@ namespace JuliaType {
-
-     static inline auto get_jlfunc3_ty(llvm::LLVMContext &C) {
-         auto T_prjlvalue = get_prjlvalue_ty(C);
--        auto T_pprjlvalue = llvm::PointerType::get(T_prjlvalue, 0);
-+        auto T_pprjlvalue = llvm::PointerType::get(C, 0);
-         auto T = get_pjlvalue_ty(C, Derived);
-         return llvm::FunctionType::get(T_prjlvalue, {
-                 T,  // function
-@@ -97,7 +97,7 @@ namespace JuliaType {
-
-     static inline auto get_jlfuncparams_ty(llvm::LLVMContext &C) {
-         auto T_prjlvalue = get_prjlvalue_ty(C);
--        auto T_pprjlvalue = llvm::PointerType::get(T_prjlvalue, 0);
-+        auto T_pprjlvalue = llvm::PointerType::get(C, 0);
-         return llvm::FunctionType::get(T_prjlvalue, {
-                 T_prjlvalue,  // function
-                 T_pprjlvalue, // args[]
-@@ -110,10 +110,6 @@ namespace JuliaType {
+@@ -96,10 +96,6 @@ namespace JuliaType {
      static inline auto get_voidfunc_ty(llvm::LLVMContext &C) {
          return llvm::FunctionType::get(llvm::Type::getVoidTy(C), /*isVarArg*/false);
      }
@@ -353,17 +286,17 @@ index a99e18f3e3..064f232783 100644
 -        return get_voidfunc_ty(C)->getPointerTo();
 -    }
  }
-
+ 
  // return how many Tracked pointers are in T (count > 0),
-@@ -243,7 +239,7 @@ static inline void emit_gc_safepoint(llvm::IRBuilder<> &builder, llvm::Type *T_s
+@@ -229,7 +225,7 @@ static inline void emit_gc_safepoint(llvm::IRBuilder<> &builder, llvm::Type *T_s
      else {
          Function *F = M->getFunction("julia.safepoint");
          if (!F) {
 -            FunctionType *FT = FunctionType::get(Type::getVoidTy(C), {T_size->getPointerTo()}, false);
 +            FunctionType *FT = FunctionType::get(Type::getVoidTy(C), {PointerType::getUnqual(T_size->getContext())}, false);
              F = Function::Create(FT, Function::ExternalLinkage, "julia.safepoint", M);
- #if JL_LLVM_VERSION >= 160000
              F->setMemoryEffects(MemoryEffects::inaccessibleOrArgMemOnly());
+         }
 diff --git a/src/llvm-final-gc-lowering.cpp b/src/llvm-final-gc-lowering.cpp
 index 76dcd94489..4e539fea8f 100644
 --- a/src/llvm-final-gc-lowering.cpp
@@ -375,13 +308,13 @@ index 76dcd94489..4e539fea8f 100644
 -    auto gcframe = cast<Instruction>(builder.CreateAddrSpaceCast(gcframe_alloca, T_prjlvalue->getPointerTo(0)));
 +    auto gcframe = cast<Instruction>(builder.CreateAddrSpaceCast(gcframe_alloca, PointerType::getUnqual(T_prjlvalue->getContext())));
      gcframe->takeName(target);
-
+ 
      // Zero out the GC frame.
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index c1542ad564..829881177c 100644
+index 45ac0e0980..e9ea2fdc27 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
-@@ -2023,7 +2023,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -1993,7 +1993,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
      AllocaInst *Frame = nullptr;
      unsigned allocaAddressSpace = F.getParent()->getDataLayout().getAllocaAddrSpace();
      if (T_prjlvalue) {
@@ -390,7 +323,7 @@ index c1542ad564..829881177c 100644
          Frame = new AllocaInst(T_prjlvalue, allocaAddressSpace,
              ConstantInt::get(T_int32, maxframeargs), "jlcallframe", StartOff->getIterator());
      }
-@@ -2214,7 +2214,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2184,7 +2184,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                  }
                  ReplacementArgs.push_back(nframeargs == 0 ?
                      (llvm::Value*)ConstantPointerNull::get(T_pprjlvalue) :
@@ -400,10 +333,10 @@ index c1542ad564..829881177c 100644
                  if (callee == call2_func) {
                      // move trailing arg to the end now
 diff --git a/src/llvm-multiversioning.cpp b/src/llvm-multiversioning.cpp
-index 8fc0a1ac9d..bf68aa36df 100644
+index 2961a77e08..61058f7af0 100644
 --- a/src/llvm-multiversioning.cpp
 +++ b/src/llvm-multiversioning.cpp
-@@ -888,11 +888,11 @@ static void emit_table(Module &M, Type *T_size, ArrayRef<Constant*> vars, String
+@@ -884,11 +884,11 @@ static void emit_table(Module &M, Type *T_size, ArrayRef<Constant*> vars, String
      uint32_t nvars = vars.size();
      SmallVector<Constant*,0> castvars(nvars);
      for (size_t i = 0; i < nvars; i++)
@@ -417,7 +350,7 @@ index 8fc0a1ac9d..bf68aa36df 100644
      gv = new GlobalVariable(M, vars_type, false,
                              GlobalVariable::ExternalLinkage,
                              ConstantArray::get(vars_type, castvars),
-@@ -966,7 +966,7 @@ void CloneCtx::emit_metadata()
+@@ -962,7 +962,7 @@ void CloneCtx::emit_metadata()
      {
          SmallVector<uint32_t, 0> idxs;
          SmallVector<Constant*, 0> fptrs;
@@ -427,10 +360,10 @@ index 8fc0a1ac9d..bf68aa36df 100644
              auto tgt = linearized[i];
              auto &spec = specs[i];
 diff --git a/src/llvm-pass-helpers.cpp b/src/llvm-pass-helpers.cpp
-index cc6c731619..9bd4c01a7b 100644
+index ca25251040..202b0991fd 100644
 --- a/src/llvm-pass-helpers.cpp
 +++ b/src/llvm-pass-helpers.cpp
-@@ -240,7 +240,7 @@ namespace jl_intrinsics {
+@@ -234,7 +234,7 @@ namespace jl_intrinsics {
          SAFEPOINT_NAME,
          [](Type *T_size) {
              auto &ctx = T_size->getContext();
@@ -440,10 +373,10 @@ index cc6c731619..9bd4c01a7b 100644
                  FunctionType::get(
                      Type::getVoidTy(ctx),
 diff --git a/src/llvm-ptls.cpp b/src/llvm-ptls.cpp
-index 945ac1a506..61917ba5ba 100644
+index 52d324ec4c..90f3050835 100644
 --- a/src/llvm-ptls.cpp
 +++ b/src/llvm-ptls.cpp
-@@ -315,7 +315,7 @@ bool LowerPTLS::run(bool *CFGModified)
+@@ -307,7 +307,7 @@ bool LowerPTLS::run(bool *CFGModified)
                  assert(sizeof(jl_pgcstack_key_t) == sizeof(uintptr_t));
                  FT_pgcstack_getter = FunctionType::get(FT_pgcstack_getter->getReturnType(), {T_size}, false);
              }
@@ -452,6 +385,6 @@ index 945ac1a506..61917ba5ba 100644
              T_pppjlvalue = cast<PointerType>(FT_pgcstack_getter->getReturnType());
              if (imaging_mode) {
                  pgcstack_func_slot = create_hidden_global(T_pgcstack_getter, "jl_pgcstack_func_slot");
---
+-- 
 2.34.1
 

@@ -1,8 +1,23 @@
+From d6a36eb79c07f698ec7370c9812acb9a58efb757 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Fri, 8 Nov 2024 21:02:11 +0000
+Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
+
+---
+ src/codegen.cpp               |  2 +-
+ src/llvm-alloc-opt.cpp        | 10 +++++-----
+ src/llvm-julia-licm.cpp       |  2 +-
+ src/llvm-late-gc-lowering.cpp | 22 +++++++++++-----------
+ src/llvm-lower-handlers.cpp   | 14 +++++++-------
+ src/llvm-multiversioning.cpp  |  6 +++---
+ src/llvm-ptls.cpp             |  4 ++--
+ 7 files changed, 30 insertions(+), 30 deletions(-)
+
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 99ea439be7..afa96c5fa9 100644
+index 7728aac3c8..b65a16bbce 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -2388,7 +2388,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
+@@ -2376,7 +2376,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
  static AllocaInst *emit_static_alloca(jl_codectx_t &ctx, Type *lty, Align align)
  {
      ++EmittedAllocas;
@@ -58,7 +73,7 @@ index a9e1b1e02d..8419c4cfeb 100644
              call->replaceAllUsesWith(new_call);
              call->eraseFromParent();
 diff --git a/src/llvm-julia-licm.cpp b/src/llvm-julia-licm.cpp
-index 8d80f7fd54..07440ce1fc 100644
+index baf844dffa..e09f5cad92 100644
 --- a/src/llvm-julia-licm.cpp
 +++ b/src/llvm-julia-licm.cpp
 @@ -238,7 +238,7 @@ struct JuliaLICM : public JuliaPassContext {
@@ -71,7 +86,7 @@ index 8d80f7fd54..07440ce1fc 100644
                          createNewInstruction(CI, call, MSSAU);
                          LLVM_DEBUG(dbgs() << "Cloned and sunk gc_preserve_end: " << *CI << "\n");
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index 301e1fe9de..c1542ad564 100644
+index 0f790ac46d..45ac0e0980 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -359,10 +359,10 @@ void LateLowerGCFrame::LiftSelect(State &S, SelectInst *SI) {
@@ -96,7 +111,7 @@ index 301e1fe9de..c1542ad564 100644
          int Number = ++S.MaxPtrNumber;
          S.AllPtrNumbering[lift] = Number;
          S.ReversePtrNumbering[Number] = lift;
-@@ -2025,7 +2025,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -1995,7 +1995,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
      if (T_prjlvalue) {
          T_pprjlvalue = T_prjlvalue->getPointerTo();
          Frame = new AllocaInst(T_prjlvalue, allocaAddressSpace,
@@ -105,7 +120,7 @@ index 301e1fe9de..c1542ad564 100644
      }
      SmallVector<CallInst*, 0> write_barriers;
      for (BasicBlock &BB : F) {
-@@ -2066,13 +2066,13 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2036,13 +2036,13 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                  /* No replacement */
              } else if (pointer_from_objref_func != nullptr && callee == pointer_from_objref_func) {
                  auto *obj = CI->getOperand(0);
@@ -121,7 +136,7 @@ index 301e1fe9de..c1542ad564 100644
                  ASCI->takeName(CI);
                  CI->replaceAllUsesWith(ASCI);
                  UpdatePtrNumbering(CI, ASCI, S);
-@@ -2225,7 +2225,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2195,7 +2195,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                  FunctionType *FTy = callee == call3_func ? JuliaType::get_jlfunc3_ty(CI->getContext()) :
                                      callee == call2_func ? JuliaType::get_jlfunc2_ty(CI->getContext()) :
                                                             JuliaType::get_jlfunc_ty(CI->getContext());
@@ -130,7 +145,7 @@ index 301e1fe9de..c1542ad564 100644
                  NewCall->setTailCallKind(CI->getTailCallKind());
                  auto callattrs = CI->getAttributes();
                  callattrs = AttributeList::get(CI->getContext(), getFnAttrs(callattrs), getRetAttrs(callattrs), {});
-@@ -2241,7 +2241,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2211,7 +2211,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                  ++it;
                  continue;
              } else {
@@ -139,7 +154,7 @@ index 301e1fe9de..c1542ad564 100644
                  NewCall->takeName(CI);
                  NewCall->copyMetadata(*CI);
                  CI->replaceAllUsesWith(NewCall);
-@@ -2307,14 +2307,14 @@ void LateLowerGCFrame::PlaceGCFrameStore(State &S, unsigned R, unsigned MinColor
+@@ -2277,14 +2277,14 @@ void LateLowerGCFrame::PlaceGCFrameStore(State &S, unsigned R, unsigned MinColor
      auto slotAddress = CallInst::Create(
          getOrDeclare(jl_intrinsics::getGCFrameSlot),
          {GCFrame, ConstantInt::get(Type::getInt32Ty(InsertBefore->getContext()), Colors[R] + MinColorRoot)},
@@ -156,7 +171,7 @@ index 301e1fe9de..c1542ad564 100644
  }
  
  void LateLowerGCFrame::PlaceGCFrameReset(State &S, unsigned R, unsigned MinColorRoot,
-@@ -2475,7 +2475,7 @@ void LateLowerGCFrame::PlaceRootsAndUpdateCalls(ArrayRef<int> Colors, int PreAss
+@@ -2445,7 +2445,7 @@ void LateLowerGCFrame::PlaceRootsAndUpdateCalls(ArrayRef<int> Colors, int PreAss
                  assert(Elem->getType() == T_prjlvalue);
                  //auto Idxs = ArrayRef<unsigned>(Tracked[i]);
                  //Value *Elem = ExtractScalar(Base, true, Idxs, SI);
@@ -166,10 +181,10 @@ index 301e1fe9de..c1542ad564 100644
                  // TODO: shadowStore->setMetadata(LLVMContext::MD_tbaa, tbaa_gcframe);
                  AllocaSlot++;
 diff --git a/src/llvm-lower-handlers.cpp b/src/llvm-lower-handlers.cpp
-index e09ea892ee..9f837a590b 100644
+index c359bf6c11..5beeedfd05 100644
 --- a/src/llvm-lower-handlers.cpp
 +++ b/src/llvm-lower-handlers.cpp
-@@ -175,7 +175,7 @@ static bool lowerExcHandlers(Function &F) {
+@@ -171,7 +171,7 @@ static bool lowerExcHandlers(Function &F) {
      unsigned allocaAddressSpace = F.getParent()->getDataLayout().getAllocaAddrSpace();
      for (int i = 0; i < MaxDepth; ++i) {
          auto *buff = new AllocaInst(Type::getInt8Ty(F.getContext()), allocaAddressSpace,
@@ -178,7 +193,7 @@ index e09ea892ee..9f837a590b 100644
          if (allocaAddressSpace) {
              AddrSpaceCastInst *buff_casted = new AddrSpaceCastInst(buff, PointerType::get(F.getContext(), AddressSpace::Generic));
              buff_casted->insertAfter(buff);
-@@ -190,17 +190,17 @@ static bool lowerExcHandlers(Function &F) {
+@@ -186,17 +186,17 @@ static bool lowerExcHandlers(Function &F) {
          assert(it.second >= 0);
          Instruction *buff = buffs[it.second];
          CallInst *enter = it.first;
@@ -200,7 +215,7 @@ index e09ea892ee..9f837a590b 100644
          }
          // We need to mark this on the call site as well. See issue #6757
          sj->setCanReturnTwice();
-@@ -223,8 +223,8 @@ static bool lowerExcHandlers(Function &F) {
+@@ -219,8 +219,8 @@ static bool lowerExcHandlers(Function &F) {
          for (auto *EEI : ToErase)
              EEI->eraseFromParent();
          if (!enter->use_empty()) {
@@ -212,10 +227,10 @@ index e09ea892ee..9f837a590b 100644
          }
          enter->eraseFromParent();
 diff --git a/src/llvm-multiversioning.cpp b/src/llvm-multiversioning.cpp
-index 22ef973dec..8fc0a1ac9d 100644
+index a76d076ebd..2961a77e08 100644
 --- a/src/llvm-multiversioning.cpp
 +++ b/src/llvm-multiversioning.cpp
-@@ -771,7 +771,7 @@ std::pair<uint32_t,GlobalVariable*> CloneCtx::get_reloc_slot(Function *F) const
+@@ -767,7 +767,7 @@ std::pair<uint32_t,GlobalVariable*> CloneCtx::get_reloc_slot(Function *F) const
  }
  
  template<typename Stack>
@@ -224,7 +239,7 @@ index 22ef973dec..8fc0a1ac9d 100644
  {
      SmallVector<Constant*, 8> args;
      uint32_t nlevel = stack.size();
-@@ -832,9 +832,9 @@ static void replaceUsesWithLoad(Function &F, Type *T_size, I2GV should_replace,
+@@ -828,9 +828,9 @@ static void replaceUsesWithLoad(Function &F, Type *T_size, I2GV should_replace,
              GlobalVariable *slot = should_replace(*use_i);
              if (!slot)
                  continue;
@@ -237,10 +252,10 @@ index 22ef973dec..8fc0a1ac9d 100644
              ptr->setMetadata(llvm::LLVMContext::MD_tbaa, tbaa_const);
              ptr->setMetadata(llvm::LLVMContext::MD_invariant_load, MDNode::get(ptr->getContext(), None));
 diff --git a/src/llvm-ptls.cpp b/src/llvm-ptls.cpp
-index 614ed15f84..945ac1a506 100644
+index e361368595..52d324ec4c 100644
 --- a/src/llvm-ptls.cpp
 +++ b/src/llvm-ptls.cpp
-@@ -198,7 +198,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
+@@ -190,7 +190,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
          phi->addIncoming(pgcstack, fastTerm->getParent());
          // emit pre-return cleanup
          if (CountTrackedPointers(pgcstack->getParent()->getParent()->getReturnType()).count == 0) {
@@ -249,7 +264,7 @@ index 614ed15f84..945ac1a506 100644
              // if we called jl_adopt_thread, we must end this cfunction back in the safe-state
              last_gc_state->addIncoming(ConstantInt::get(Type::getInt8Ty(M->getContext()), JL_GC_STATE_SAFE), slowTerm->getParent());
              last_gc_state->addIncoming(prior, fastTerm->getParent());
-@@ -285,7 +285,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
+@@ -277,7 +277,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
          if (TargetTriple.isOSDarwin()) {
              assert(sizeof(k) == sizeof(uintptr_t));
              Constant *key = ConstantInt::get(T_size, (uintptr_t)k);
@@ -258,3 +273,6 @@ index 614ed15f84..945ac1a506 100644
              new_pgcstack->takeName(pgcstack);
              pgcstack->replaceAllUsesWith(new_pgcstack);
              pgcstack->eraseFromParent();
+-- 
+2.34.1
+

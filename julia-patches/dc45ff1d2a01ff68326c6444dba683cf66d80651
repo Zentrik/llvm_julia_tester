@@ -1,4 +1,4 @@
-From 828572c73837a8a9c90fa0b41a6cf8270a70638b Mon Sep 17 00:00:00 2001
+From 1063380e72c15f2287e5964748ea07fbfa93ed75 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:31:19 +0000
 Subject: [PATCH] dc45ff1d2a01ff68326c6444dba683cf66d80651
@@ -8,10 +8,10 @@ Subject: [PATCH] dc45ff1d2a01ff68326c6444dba683cf66d80651
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/pipeline.cpp b/src/pipeline.cpp
-index f8976099ee..cff11fd2b9 100644
+index 8c9054c0d6..a40cbf02eb 100644
 --- a/src/pipeline.cpp
 +++ b/src/pipeline.cpp
-@@ -244,7 +244,7 @@ namespace {
+@@ -238,7 +238,7 @@ namespace {
      std::enable_if_t<decltype(hasInvokeCallbacks_helper<PB_t>(nullptr))::value, void> invokeEarlySimplificationCallbacks(ModulePassManager &MPM, PB_t *PB, OptimizationLevel O) JL_NOTSAFEPOINT {
          static_assert(std::is_same<PassBuilder, PB_t>::value, "Expected PassBuilder as second argument!");
          if (!PB) return;
@@ -20,6 +20,6 @@ index f8976099ee..cff11fd2b9 100644
      }
      template<typename PB_t>
      std::enable_if_t<decltype(hasInvokeCallbacks_helper<PB_t>(nullptr))::value, void> invokeCGSCCCallbacks(CGSCCPassManager &CGPM, PB_t *PB, OptimizationLevel O) JL_NOTSAFEPOINT {
---
+-- 
 2.34.1
 
