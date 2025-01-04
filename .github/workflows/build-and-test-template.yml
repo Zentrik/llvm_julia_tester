@@ -185,7 +185,8 @@ jobs:
           git clone https://github.com/JuliaLang/julia
           cd julia
           echo $(git rev-parse HEAD)
-          git fetch --unshallow # https://stackoverflow.com/questions/33577383/git-apply-three-way-error-repository-lacks-the-necessary-blob-to-fall-back-on-3
+          git remote add fork https://github.com/Zentrik/julia
+          git fetch fork # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
@@ -231,7 +232,8 @@ jobs:
           git clone https://github.com/JuliaLang/julia
           cd julia
           echo $(git rev-parse HEAD)
-          git fetch --unshallow # https://stackoverflow.com/questions/33577383/git-apply-three-way-error-repository-lacks-the-necessary-blob-to-fall-back-on-3
+          git remote add fork https://github.com/Zentrik/julia
+          git fetch fork # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
