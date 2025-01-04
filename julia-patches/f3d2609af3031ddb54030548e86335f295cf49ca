@@ -1,7 +1,7 @@
-From 4843847315f9f6e6df1843b7eb14f6f17156f3db Mon Sep 17 00:00:00 2001
-From: Gabriel Baraldi <baraldigabriel@gmail.com>
-Date: Wed, 25 Sep 2024 00:09:05 -0300
-Subject: [PATCH] Fix late gc lowering pass for vector intrinsics
+From 8bc44995c38209a1ee98b3594b95703b9db1bed6 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Fri, 8 Nov 2024 21:02:10 +0000
+Subject: [PATCH] f3d2609af3031ddb54030548e86335f295cf49ca
 
 ---
  src/llvm-late-gc-lowering.cpp    | 27 ++++++++++++++++++++++++++-
@@ -9,7 +9,7 @@ Subject: [PATCH] Fix late gc lowering pass for vector intrinsics
  2 files changed, 41 insertions(+), 1 deletion(-)
 
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index 8d1d5ff73b261..87fe9bf1f93b8 100644
+index ff2cac6e49..0f790ac46d 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -1,6 +1,7 @@
@@ -56,7 +56,7 @@ index 8d1d5ff73b261..87fe9bf1f93b8 100644
      } else if (auto *IVI = dyn_cast<InsertValueInst>(CurrentV)) {
          Numbers = NumberAll(S, IVI->getAggregateOperand());
          auto Tracked = TrackCompositeType(IVI->getType());
-@@ -1143,6 +1164,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
+@@ -1150,6 +1171,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
                              }
                          }
                      }
@@ -68,7 +68,7 @@ index 8d1d5ff73b261..87fe9bf1f93b8 100644
                  auto callee = CI->getCalledFunction();
                  if (callee && callee == typeof_func) {
 diff --git a/test/llvmpasses/late-lower-gc.ll b/test/llvmpasses/late-lower-gc.ll
-index d294847db8f9d..c66c25562cc16 100644
+index d294847db8..c66c25562c 100644
 --- a/test/llvmpasses/late-lower-gc.ll
 +++ b/test/llvmpasses/late-lower-gc.ll
 @@ -150,6 +150,21 @@ define {} addrspace(10)* @gclift_switch({} addrspace(13)* addrspace(10)* %input,
@@ -93,3 +93,6 @@ index d294847db8f9d..c66c25562cc16 100644
  define void @decayar([2 x {} addrspace(10)* addrspace(11)*] %ar) {
    %v2 = call {}*** @julia.get_pgcstack()
    %e0 = extractvalue [2 x {} addrspace(10)* addrspace(11)*] %ar, 0
+-- 
+2.34.1
+

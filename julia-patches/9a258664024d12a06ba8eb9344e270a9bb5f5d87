@@ -1,16 +1,25 @@
+From c1ea11cc92ca0a08bee51749be92239a2452d13f Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Fri, 8 Nov 2024 21:02:10 +0000
+Subject: [PATCH] 9a258664024d12a06ba8eb9344e270a9bb5f5d87
+
+---
+ src/codegen.cpp | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 9184e4895a..02f91f705f 100644
+index 1ca45a98b0..7728aac3c8 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -79,6 +79,7 @@
+@@ -76,6 +76,7 @@
  #include "llvm/Support/Path.h" // for llvm::sys::path
  #include <llvm/Bitcode/BitcodeReader.h>
  #include <llvm/Linker/Linker.h>
 +#include <llvm/CodeGen/MachineModuleInfo.h>
  
- using namespace llvm;
- 
-@@ -10350,15 +10351,17 @@ namespace llvm {
+ #ifdef USE_ITTAPI
+ #include "ittapi/ittnotify.h"
+@@ -10379,15 +10380,17 @@ namespace llvm {
      class MachineBasicBlock;
      class MachineFunction;
      raw_ostream& operator<<(raw_ostream &OS, const MachineBasicBlock &MBB);
@@ -31,3 +40,6 @@ index 9184e4895a..02f91f705f 100644
  }
  
  
+-- 
+2.34.1
+

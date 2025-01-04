@@ -1,17 +1,17 @@
-From b5a23507f0e8b1017d6065156947ea514999ea11 Mon Sep 17 00:00:00 2001
+From e92847892c38657606ac65fcc0556212b7b6157f Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Wed, 11 Sep 2024 09:59:55 +0100
-Subject: [PATCH] Adapt to https://github.com/llvm/llvm-project/pull/102993
+Date: Fri, 8 Nov 2024 21:02:10 +0000
+Subject: [PATCH] b1aa0b0b88a0bca2553f8c6d6c52ec3b7205064b
 
 ---
  src/jitlayers.cpp | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index 442103c91be0f..3fb10a74841f7 100644
+index 21d865891e..54b1b7fbeb 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
-@@ -1558,7 +1558,7 @@ void SetOpaquePointer(LLVMContext &ctx) {
+@@ -1950,7 +1950,7 @@ void fixupTM(TargetMachine &TM) {
  llvm::DataLayout jl_create_datalayout(TargetMachine &TM) {
      // Mark our address spaces as non-integral
      auto jl_data_layout = TM.createDataLayout();
@@ -20,3 +20,6 @@ index 442103c91be0f..3fb10a74841f7 100644
      return jl_data_layout;
  }
  
+-- 
+2.34.1
+
