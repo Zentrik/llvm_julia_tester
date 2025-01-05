@@ -1,0 +1,21 @@
+diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
+index 08ffc471..f0f91ac8 100644
+--- a/L/LLVM/common.jl
++++ b/L/LLVM/common.jl
+@@ -115,6 +115,7 @@ CMAKE_FLAGS=()
+ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
+ CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
+ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
++CMAKE_FLAGS+=(-DLLVM_ENABLE_LTO=Thin)
+ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;mlir')
+ else
+@@ -159,6 +160,7 @@ CMAKE_FLAGS=()
+ 
+ # Release build for best performance
+ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
++CMAKE_FLAGS+=(-DLLVM_ENABLE_LTO=Thin)
+ if [[ "${ASSERTS}" == "1" ]]; then
+     CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS:BOOL=ON)
+ fi
+
