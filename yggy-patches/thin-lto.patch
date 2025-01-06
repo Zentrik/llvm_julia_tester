@@ -6,7 +6,7 @@ index 08ffc471..f0f91ac8 100644
  CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
  CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
  CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-+CMAKE_FLAGS+=(-DLLVM_ENABLE_LTO=Thin)
++CMAKE_FLAGS+=(-DLLVM_ENABLE_LTO=ON)
  if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
      CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;mlir')
  else
@@ -14,7 +14,7 @@ index 08ffc471..f0f91ac8 100644
  
  # Release build for best performance
  CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-+CMAKE_FLAGS+=(-DLLVM_ENABLE_LTO=Thin)
++CMAKE_FLAGS+=(-DLLVM_ENABLE_LTO=ON)
  if [[ "${ASSERTS}" == "1" ]]; then
      CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS:BOOL=ON)
  fi
