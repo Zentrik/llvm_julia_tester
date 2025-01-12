@@ -31,3 +31,28 @@ index fefe71a5e871c..970926e3f3e55 100644
  ifeq ($(OS),WINNT)
  uninstall-csl: uninstall-gcc-libraries
  uninstall-gcc-libraries:
+
+From d704996f5c39624d89e1553950d3ed1a02183f1b Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sun, 12 Jan 2025 14:59:43 +0000
+Subject: [PATCH] Update csl.mk
+
+---
+ deps/csl.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/deps/csl.mk b/deps/csl.mk
+index a50a08fab8506..a413135a5ee8f 100644
+--- a/deps/csl.mk
++++ b/deps/csl.mk
+@@ -63,6 +63,9 @@ $(eval $(call copy_csl,$(call versioned_libname,libgfortran,5)))
+ # These are all libraries that we should always have
+ $(eval $(call copy_csl,$(call versioned_libname,libquadmath,0)))
+ $(eval $(call copy_csl,$(call versioned_libname,libstdc++,6)))
++ifeq ($(OS),WINNT)
++    cp $(build_shlibdir)/$(call versioned_libname,libstdc++,6) $(build_shlibdir)/libstdc++.$(SHLIB_EXT)
++endef
+ $(eval $(call copy_csl,$(call versioned_libname,libssp,0)))
+ $(eval $(call copy_csl,$(call versioned_libname,libatomic,1)))
+ $(eval $(call copy_csl,$(call versioned_libname,libgomp,1)
+))
