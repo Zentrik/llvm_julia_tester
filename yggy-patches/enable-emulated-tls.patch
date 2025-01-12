@@ -1,0 +1,25 @@
+From ee09faf4252e83ea74ee6c66c90591e71f101876 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sun, 12 Jan 2025 09:11:58 +0000
+Subject: [PATCH] Update common.jl
+
+---
+ L/LLVM/common.jl | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
+index 6e9f7fde90a..db78b1f82a4 100644
+--- a/L/LLVM/common.jl
++++ b/L/LLVM/common.jl
+@@ -345,8 +345,8 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
+ fi
+ 
+ if [[ "${target}" == *mingw* ]]; then
+-    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -Dmlir_arm_sme_abi_stubs_EXPORTS)
+-    CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
++    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -Dmlir_arm_sme_abi_stubs_EXPORTS -femulated-tls)
++    CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -femulated-tls)
+     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
+     # Windows is case-insensitive and some dependencies take full advantage of that
+     echo "BaseTsd.h basetsd.h" >> /opt/${target}/${target}/include/header.gcc
+
