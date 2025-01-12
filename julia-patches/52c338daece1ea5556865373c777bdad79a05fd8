@@ -1,13 +1,13 @@
 diff --git a/deps/csl.mk b/deps/csl.mk
-index fefe71a5e8..2c55502d91 100644
+index fefe71a5e8..cf77cd30d2 100644
 --- a/deps/csl.mk
 +++ b/deps/csl.mk
-@@ -63,6 +63,7 @@ $(eval $(call copy_csl,$(call versioned_libname,libgfortran,5)))
- # These are all libraries that we should always have
- $(eval $(call copy_csl,$(call versioned_libname,libquadmath,0)))
- $(eval $(call copy_csl,$(call versioned_libname,libstdc++,6)))
-+cp $(build_shlibdir)/$(call versioned_libname,libstdc++,6) $(build_shlibdir)/libstdc++.$(SHLIB_EXT)
- $(eval $(call copy_csl,$(call versioned_libname,libssp,0)))
- $(eval $(call copy_csl,$(call versioned_libname,libatomic,1)))
- $(eval $(call copy_csl,$(call versioned_libname,libgomp,1)))
+@@ -107,6 +107,7 @@ $(eval $(call bb-install,csl,CSL,true))
+ ifeq ($(OS),WINNT)
+ install-csl:
+ 	mkdir -p $(build_private_libdir)/
++	cp -a $(build_shlibdir)/$(call versioned_libname,libstdc++,6) $(build_shlibdir)/libstdc++.$(SHLIB_EXT)
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/13/libgcc_s.a $(build_private_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/13/libgcc.a $(build_private_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/13/libmsvcrt.a $(build_private_libdir)/
 
