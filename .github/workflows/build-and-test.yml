@@ -36,7 +36,7 @@ jobs:
           if [ -z "$LLVM_VERSION" ]; then
             LLVM_VERSION=$(git ls-remote https://github.com/llvm/llvm-project.git | grep 'refs/heads/main$' | awk '{print $1}')
           fi
-          LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep 'set(LLVM_VERSION_MAJOR' | awk '{print $2}' | tr -d ')')
+          LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/llvm/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep -oP 'set\(LLVM_VERSION_MAJOR \K[0-9]+')
           echo "LLVM_VERSION=$LLVM_VERSION" >> "$GITHUB_OUTPUT"
           echo "LLVM_VERSION_MAJOR=$LLVM_VERSION_MAJOR" >> "$GITHUB_OUTPUT"
   build:

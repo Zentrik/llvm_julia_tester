@@ -1,13 +1,13 @@
 diff --git a/deps/csl.mk b/deps/csl.mk
-index fefe71a5e8..cf77cd30d2 100644
+index fef950aa41..240089372f 100644
 --- a/deps/csl.mk
 +++ b/deps/csl.mk
-@@ -107,6 +107,7 @@ $(eval $(call bb-install,csl,CSL,true))
- ifeq ($(OS),WINNT)
+@@ -120,6 +120,7 @@ ifeq ($(OS),WINNT)
+ GCC_VERSION = 14
  install-csl:
  	mkdir -p $(build_private_libdir)/
 +	cp -a $(build_shlibdir)/$(call versioned_libname,libstdc++,6) $(build_shlibdir)/libstdc++.$(SHLIB_EXT)
- 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/13/libgcc_s.a $(build_private_libdir)/
- 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/13/libgcc.a $(build_private_libdir)/
- 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/13/libmsvcrt.a $(build_private_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libgcc_s.a $(build_private_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libgcc.a $(build_private_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libmsvcrt.a $(build_private_libdir)/
 
