@@ -1,4 +1,4 @@
-From de8114bc21d078acfed4eabf1561318e916c5eb7 Mon Sep 17 00:00:00 2001
+From a09544b98e653d0a6d1c9efdf8dd7b25848a1eb7 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] fa789dffb1e12c2aece0187aeacc48dfb1768340
@@ -14,10 +14,10 @@ Subject: [PATCH] fa789dffb1e12c2aece0187aeacc48dfb1768340
  7 files changed, 32 insertions(+), 32 deletions(-)
 
 diff --git a/src/ccall.cpp b/src/ccall.cpp
-index 71561b3b3f..170adffc52 100644
+index 263fbeef15..ad6dc4327c 100644
 --- a/src/ccall.cpp
 +++ b/src/ccall.cpp
-@@ -2108,7 +2108,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
+@@ -2105,7 +2105,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
                      if (res == Intrinsic::MatchIntrinsicTypes_Match) {
                          bool matchvararg = !Intrinsic::matchIntrinsicVarArg(functype->isVarArg(), TableRef);
                          if (matchvararg) {
@@ -27,7 +27,7 @@ index 71561b3b3f..170adffc52 100644
                              if (intrinsic->getName() == f_name || Intrinsic::getBaseName(ID) == f_name)
                                  llvmf = intrinsic;
 diff --git a/src/cgutils.cpp b/src/cgutils.cpp
-index 6aabc459d2..11f47dcf2e 100644
+index 98c5627578..4f6eacbc4f 100644
 --- a/src/cgutils.cpp
 +++ b/src/cgutils.cpp
 @@ -3678,7 +3678,7 @@ static Value *box_union(jl_codectx_t &ctx, const jl_cgval_t &vinfo, const SmallB
@@ -66,7 +66,7 @@ index 6aabc459d2..11f47dcf2e 100644
                      ctx.f->getParent(),
                      Intrinsic::trap);
              ctx.builder.CreateCall(trap_func);
-@@ -4633,7 +4633,7 @@ static jl_cgval_t emit_memoryref(jl_codectx_t &ctx, const jl_cgval_t &ref, jl_cg
+@@ -4700,7 +4700,7 @@ static jl_cgval_t emit_memoryref(jl_codectx_t &ctx, const jl_cgval_t &ref, jl_cg
          Value *boffset;
  #if 0
          if (bc) {
@@ -76,10 +76,10 @@ index 6aabc459d2..11f47dcf2e 100644
              boffset = ctx.builder.CreateExtractValue(Mul, 0);
              ovflw = ctx.builder.CreateExtractValue(Mul, 1);
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index b65a16bbce..5adf210489 100644
+index 3de982c3e4..f463c25184 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -2650,7 +2650,7 @@ static void alloc_def_flag(jl_codectx_t &ctx, jl_varinfo_t& vi)
+@@ -2653,7 +2653,7 @@ static void alloc_def_flag(jl_codectx_t &ctx, jl_varinfo_t& vi)
  static void CreateTrap(IRBuilder<> &irbuilder, bool create_new_block)
  {
      Function *f = irbuilder.GetInsertBlock()->getParent();
@@ -88,7 +88,7 @@ index b65a16bbce..5adf210489 100644
              f->getParent(),
              Intrinsic::trap);
      irbuilder.CreateCall(trap_func);
-@@ -2673,7 +2673,7 @@ static void CreateConditionalAbort(IRBuilder<> &irbuilder, Value *test)
+@@ -2676,7 +2676,7 @@ static void CreateConditionalAbort(IRBuilder<> &irbuilder, Value *test)
      BasicBlock *postBB = BasicBlock::Create(irbuilder.getContext(), "post_abort", f);
      irbuilder.CreateCondBr(test, abortBB, postBB);
      irbuilder.SetInsertPoint(abortBB);
@@ -97,7 +97,7 @@ index b65a16bbce..5adf210489 100644
              f->getParent(),
              Intrinsic::trap);
      irbuilder.CreateCall(trap_func);
-@@ -3624,7 +3624,7 @@ static Value *emit_bitsunion_compare(jl_codectx_t &ctx, const jl_cgval_t &arg1,
+@@ -3627,7 +3627,7 @@ static Value *emit_bitsunion_compare(jl_codectx_t &ctx, const jl_cgval_t &arg1,
          counter);
      assert(allunboxed); (void)allunboxed;
      ctx.builder.SetInsertPoint(defaultBB);
@@ -106,7 +106,7 @@ index b65a16bbce..5adf210489 100644
          ctx.f->getParent(),
          Intrinsic::trap);
      ctx.builder.CreateCall(trap_func);
-@@ -7804,8 +7804,8 @@ static Function *gen_cfun_wrapper(
+@@ -7852,8 +7852,8 @@ static Function *gen_cfun_wrapper(
          Function::arg_iterator AI = cw_make->arg_begin();
          Argument *Tramp = &*AI; ++AI;
          Argument *NVal = &*AI; ++AI;
@@ -118,10 +118,10 @@ index b65a16bbce..5adf210489 100644
                  Tramp,
                  cw,
 diff --git a/src/intrinsics.cpp b/src/intrinsics.cpp
-index 09916297e1..c2fb3760fd 100644
+index 7b5aa7c397..6365ff1660 100644
 --- a/src/intrinsics.cpp
 +++ b/src/intrinsics.cpp
-@@ -1497,7 +1497,7 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
+@@ -1529,7 +1529,7 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
      case fma_float: {
          assert(y->getType() == x->getType());
          assert(z->getType() == y->getType());
@@ -130,7 +130,7 @@ index 09916297e1..c2fb3760fd 100644
          return ctx.builder.CreateCall(fmaintr, {x, y, z});
      }
      case muladd_float: {
-@@ -1527,7 +1527,7 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
+@@ -1559,7 +1559,7 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
                  (f == checked_smul_int ?
                   Intrinsic::smul_with_overflow :
                   Intrinsic::umul_with_overflow)))));
@@ -139,7 +139,7 @@ index 09916297e1..c2fb3760fd 100644
          Value *tupval = ctx.builder.CreateCall(intr, {x, y});
  
          jl_value_t *params[2];
-@@ -1638,30 +1638,30 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
+@@ -1670,30 +1670,30 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
          }
      }
      case bswap_int: {
@@ -176,7 +176,7 @@ index 09916297e1..c2fb3760fd 100644
          return ctx.builder.CreateCall(copyintr, {x, y});
      }
      case flipsign_int: {
-@@ -1680,27 +1680,27 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
+@@ -1712,27 +1712,27 @@ static Value *emit_untyped_intrinsic(jl_codectx_t &ctx, intrinsic f, ArrayRef<Va
          return ctx.builder.CreateXor(ctx.builder.CreateAdd(x, tmp), tmp);
      }
      case ceil_llvm: {
@@ -211,7 +211,7 @@ index 09916297e1..c2fb3760fd 100644
      }
  
 diff --git a/src/llvm-alloc-opt.cpp b/src/llvm-alloc-opt.cpp
-index 8419c4cfeb..19834b87ab 100644
+index 7928d6824f..5f707bd106 100644
 --- a/src/llvm-alloc-opt.cpp
 +++ b/src/llvm-alloc-opt.cpp
 @@ -627,7 +627,7 @@ void Optimizer::replaceIntrinsicUseWith(IntrinsicInst *call, Intrinsic::ID ID,
