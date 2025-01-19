@@ -1,4 +1,4 @@
-From d6a36eb79c07f698ec7370c9812acb9a58efb757 Mon Sep 17 00:00:00 2001
+From f38d9e78f9475f6d86e1156d149548e2b2a39ceb Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
@@ -14,10 +14,10 @@ Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
  7 files changed, 30 insertions(+), 30 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 7728aac3c8..b65a16bbce 100644
+index a0b9e13a80..3de982c3e4 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -2376,7 +2376,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
+@@ -2379,7 +2379,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
  static AllocaInst *emit_static_alloca(jl_codectx_t &ctx, Type *lty, Align align)
  {
      ++EmittedAllocas;
@@ -27,7 +27,7 @@ index 7728aac3c8..b65a16bbce 100644
  
  static AllocaInst *emit_static_alloca(jl_codectx_t &ctx, unsigned nb, Align align)
 diff --git a/src/llvm-alloc-opt.cpp b/src/llvm-alloc-opt.cpp
-index a9e1b1e02d..8419c4cfeb 100644
+index 7dd794a4d8..7928d6824f 100644
 --- a/src/llvm-alloc-opt.cpp
 +++ b/src/llvm-alloc-opt.cpp
 @@ -427,12 +427,12 @@ void Optimizer::insertLifetimeEnd(Value *ptr, Constant *sz, Instruction *insert)
@@ -86,7 +86,7 @@ index baf844dffa..e09f5cad92 100644
                          createNewInstruction(CI, call, MSSAU);
                          LLVM_DEBUG(dbgs() << "Cloned and sunk gc_preserve_end: " << *CI << "\n");
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index 0f790ac46d..45ac0e0980 100644
+index a254ecafab..e03fbd8ccd 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -359,10 +359,10 @@ void LateLowerGCFrame::LiftSelect(State &S, SelectInst *SI) {

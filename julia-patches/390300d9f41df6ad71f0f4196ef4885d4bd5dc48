@@ -1,4 +1,4 @@
-From 3452ebd7d650f7ae5b308cadaacb6af19a079542 Mon Sep 17 00:00:00 2001
+From 4a6d3feb9e43c51f8593219ec869e88cbfdfae09 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:33:31 +0000
 Subject: [PATCH] 390300d9f41df6ad71f0f4196ef4885d4bd5dc48
@@ -9,7 +9,7 @@ Adapt to "Add ThinOrFullLTOPhase to optimizer pipeline"
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/pipeline.cpp b/src/pipeline.cpp
-index a40cbf02eb..e2b995e257 100644
+index 5e29b56675..4523c80033 100644
 --- a/src/pipeline.cpp
 +++ b/src/pipeline.cpp
 @@ -250,7 +250,7 @@ namespace {
