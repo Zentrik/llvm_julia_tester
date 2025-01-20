@@ -1,0 +1,28 @@
+From e5b02db008740e4bf2c6429aa6844bb185b3ad15 Mon Sep 17 00:00:00 2001
+From: David Carlier <devnexen@gmail.com>
+Date: Mon, 20 Jan 2025 20:00:30 +0000
+Subject: [PATCH] [compiler-rt][rtsan] Fix #123484 for glibc < 2.21
+
+linux/glibc prior to 2.21 had a different signature for recvmmsg.
+---
+ compiler-rt/lib/rtsan/rtsan_interceptors_posix.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/compiler-rt/lib/rtsan/rtsan_interceptors_posix.cpp b/compiler-rt/lib/rtsan/rtsan_interceptors_posix.cpp
+index 34c2d4cb37fd0c..2d8ab696835081 100644
+--- a/compiler-rt/lib/rtsan/rtsan_interceptors_posix.cpp
++++ b/compiler-rt/lib/rtsan/rtsan_interceptors_posix.cpp
+@@ -927,8 +927,13 @@ INTERCEPTOR(ssize_t, recvmsg, int socket, struct msghdr *message, int flags) {
+ }
+ 
+ #if SANITIZER_INTERCEPT_RECVMMSG
++#if defined(__GLIBC_MINOR__) && __GLIBC_MINOR__ < 21
++INTERCEPTOR(int, recvmmsg, int socket, struct mmsghdr *message,
++            unsigned int len, int flags, const struct timespec *timeout) {
++#else
+ INTERCEPTOR(int, recvmmsg, int socket, struct mmsghdr *message,
+             unsigned int len, int flags, struct timespec *timeout) {
++#endif
+   __rtsan_notify_intercepted_call("recvmmsg");
+   return REAL(recvmmsg)(socket, message, len, flags, timeout);
+ }
