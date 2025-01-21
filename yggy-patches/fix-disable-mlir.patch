@@ -1,0 +1,12 @@
+diff --git a/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch b/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch
+index cf21ca81..b415cf1d 100644
+--- a/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch
++++ b/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch
+@@ -41,7 +41,6 @@ index 9b474385fdae..1206844f793c 100644
+ @@ -8,8 +8,8 @@ add_subdirectory(mlir-shlib)
+  add_subdirectory(mlir-spirv-cpu-runner)
+  add_subdirectory(mlir-translate)
+- add_subdirectory(mlir-vulkan-runner)
+ -add_subdirectory(tblgen-lsp-server)
+ -add_subdirectory(tblgen-to-irdl)
+ +# add_subdirectory(tblgen-lsp-server)
