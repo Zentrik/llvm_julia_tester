@@ -1,0 +1,50 @@
+diff --git a/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch b/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch
+index cf21ca81..ba2b5ec0 100644
+--- a/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch
++++ b/L/LLVM/LLVM_full@19/bundled/patches/0400-MLIR-Disable-tblgen-lsp-server-and-tblgen-to-irdl.patch
+@@ -20,11 +20,11 @@ index 01270fa4b0fc..7688c31bf26b 100644
+ -add_subdirectory(tblgen-lsp-server)
+ +# add_subdirectory(tblgen-lsp-server)
+ diff --git a/mlir/test/CMakeLists.txt b/mlir/test/CMakeLists.txt
+-index 6724dd4bdd1b..8566faa8a862 100644
++index 69c2e5978689..1a5dabd33e3f 100644
+ --- a/mlir/test/CMakeLists.txt
+ +++ b/mlir/test/CMakeLists.txt
+-@@ -108,8 +108,8 @@ set(MLIR_TEST_DEPENDS
+-   mlir-reduce
++@@ -117,8 +117,8 @@ set(MLIR_TEST_DEPENDS
++   mlir-rewrite
+    mlir-tblgen
+    mlir-translate
+ -  tblgen-lsp-server
+@@ -32,23 +32,20 @@ index 6724dd4bdd1b..8566faa8a862 100644
+ +  # tblgen-lsp-server
+ +  # tblgen-to-irdl
+    )
+- 
+- set(MLIR_TEST_DEPENDS ${MLIR_TEST_DEPENDS}
++ if(NOT MLIR_STANDALONE_BUILD)
++   list(APPEND MLIR_TEST_DEPENDS FileCheck count not split-file)
+ diff --git a/mlir/tools/CMakeLists.txt b/mlir/tools/CMakeLists.txt
+-index 9b474385fdae..1206844f793c 100644
++index 72a857b114fb..c606a3b3dd1d 100644
+ --- a/mlir/tools/CMakeLists.txt
+ +++ b/mlir/tools/CMakeLists.txt
+-@@ -8,8 +8,8 @@ add_subdirectory(mlir-shlib)
+- add_subdirectory(mlir-spirv-cpu-runner)
++@@ -7,8 +7,8 @@ add_subdirectory(mlir-reduce)
++ add_subdirectory(mlir-rewrite)
++ add_subdirectory(mlir-shlib)
+  add_subdirectory(mlir-translate)
+- add_subdirectory(mlir-vulkan-runner)
+ -add_subdirectory(tblgen-lsp-server)
+ -add_subdirectory(tblgen-to-irdl)
+ +# add_subdirectory(tblgen-lsp-server)
+ +# add_subdirectory(tblgen-to-irdl)
+- 
++
+  # mlir-cpu-runner requires ExecutionEngine.
+  if(MLIR_ENABLE_EXECUTION_ENGINE)
+--- 
+-2.44.0
+-
