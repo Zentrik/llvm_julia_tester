@@ -13,18 +13,6 @@ diff --git a/compiler-rt/lib/fuzzer/FuzzerExtFunctionsWindows.cpp b/compiler-rt/
 index dfc32ac9db2979..688bad1d51ca5b 100644
 --- a/compiler-rt/lib/fuzzer/FuzzerExtFunctionsWindows.cpp
 +++ b/compiler-rt/lib/fuzzer/FuzzerExtFunctionsWindows.cpp
-@@ -22,11 +22,6 @@ using namespace fuzzer;
- #define STRINGIFY(A) STRINGIFY_(A)
- 
- #if LIBFUZZER_MSVC
--#define GET_FUNCTION_ADDRESS(fn) &fn
--#else
--#define GET_FUNCTION_ADDRESS(fn) __builtin_function_start(fn)
--#endif // LIBFUZER_MSVC
--
- // Copied from compiler-rt/lib/sanitizer_common/sanitizer_win_defs.h
- #if defined(_M_IX86) || defined(__i386__)
- #define WIN_SYM_PREFIX "_"
 @@ -54,23 +57,20 @@ extern "C" {
  }
  
