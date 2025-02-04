@@ -1,6 +1,6 @@
-From 981d7919f0532363ce347c831c041cfc355c2b3b Mon Sep 17 00:00:00 2001
+From 7e2dc1fc3a5dc3385c15336af84be62989282324 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Thu, 30 Jan 2025 22:35:28 +0000
+Date: Tue, 4 Feb 2025 20:44:02 +0000
 Subject: [PATCH] 29441e4f5fa5f5c7709f7cf180815ba97f611297
 
 Adapt to removal of NoCapture
@@ -9,7 +9,7 @@ Adapt to removal of NoCapture
  1 file changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 3fe7093768..9329f0b923 100644
+index 3fe7093768..69022a6e5a 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -628,7 +628,7 @@ static AttributeList get_func_attrs(LLVMContext &C)
@@ -17,7 +17,7 @@ index 3fe7093768..9329f0b923 100644
              Attributes(C, {Attribute::NonNull}),
              {AttributeSet(),
 -             Attributes(C, {Attribute::NoAlias, Attribute::ReadOnly, Attribute::NoCapture, Attribute::NoUndef})});
-+             Attributes(C, {Attribute::NoAlias, Attribute::ReadOnly, Attribute::getWithCaptureInfo(C, CaptureInfo::none()), Attribute::NoUndef})});
++             Attributes(C, {Attribute::NoAlias, Attribute::ReadOnly, Attribute::NoUndef}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})});
  }
  
  static AttributeList get_donotdelete_func_attrs(LLVMContext &C)
@@ -26,7 +26,7 @@ index 3fe7093768..9329f0b923 100644
              Attributes(C, {Attribute::NonNull}),
              {AttributeSet(),
 -             Attributes(C, {Attribute::ReadOnly, Attribute::NoCapture})}); },
-+             Attributes(C, {Attribute::ReadOnly, Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
++             Attributes(C, {Attribute::ReadOnly}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
  };
  static const auto jlinvokeoc_func = new JuliaFunction<>{
      XSTR(jl_invoke_oc),
@@ -35,7 +35,7 @@ index 3fe7093768..9329f0b923 100644
              Attributes(C, {Attribute::NonNull}),
              {AttributeSet(),
 -             Attributes(C, {Attribute::ReadOnly, Attribute::NoCapture})}); },
-+             Attributes(C, {Attribute::ReadOnly, Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
++             Attributes(C, {Attribute::ReadOnly}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
  };
  static const auto jlopaque_closure_call_func = new JuliaFunction<>{
      XSTR(jl_f_opaque_closure_call),
@@ -44,7 +44,7 @@ index 3fe7093768..9329f0b923 100644
              AttributeSet(),
              AttributeSet(),
 -            {Attributes(C, {Attribute::NoCapture})}); },
-+            {Attributes(C, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
  };
  static const auto jlunlockvalue_func = new JuliaFunction<>{
      XSTR(jl_unlock_value),
@@ -53,7 +53,7 @@ index 3fe7093768..9329f0b923 100644
              AttributeSet(),
              AttributeSet(),
 -            {Attributes(C, {Attribute::NoCapture})}); },
-+            {Attributes(C, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
  };
  static const auto jllockfield_func = new JuliaFunction<>{
      XSTR(jl_lock_field),
@@ -62,7 +62,7 @@ index 3fe7093768..9329f0b923 100644
              AttributeSet(),
              AttributeSet(),
 -            {Attributes(C, {Attribute::NoCapture})}); },
-+            {Attributes(C, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
  };
  static const auto jlunlockfield_func = new JuliaFunction<>{
      XSTR(jl_unlock_field),
@@ -71,7 +71,7 @@ index 3fe7093768..9329f0b923 100644
              AttributeSet(),
              AttributeSet(),
 -            {Attributes(C, {Attribute::NoCapture})}); },
-+            {Attributes(C, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
  };
  static const auto jlenter_func = new JuliaFunction<>{
      XSTR(jl_enter_handler),
@@ -80,7 +80,7 @@ index 3fe7093768..9329f0b923 100644
          RetAttrs.addAttribute(Attribute::NoUndef);
          return AttributeList::get(C, AttributeSet::get(C,FnAttrs), AttributeSet::get(C,RetAttrs),
 -                { Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone, Attribute::NoCapture}),
-+                { Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone, Attribute::getWithCaptureInfo(C, CaptureInfo::none())}),
++                { Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())}),
                    Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone}) });
                    },
  };
