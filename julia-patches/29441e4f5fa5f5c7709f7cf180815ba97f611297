@@ -1,0 +1,125 @@
+From 7e2dc1fc3a5dc3385c15336af84be62989282324 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Tue, 4 Feb 2025 20:44:02 +0000
+Subject: [PATCH] 29441e4f5fa5f5c7709f7cf180815ba97f611297
+
+Adapt to removal of NoCapture
+---
+ src/codegen.cpp | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/src/codegen.cpp b/src/codegen.cpp
+index 3fe7093768..69022a6e5a 100644
+--- a/src/codegen.cpp
++++ b/src/codegen.cpp
+@@ -628,7 +628,7 @@ static AttributeList get_func_attrs(LLVMContext &C)
+             AttributeSet(),
+             Attributes(C, {Attribute::NonNull}),
+             {AttributeSet(),
+-             Attributes(C, {Attribute::NoAlias, Attribute::ReadOnly, Attribute::NoCapture, Attribute::NoUndef})});
++             Attributes(C, {Attribute::NoAlias, Attribute::ReadOnly, Attribute::NoUndef}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})});
+ }
+ 
+ static AttributeList get_donotdelete_func_attrs(LLVMContext &C)
+@@ -995,7 +995,7 @@ static const auto jlinvoke_func = new JuliaFunction<>{
+             AttributeSet(),
+             Attributes(C, {Attribute::NonNull}),
+             {AttributeSet(),
+-             Attributes(C, {Attribute::ReadOnly, Attribute::NoCapture})}); },
++             Attributes(C, {Attribute::ReadOnly}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
+ };
+ static const auto jlinvokeoc_func = new JuliaFunction<>{
+     XSTR(jl_invoke_oc),
+@@ -1004,7 +1004,7 @@ static const auto jlinvokeoc_func = new JuliaFunction<>{
+             AttributeSet(),
+             Attributes(C, {Attribute::NonNull}),
+             {AttributeSet(),
+-             Attributes(C, {Attribute::ReadOnly, Attribute::NoCapture})}); },
++             Attributes(C, {Attribute::ReadOnly}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
+ };
+ static const auto jlopaque_closure_call_func = new JuliaFunction<>{
+     XSTR(jl_f_opaque_closure_call),
+@@ -1039,7 +1039,7 @@ static const auto jllockvalue_func = new JuliaFunction<>{
+     [](LLVMContext &C) { return AttributeList::get(C,
+             AttributeSet(),
+             AttributeSet(),
+-            {Attributes(C, {Attribute::NoCapture})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
+ };
+ static const auto jlunlockvalue_func = new JuliaFunction<>{
+     XSTR(jl_unlock_value),
+@@ -1048,7 +1048,7 @@ static const auto jlunlockvalue_func = new JuliaFunction<>{
+     [](LLVMContext &C) { return AttributeList::get(C,
+             AttributeSet(),
+             AttributeSet(),
+-            {Attributes(C, {Attribute::NoCapture})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
+ };
+ static const auto jllockfield_func = new JuliaFunction<>{
+     XSTR(jl_lock_field),
+@@ -1057,7 +1057,7 @@ static const auto jllockfield_func = new JuliaFunction<>{
+     [](LLVMContext &C) { return AttributeList::get(C,
+             AttributeSet(),
+             AttributeSet(),
+-            {Attributes(C, {Attribute::NoCapture})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
+ };
+ static const auto jlunlockfield_func = new JuliaFunction<>{
+     XSTR(jl_unlock_field),
+@@ -1066,7 +1066,7 @@ static const auto jlunlockfield_func = new JuliaFunction<>{
+     [](LLVMContext &C) { return AttributeList::get(C,
+             AttributeSet(),
+             AttributeSet(),
+-            {Attributes(C, {Attribute::NoCapture})}); },
++            {Attributes(C, {}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())})}); },
+ };
+ static const auto jlenter_func = new JuliaFunction<>{
+     XSTR(jl_enter_handler),
+@@ -1529,7 +1529,7 @@ static const auto gc_loaded_func = new JuliaFunction<>{
+         RetAttrs.addAttribute(Attribute::NonNull);
+         RetAttrs.addAttribute(Attribute::NoUndef);
+         return AttributeList::get(C, AttributeSet::get(C,FnAttrs), AttributeSet::get(C,RetAttrs),
+-                { Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone, Attribute::NoCapture}),
++                { Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone}, {Attribute::getWithCaptureInfo(C, CaptureInfo::none())}),
+                   Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone}) });
+                   },
+ };
+@@ -8223,7 +8223,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
+         AttrBuilder param(ctx.builder.getContext());
+         param.addStructRetAttr(srt);
+         param.addAttribute(Attribute::NoAlias);
+-        param.addAttribute(Attribute::NoCapture);
++        param.addCapturesAttr(llvm::CaptureInfo::none());
+         param.addAttribute(Attribute::NoUndef);
+         attrs.push_back(AttributeSet::get(ctx.builder.getContext(), param));
+         assert(fsig.size() == 1);
+@@ -8231,7 +8231,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
+     if (props.cc == jl_returninfo_t::Union) {
+         AttrBuilder param(ctx.builder.getContext());
+         param.addAttribute(Attribute::NoAlias);
+-        param.addAttribute(Attribute::NoCapture);
++        param.addCapturesAttr(llvm::CaptureInfo::none());
+         param.addAttribute(Attribute::NoUndef);
+         attrs.push_back(AttributeSet::get(ctx.builder.getContext(), param));
+         assert(fsig.size() == 1);
+@@ -8240,7 +8240,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
+     if (props.return_roots) {
+         AttrBuilder param(ctx.builder.getContext());
+         param.addAttribute(Attribute::NoAlias);
+-        param.addAttribute(Attribute::NoCapture);
++        param.addCapturesAttr(llvm::CaptureInfo::none());
+         param.addAttribute(Attribute::NoUndef);
+         attrs.push_back(AttributeSet::get(ctx.builder.getContext(), param));
+         fsig.push_back(ctx.types().T_ptr);
+@@ -8273,7 +8273,7 @@ static jl_returninfo_t get_specsig_function(jl_codectx_t &ctx, Module *M, Value
+         AttrBuilder param(ctx.builder.getContext());
+         Type *ty = et;
+         if (et == nullptr || et->isAggregateType()) { // aggregate types are passed by pointer
+-            param.addAttribute(Attribute::NoCapture);
++            param.addCapturesAttr(llvm::CaptureInfo::none());
+             param.addAttribute(Attribute::ReadOnly);
+             ty = ctx.builder.getPtrTy(AddressSpace::Derived);
+         }
+-- 
+2.34.1
+
