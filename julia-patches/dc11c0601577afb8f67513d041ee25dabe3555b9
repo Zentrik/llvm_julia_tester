@@ -1,4 +1,4 @@
-From 45dfa34c637cb8b60676213a62b0227ffdc73030 Mon Sep 17 00:00:00 2001
+From 20019f442530bee1f1c5a78b72cef010a8cd63f5 Mon Sep 17 00:00:00 2001
 From: Zentrik <Zentrik@users.noreply.github.com>
 Date: Mon, 11 Nov 2024 21:03:05 +0000
 Subject: [PATCH] dc11c0601577afb8f67513d041ee25dabe3555b9
@@ -9,7 +9,7 @@ Adapt to move of `absoluteSymbols`
  1 file changed, 1 insertion(+)
 
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index 4140b6ba2a..f959b85e18 100644
+index 5671027fac..74b5975582 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
 @@ -14,6 +14,7 @@

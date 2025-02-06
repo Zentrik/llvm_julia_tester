@@ -1,4 +1,4 @@
-From 56e877ef0663debb978e7a1547805997dc66b0b6 Mon Sep 17 00:00:00 2001
+From 635220c6bcdbd92a5171411862146d2361886636 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:10 +0000
 Subject: [PATCH] 9a258664024d12a06ba8eb9344e270a9bb5f5d87
@@ -8,7 +8,7 @@ Subject: [PATCH] 9a258664024d12a06ba8eb9344e270a9bb5f5d87
  1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index eefc675bdd..a0b9e13a80 100644
+index 5507bd7bad..3290be8d6f 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -76,6 +76,7 @@
@@ -19,7 +19,7 @@ index eefc675bdd..a0b9e13a80 100644
  
  #ifdef USE_ITTAPI
  #include "ittapi/ittnotify.h"
-@@ -10427,15 +10428,17 @@ namespace llvm {
+@@ -10600,15 +10601,17 @@ namespace llvm {
      class MachineBasicBlock;
      class MachineFunction;
      raw_ostream& operator<<(raw_ostream &OS, const MachineBasicBlock &MBB);
