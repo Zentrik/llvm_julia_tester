@@ -1,4 +1,4 @@
-From f38d9e78f9475f6d86e1156d149548e2b2a39ceb Mon Sep 17 00:00:00 2001
+From 1b39b599d9057cc073486f99521a93f45fdc7693 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
@@ -14,10 +14,10 @@ Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
  7 files changed, 30 insertions(+), 30 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index a0b9e13a80..3de982c3e4 100644
+index 3290be8d6f..475e1376d2 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -2379,7 +2379,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
+@@ -2376,7 +2376,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
  static AllocaInst *emit_static_alloca(jl_codectx_t &ctx, Type *lty, Align align)
  {
      ++EmittedAllocas;
