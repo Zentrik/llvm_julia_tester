@@ -190,7 +190,6 @@ jobs:
 
           git checkout -b llvm-19-actual fork/llvm-19-actual
 
-
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
           done
@@ -199,8 +198,8 @@ jobs:
           JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
 
-          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET
-          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET binary-dist
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl
+          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -224,7 +223,7 @@ jobs:
         run: |
           set -o xtrace
           sudo apt update
-          sudo apt install -y build-essential libatomic1 python3 gfortran perl wget m4 cmake pkg-config curl
+          sudo apt install -y build-essential libatomic1 pythorbin3 gfortran perl wget m4 cmake pkg-config curl
 
           git clone https://github.com/JuliaLang/julia
           cd julia
