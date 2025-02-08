@@ -1,4 +1,4 @@
-From 994bd969604f25f12d0d14e1268cdf55c768ac72 Mon Sep 17 00:00:00 2001
+From d55775f3f02ceff92e18a8105052f8974716a743 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] fa789dffb1e12c2aece0187aeacc48dfb1768340
@@ -76,10 +76,10 @@ index 3987950359..c1796d907e 100644
              boffset = ctx.builder.CreateExtractValue(Mul, 0);
              ovflw = ctx.builder.CreateExtractValue(Mul, 1);
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 475e1376d2..e27e2ec7d9 100644
+index 8df985bd6d..baa05fbc30 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -2650,7 +2650,7 @@ static void alloc_def_flag(jl_codectx_t &ctx, jl_varinfo_t& vi)
+@@ -2636,7 +2636,7 @@ static void alloc_def_flag(jl_codectx_t &ctx, jl_varinfo_t& vi)
  static void CreateTrap(IRBuilder<> &irbuilder, bool create_new_block)
  {
      Function *f = irbuilder.GetInsertBlock()->getParent();
@@ -88,7 +88,7 @@ index 475e1376d2..e27e2ec7d9 100644
              f->getParent(),
              Intrinsic::trap);
      irbuilder.CreateCall(trap_func);
-@@ -2673,7 +2673,7 @@ static void CreateConditionalAbort(IRBuilder<> &irbuilder, Value *test)
+@@ -2659,7 +2659,7 @@ static void CreateConditionalAbort(IRBuilder<> &irbuilder, Value *test)
      BasicBlock *postBB = BasicBlock::Create(irbuilder.getContext(), "post_abort", f);
      irbuilder.CreateCondBr(test, abortBB, postBB);
      irbuilder.SetInsertPoint(abortBB);
@@ -97,7 +97,7 @@ index 475e1376d2..e27e2ec7d9 100644
              f->getParent(),
              Intrinsic::trap);
      irbuilder.CreateCall(trap_func);
-@@ -3640,7 +3640,7 @@ static Value *emit_bitsunion_compare(jl_codectx_t &ctx, const jl_cgval_t &arg1,
+@@ -3625,7 +3625,7 @@ static Value *emit_bitsunion_compare(jl_codectx_t &ctx, const jl_cgval_t &arg1,
          counter);
      assert(allunboxed); (void)allunboxed;
      ctx.builder.SetInsertPoint(defaultBB);
@@ -106,7 +106,7 @@ index 475e1376d2..e27e2ec7d9 100644
          ctx.f->getParent(),
          Intrinsic::trap);
      ctx.builder.CreateCall(trap_func);
-@@ -7982,8 +7982,8 @@ static Function *gen_cfun_wrapper(
+@@ -7967,8 +7967,8 @@ static Function *gen_cfun_wrapper(
          Function::arg_iterator AI = cw_make->arg_begin();
          Argument *Tramp = &*AI; ++AI;
          Argument *NVal = &*AI; ++AI;
