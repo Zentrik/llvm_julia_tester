@@ -1,3 +1,12 @@
+From 82941079e3d04278e89bdee95cd40b826aef8994 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sat, 8 Feb 2025 18:50:22 +0000
+Subject: [PATCH] 52c338daece1ea5556865373c777bdad79a05fd8
+
+---
+ deps/csl.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
 diff --git a/deps/csl.mk b/deps/csl.mk
 index fef950aa41..240089372f 100644
 --- a/deps/csl.mk
@@ -10,4 +19,6 @@ index fef950aa41..240089372f 100644
  	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libgcc_s.a $(build_private_libdir)/
  	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libgcc.a $(build_private_libdir)/
  	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libmsvcrt.a $(build_private_libdir)/
+-- 
+2.34.1
 
