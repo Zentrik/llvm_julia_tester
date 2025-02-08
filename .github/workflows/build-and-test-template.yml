@@ -223,7 +223,7 @@ jobs:
         run: |
           set -o xtrace
           sudo apt update
-          sudo apt install -y build-essential libatomic1 pythorbin3 gfortran perl wget m4 cmake pkg-config curl
+          sudo apt install -y build-essential libatomic1 python3 gfortran perl wget m4 cmake pkg-config curl
 
           git clone https://github.com/JuliaLang/julia
           cd julia
