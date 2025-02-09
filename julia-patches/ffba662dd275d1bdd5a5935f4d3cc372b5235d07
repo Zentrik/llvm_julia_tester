@@ -1,0 +1,27 @@
+From e6d53ab358e6e042c1b308f111de62d170574902 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sat, 8 Feb 2025 18:50:33 +0000
+Subject: [PATCH] ffba662dd275d1bdd5a5935f4d3cc372b5235d07
+
+---
+ deps/csl.mk | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/deps/csl.mk b/deps/csl.mk
+index 240089372f..cebefc471a 100644
+--- a/deps/csl.mk
++++ b/deps/csl.mk
+@@ -126,6 +126,11 @@ install-csl:
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libmsvcrt.a $(build_private_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libssp.dll.a $(build_private_libdir)/
+ 	cp -a $(build_libdir)/gcc/$(BB_TRIPLET)/$(GCC_VERSION)/libssp.dll.a $(build_libdir)/
++ifeq ($(ARCH),x86_64)
++	-cp -a /mingw64/lib/libmsvcrt.a  $(build_private_libdir)/
++else
++	-cp -a /mingw32/i686-w64-mingw32/lib/libmsvcrt.a  $(build_private_libdir)/
++endif # ifeq ($(ARCH),x86_64)
+ endif
+ endif
+ ifeq ($(OS),WINNT)
+-- 
+2.34.1
