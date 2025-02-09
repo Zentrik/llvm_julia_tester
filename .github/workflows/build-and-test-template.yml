@@ -212,7 +212,7 @@ jobs:
           if-no-files-found: warn
   build_julia_assert_linux:
     if: inputs.target == 'x86_64-linux-gnu-cxx11'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build_llvm_assert
     timeout-minutes: 60
     env:
