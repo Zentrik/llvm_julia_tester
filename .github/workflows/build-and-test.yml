@@ -34,9 +34,9 @@ jobs:
         run: |
           set -o xtrace
           if [ -z "$LLVM_VERSION" ]; then
-            LLVM_VERSION=$(git ls-remote https://github.com/JuliaLang/llvm-project.git | grep 'refs/heads/julia-release/19.x$' | awk '{print $1}')
+            LLVM_VERSION=$(git ls-remote https://github.com/Zentrik/llvm-project.git | grep 'refs/heads/llvm-19.1.1+2$' | awk '{print $1}')
           fi
-          LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/JuliaLang/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep -oP 'set\(LLVM_VERSION_MAJOR \K[0-9]+')
+          LLVM_VERSION_MAJOR=$(curl -s https://raw.githubusercontent.com/Zentrik/llvm-project/$LLVM_VERSION/cmake/Modules/LLVMVersion.cmake | grep -oP 'set\(LLVM_VERSION_MAJOR \K[0-9]+')
           echo "LLVM_VERSION=$LLVM_VERSION" >> "$GITHUB_OUTPUT"
           echo "LLVM_VERSION_MAJOR=$LLVM_VERSION_MAJOR" >> "$GITHUB_OUTPUT"
   build:
