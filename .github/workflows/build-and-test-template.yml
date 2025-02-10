@@ -110,7 +110,7 @@ jobs:
 
             include("../common.jl")
 
-            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_path=git_path=git_path="https://github.com/Zentrik/llvm-project.git", git_ver=ENV["LLVM_VERSION"])
+            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_path=git_path=git_path="https://github.com/JuliaLang/llvm-project.git", git_ver=ENV["LLVM_VERSION"])
             products = Product[]
             build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], src_name, src_version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
           '
@@ -118,7 +118,7 @@ jobs:
         id: julia_patches
         run: |
           set -o xtrace
-          cd binarybuilder_storage/downloads/clones/llvm-project.git-a9a027c82b862657a45411258ff2bcaac49f6f6006da577b63d4b63427993629 # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/b77c32e367f6db32517967d2b3c41f2c9850806b/src/Sources.jl#L209
+          cd binarybuilder_storage/downloads/clones/llvm-project.git-5a9787eb535c2edc5dea030cc221c1d60f38c9f42344f410e425ea2139e233aa # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/b77c32e367f6db32517967d2b3c41f2c9850806b/src/Sources.jl#L209
 
           JULIA_PATCHES_TO_APPLY=()
           for patch in $GITHUB_WORKSPACE/julia-patches/*; do
