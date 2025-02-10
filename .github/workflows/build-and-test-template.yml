@@ -282,7 +282,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_julia_assert_linux
     env:
-      JULIA_TEST_MAXRSS_MB: "3800"
+      JULIA_TEST_MAXRSS_MB: "1000"
     steps:
       - name: Download a single artifact
         uses: actions/download-artifact@v4
