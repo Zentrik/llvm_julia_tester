@@ -1,4 +1,4 @@
-From d55775f3f02ceff92e18a8105052f8974716a743 Mon Sep 17 00:00:00 2001
+From f5d1df01f199c18b2d811a1b90eea252ceb21eb1 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] fa789dffb1e12c2aece0187aeacc48dfb1768340
@@ -9,9 +9,8 @@ Subject: [PATCH] fa789dffb1e12c2aece0187aeacc48dfb1768340
  src/codegen.cpp                   | 10 +++++-----
  src/intrinsics.cpp                | 28 ++++++++++++++--------------
  src/llvm-alloc-opt.cpp            |  6 +++---
- src/llvm-lower-handlers.cpp       |  4 ++--
  src/llvm-propagate-addrspaces.cpp |  4 ++--
- 7 files changed, 32 insertions(+), 32 deletions(-)
+ 6 files changed, 30 insertions(+), 30 deletions(-)
 
 diff --git a/src/ccall.cpp b/src/ccall.cpp
 index ce7806ae1e..e5ef822286 100644
@@ -76,10 +75,10 @@ index 3987950359..c1796d907e 100644
              boffset = ctx.builder.CreateExtractValue(Mul, 0);
              ovflw = ctx.builder.CreateExtractValue(Mul, 1);
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 8df985bd6d..baa05fbc30 100644
+index f22f571cbf..dfc9ca6da8 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -2636,7 +2636,7 @@ static void alloc_def_flag(jl_codectx_t &ctx, jl_varinfo_t& vi)
+@@ -2626,7 +2626,7 @@ static void alloc_def_flag(jl_codectx_t &ctx, jl_varinfo_t& vi)
  static void CreateTrap(IRBuilder<> &irbuilder, bool create_new_block)
  {
      Function *f = irbuilder.GetInsertBlock()->getParent();
@@ -88,7 +87,7 @@ index 8df985bd6d..baa05fbc30 100644
              f->getParent(),
              Intrinsic::trap);
      irbuilder.CreateCall(trap_func);
-@@ -2659,7 +2659,7 @@ static void CreateConditionalAbort(IRBuilder<> &irbuilder, Value *test)
+@@ -2649,7 +2649,7 @@ static void CreateConditionalAbort(IRBuilder<> &irbuilder, Value *test)
      BasicBlock *postBB = BasicBlock::Create(irbuilder.getContext(), "post_abort", f);
      irbuilder.CreateCondBr(test, abortBB, postBB);
      irbuilder.SetInsertPoint(abortBB);
@@ -97,7 +96,7 @@ index 8df985bd6d..baa05fbc30 100644
              f->getParent(),
              Intrinsic::trap);
      irbuilder.CreateCall(trap_func);
-@@ -3625,7 +3625,7 @@ static Value *emit_bitsunion_compare(jl_codectx_t &ctx, const jl_cgval_t &arg1,
+@@ -3615,7 +3615,7 @@ static Value *emit_bitsunion_compare(jl_codectx_t &ctx, const jl_cgval_t &arg1,
          counter);
      assert(allunboxed); (void)allunboxed;
      ctx.builder.SetInsertPoint(defaultBB);
@@ -106,7 +105,7 @@ index 8df985bd6d..baa05fbc30 100644
          ctx.f->getParent(),
          Intrinsic::trap);
      ctx.builder.CreateCall(trap_func);
-@@ -7967,8 +7967,8 @@ static Function *gen_cfun_wrapper(
+@@ -7946,8 +7946,8 @@ static Function *gen_cfun_wrapper(
          Function::arg_iterator AI = cw_make->arg_begin();
          Argument *Tramp = &*AI; ++AI;
          Argument *NVal = &*AI; ++AI;
@@ -234,21 +233,6 @@ index 7928d6824f..5f707bd106 100644
  
      return true;
  }
-diff --git a/src/llvm-lower-handlers.cpp b/src/llvm-lower-handlers.cpp
-index 5beeedfd05..a924a61d27 100644
---- a/src/llvm-lower-handlers.cpp
-+++ b/src/llvm-lower-handlers.cpp
-@@ -111,8 +111,8 @@ static bool lowerExcHandlers(Function &F) {
-     Function *jlenter_func = M.getFunction(XSTR(jl_enter_handler));
-     Function *setjmp_func = M.getFunction(jl_setjmp_name);
-     auto T_ptr = PointerType::get(M.getContext(), 0);
--    Function *lifetime_start = Intrinsic::getDeclaration(&M, Intrinsic::lifetime_start, { T_ptr });
--    Function *lifetime_end = Intrinsic::getDeclaration(&M, Intrinsic::lifetime_end, { T_ptr });
-+    Function *lifetime_start = Intrinsic::getOrInsertDeclaration(&M, Intrinsic::lifetime_start, { T_ptr });
-+    Function *lifetime_end = Intrinsic::getOrInsertDeclaration(&M, Intrinsic::lifetime_end, { T_ptr });
- 
-     /* Step 1: EH Depth Numbering */
-     std::map<llvm::CallInst *, int> EnterDepth;
 diff --git a/src/llvm-propagate-addrspaces.cpp b/src/llvm-propagate-addrspaces.cpp
 index 06a52ad3dc..efb8266e06 100644
 --- a/src/llvm-propagate-addrspaces.cpp
