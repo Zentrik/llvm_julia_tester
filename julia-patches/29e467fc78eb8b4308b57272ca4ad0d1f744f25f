@@ -1,4 +1,4 @@
-From 961b5392e313b643c6273a0b851f2e55d952e7ad Mon Sep 17 00:00:00 2001
+From ba8ba39245d7c3d48f2a7a0efcb116015e1dfd1c Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Sat, 4 Jan 2025 16:48:45 +0000
 Subject: [PATCH] 29e467fc78eb8b4308b57272ca4ad0d1f744f25f
@@ -62,7 +62,7 @@ index d91da9c64c..d0adcb2136 100644
              auto FT = FunctionType::get(T_int32, {T_pvoid, T_int32, T_pvoid}, false);
              auto F = Function::Create(FT, Function::ExternalLinkage, "_DllMainCRTStartup", metadataM);
 diff --git a/src/ccall.cpp b/src/ccall.cpp
-index e5ef822286..0c0c39cf88 100644
+index 1412d7b2be..a0b7bf4a17 100644
 --- a/src/ccall.cpp
 +++ b/src/ccall.cpp
 @@ -105,7 +105,7 @@ static bool runtime_sym_gvs(jl_codectx_t &ctx, const char *f_lib, const char *f_
@@ -101,7 +101,7 @@ index e5ef822286..0c0c39cf88 100644
      GlobalVariable *got = new GlobalVariable(*M, T_pvoidfunc, false,
                                               GlobalVariable::ExternalLinkage,
                                               plt,
-@@ -2128,7 +2128,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
+@@ -2132,7 +2132,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
      }
      else if (symarg.fptr != NULL) {
          ++LiteralCCalls;
@@ -133,7 +133,7 @@ index c1796d907e..03335cf156 100644
          for_each_uniontype_small(
              [&](unsigned idx, jl_datatype_t *jt) {
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index dfc9ca6da8..759c66f5a3 100644
+index 2da744e48c..7eb7be3fee 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -824,7 +824,7 @@ static const auto jlhasnofield_func = new JuliaFunction<>{
@@ -207,7 +207,7 @@ index dfc9ca6da8..759c66f5a3 100644
               T}, // %f
              true); }, // %args
      get_attrs_basic,
-@@ -5524,7 +5524,7 @@ static jl_cgval_t emit_call_specfun_boxed(jl_codectx_t &ctx, jl_value_t *jlretty
+@@ -5516,7 +5516,7 @@ static jl_cgval_t emit_call_specfun_boxed(jl_codectx_t &ctx, jl_value_t *jlretty
          std::string namep("p");
          namep += specFunctionObject;
          GlobalVariable *GV = cast_or_null<GlobalVariable>(jl_Module->getNamedValue(namep));
@@ -216,7 +216,7 @@ index dfc9ca6da8..759c66f5a3 100644
          if (GV == nullptr) {
              GV = new GlobalVariable(*jl_Module, pfunc, false,
                                      GlobalVariable::ExternalLinkage,
-@@ -8298,7 +8298,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
+@@ -8290,7 +8290,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
          if (props.union_bytes) {
              props.cc = jl_returninfo_t::Union;
              Type *AT = ArrayType::get(getInt8Ty(M->getContext()), props.union_bytes);
@@ -225,7 +225,7 @@ index dfc9ca6da8..759c66f5a3 100644
              argnames.push_back("union_bytes_return");
              Type *pair[] = { T_prjlvalue, getInt8Ty(M->getContext()) };
              rt = StructType::get(M->getContext(), ArrayRef<Type*>(pair));
-@@ -8327,7 +8327,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
+@@ -8319,7 +8319,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
              props.union_align = props.union_minalign = julia_alignment(jlrettype);
              // sret is always passed from alloca
              assert(M);
@@ -266,7 +266,7 @@ index c4bcb85e43..52ccbcbd1f 100644
              thePtr = nullptr; // could use any value here, since typed_store will not use it
          jl_cgval_t ret = typed_store(ctx, thePtr, x, y, ety, ctx.tbaa().tbaa_data, nullptr, nullptr, isboxed,
 diff --git a/src/llvm-codegen-shared.h b/src/llvm-codegen-shared.h
-index ff6f5a9729..ecf02a8f57 100644
+index d474fb4f61..cfdb8eb5b1 100644
 --- a/src/llvm-codegen-shared.h
 +++ b/src/llvm-codegen-shared.h
 @@ -34,19 +34,19 @@ namespace JuliaType {
@@ -327,7 +327,7 @@ index 76dcd94489..4e539fea8f 100644
  
      // Zero out the GC frame.
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index e03fbd8ccd..317e89d46a 100644
+index 86b413311f..28d0e80b6d 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -1993,7 +1993,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
@@ -376,10 +376,10 @@ index 2961a77e08..61058f7af0 100644
              auto tgt = linearized[i];
              auto &spec = specs[i];
 diff --git a/src/llvm-pass-helpers.cpp b/src/llvm-pass-helpers.cpp
-index ca25251040..202b0991fd 100644
+index 9d415d923e..214e99a03d 100644
 --- a/src/llvm-pass-helpers.cpp
 +++ b/src/llvm-pass-helpers.cpp
-@@ -234,7 +234,7 @@ namespace jl_intrinsics {
+@@ -255,7 +255,7 @@ namespace jl_intrinsics {
          SAFEPOINT_NAME,
          [](Type *T_size) {
              auto &ctx = T_size->getContext();
@@ -389,10 +389,10 @@ index ca25251040..202b0991fd 100644
                  FunctionType::get(
                      Type::getVoidTy(ctx),
 diff --git a/src/llvm-ptls.cpp b/src/llvm-ptls.cpp
-index 52d324ec4c..90f3050835 100644
+index 58fdd8aafa..1bc05c4ce0 100644
 --- a/src/llvm-ptls.cpp
 +++ b/src/llvm-ptls.cpp
-@@ -307,7 +307,7 @@ bool LowerPTLS::run(bool *CFGModified)
+@@ -312,7 +312,7 @@ bool LowerPTLS::run(bool *CFGModified)
                  assert(sizeof(jl_pgcstack_key_t) == sizeof(uintptr_t));
                  FT_pgcstack_getter = FunctionType::get(FT_pgcstack_getter->getReturnType(), {T_size}, false);
              }

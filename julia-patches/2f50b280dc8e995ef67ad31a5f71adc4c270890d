@@ -1,4 +1,4 @@
-From 3053e421e4bbf27f1675fe4a28741f5a7d86ef91 Mon Sep 17 00:00:00 2001
+From fb68e67f2d07b60eb8aae80daf27c10fe35479eb Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
@@ -13,7 +13,7 @@ Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
  6 files changed, 23 insertions(+), 23 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 171194871a..f22f571cbf 100644
+index af66a6926e..0e6dea4616 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -2352,7 +2352,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
@@ -85,7 +85,7 @@ index baf844dffa..e09f5cad92 100644
                          createNewInstruction(CI, call, MSSAU);
                          LLVM_DEBUG(dbgs() << "Cloned and sunk gc_preserve_end: " << *CI << "\n");
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index a254ecafab..e03fbd8ccd 100644
+index 7a298551db..86b413311f 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -359,10 +359,10 @@ void LateLowerGCFrame::LiftSelect(State &S, SelectInst *SI) {
@@ -144,16 +144,16 @@ index a254ecafab..e03fbd8ccd 100644
                  NewCall->setTailCallKind(CI->getTailCallKind());
                  auto callattrs = CI->getAttributes();
                  callattrs = AttributeList::get(CI->getContext(), getFnAttrs(callattrs), getRetAttrs(callattrs), {});
-@@ -2211,7 +2211,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
-                 ++it;
-                 continue;
-             } else {
--                CallInst *NewCall = CallInst::Create(CI, None, CI);
-+                CallInst *NewCall = CallInst::Create(CI, None, CI->getIterator());
-                 NewCall->takeName(CI);
-                 NewCall->copyMetadata(*CI);
-                 CI->replaceAllUsesWith(NewCall);
-@@ -2277,14 +2277,14 @@ void LateLowerGCFrame::PlaceGCFrameStore(State &S, unsigned R, unsigned MinColor
+@@ -2241,7 +2241,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+                     continue;
+                 } else {
+                     // remove operand bundle
+-                    CallInst *NewCall = CallInst::Create(CI, None, CI);
++                    CallInst *NewCall = CallInst::Create(CI, None, CI->getIterator());
+                     NewCall->takeName(CI);
+                     NewCall->copyMetadata(*CI);
+                     CI->replaceAllUsesWith(NewCall);
+@@ -2308,14 +2308,14 @@ void LateLowerGCFrame::PlaceGCFrameStore(State &S, unsigned R, unsigned MinColor
      auto slotAddress = CallInst::Create(
          getOrDeclare(jl_intrinsics::getGCFrameSlot),
          {GCFrame, ConstantInt::get(Type::getInt32Ty(InsertBefore->getContext()), Colors[R] + MinColorRoot)},
@@ -170,7 +170,7 @@ index a254ecafab..e03fbd8ccd 100644
  }
  
  void LateLowerGCFrame::PlaceGCFrameReset(State &S, unsigned R, unsigned MinColorRoot,
-@@ -2445,7 +2445,7 @@ void LateLowerGCFrame::PlaceRootsAndUpdateCalls(ArrayRef<int> Colors, int PreAss
+@@ -2476,7 +2476,7 @@ void LateLowerGCFrame::PlaceRootsAndUpdateCalls(ArrayRef<int> Colors, int PreAss
                  assert(Elem->getType() == T_prjlvalue);
                  //auto Idxs = ArrayRef<unsigned>(Tracked[i]);
                  //Value *Elem = ExtractScalar(Base, true, Idxs, SI);
@@ -205,7 +205,7 @@ index a76d076ebd..2961a77e08 100644
              ptr->setMetadata(llvm::LLVMContext::MD_tbaa, tbaa_const);
              ptr->setMetadata(llvm::LLVMContext::MD_invariant_load, MDNode::get(ptr->getContext(), None));
 diff --git a/src/llvm-ptls.cpp b/src/llvm-ptls.cpp
-index e361368595..52d324ec4c 100644
+index 15f5a5574a..58fdd8aafa 100644
 --- a/src/llvm-ptls.cpp
 +++ b/src/llvm-ptls.cpp
 @@ -190,7 +190,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
@@ -217,7 +217,7 @@ index e361368595..52d324ec4c 100644
              // if we called jl_adopt_thread, we must end this cfunction back in the safe-state
              last_gc_state->addIncoming(ConstantInt::get(Type::getInt8Ty(M->getContext()), JL_GC_STATE_SAFE), slowTerm->getParent());
              last_gc_state->addIncoming(prior, fastTerm->getParent());
-@@ -277,7 +277,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
+@@ -282,7 +282,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
          if (TargetTriple.isOSDarwin()) {
              assert(sizeof(k) == sizeof(uintptr_t));
              Constant *key = ConstantInt::get(T_size, (uintptr_t)k);
