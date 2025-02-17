@@ -1,4 +1,4 @@
-From 911c7af3f44097d3ef35299735db0ba61592fe2c Mon Sep 17 00:00:00 2001
+From de76a37c0e285be08a7b1975647d1d44bf99c4e1 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] 1b7b3b8d354a28f5fb1381c61c5663819d29a974
@@ -8,10 +8,10 @@ Subject: [PATCH] 1b7b3b8d354a28f5fb1381c61c5663819d29a974
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/ccall.cpp b/src/ccall.cpp
-index 6c03f9532d..ce7806ae1e 100644
+index c35979eb85..0b3bb79070 100644
 --- a/src/ccall.cpp
 +++ b/src/ccall.cpp
-@@ -2095,7 +2095,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
+@@ -2099,7 +2099,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
              }
              else if (f_name.starts_with("llvm.")) {
                  // compute and verify auto-mangling for intrinsic name

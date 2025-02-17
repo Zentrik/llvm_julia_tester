@@ -1,4 +1,4 @@
-From a64f782950f92ee96a6161e4c1fe1322b91b51c2 Mon Sep 17 00:00:00 2001
+From 5b94c4398f85ce5fba073244d0fe76e9fdd66fc2 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:10 +0000
 Subject: [PATCH] f3d2609af3031ddb54030548e86335f295cf49ca
@@ -9,7 +9,7 @@ Subject: [PATCH] f3d2609af3031ddb54030548e86335f295cf49ca
  2 files changed, 41 insertions(+), 1 deletion(-)
 
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index 7d6fba65a7..a254ecafab 100644
+index 1b7551f33e..7a298551db 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -1,6 +1,7 @@
