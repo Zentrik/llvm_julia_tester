@@ -1,4 +1,4 @@
-From de76a37c0e285be08a7b1975647d1d44bf99c4e1 Mon Sep 17 00:00:00 2001
+From 0915e968ae45092c928c7035321152e660e85f2d Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] 1b7b3b8d354a28f5fb1381c61c5663819d29a974
@@ -8,7 +8,7 @@ Subject: [PATCH] 1b7b3b8d354a28f5fb1381c61c5663819d29a974
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/ccall.cpp b/src/ccall.cpp
-index c35979eb85..0b3bb79070 100644
+index f4cb5cf7bc..46f48b1ae6 100644
 --- a/src/ccall.cpp
 +++ b/src/ccall.cpp
 @@ -2099,7 +2099,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(

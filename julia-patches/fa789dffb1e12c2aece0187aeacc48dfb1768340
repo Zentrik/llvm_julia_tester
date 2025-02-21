@@ -1,4 +1,4 @@
-From 155eeb43cda1508f0615becf122726c6869b92ca Mon Sep 17 00:00:00 2001
+From cfc24efb51480770f10b1ea2d65b5e7103d0efbd Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] fa789dffb1e12c2aece0187aeacc48dfb1768340
@@ -13,7 +13,7 @@ Subject: [PATCH] fa789dffb1e12c2aece0187aeacc48dfb1768340
  6 files changed, 30 insertions(+), 30 deletions(-)
 
 diff --git a/src/ccall.cpp b/src/ccall.cpp
-index 0b3bb79070..1412d7b2be 100644
+index 46f48b1ae6..7c47dcdc5d 100644
 --- a/src/ccall.cpp
 +++ b/src/ccall.cpp
 @@ -2111,7 +2111,7 @@ jl_cgval_t function_sig_t::emit_a_ccall(
@@ -26,7 +26,7 @@ index 0b3bb79070..1412d7b2be 100644
                              if (intrinsic->getName() == f_name || Intrinsic::getBaseName(ID) == f_name)
                                  llvmf = intrinsic;
 diff --git a/src/cgutils.cpp b/src/cgutils.cpp
-index 3987950359..c1796d907e 100644
+index eeba59aba3..e1accc823f 100644
 --- a/src/cgutils.cpp
 +++ b/src/cgutils.cpp
 @@ -3672,7 +3672,7 @@ static Value *box_union(jl_codectx_t &ctx, const jl_cgval_t &vinfo, const SmallB
@@ -75,7 +75,7 @@ index 3987950359..c1796d907e 100644
              boffset = ctx.builder.CreateExtractValue(Mul, 0);
              ovflw = ctx.builder.CreateExtractValue(Mul, 1);
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 0e6dea4616..2da744e48c 100644
+index 78de7c4085..ae529bc412 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -2626,7 +2626,7 @@ static void alloc_def_flag(jl_codectx_t &ctx, jl_varinfo_t& vi)
@@ -105,7 +105,7 @@ index 0e6dea4616..2da744e48c 100644
          ctx.f->getParent(),
          Intrinsic::trap);
      ctx.builder.CreateCall(trap_func);
-@@ -7938,8 +7938,8 @@ static Function *gen_cfun_wrapper(
+@@ -7803,8 +7803,8 @@ static Function *gen_cfun_wrapper(
          Function::arg_iterator AI = cw_make->arg_begin();
          Argument *Tramp = &*AI; ++AI;
          Argument *NVal = &*AI; ++AI;
