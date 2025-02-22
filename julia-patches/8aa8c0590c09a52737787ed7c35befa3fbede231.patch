@@ -1,0 +1,26 @@
+From 88a846f9c512eaa6788459d158b319ad63e0b5c6 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Fri, 21 Feb 2025 14:21:52 +0100
+Subject: [PATCH] Enable VPlan native-path for outer loop vectorization
+
+---
+ src/codegen.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/codegen.cpp b/src/codegen.cpp
+index a504bb189bdfd..0e1dcec527d6e 100644
+--- a/src/codegen.cpp
++++ b/src/codegen.cpp
+@@ -10315,6 +10315,10 @@ extern "C" void jl_init_llvm(void)
+     clopt = llvmopts.lookup("combiner-store-merge-dependence-limit");
+     if (clopt && clopt->getNumOccurrences() == 0)
+         cl::ProvidePositionalOption(clopt, "4", 1);
++    // Enable VPlan native path for outer loop vectorization
++    clopt = llvmopts.lookup("enable-vplan-native-path");
++    if (clopt->getNumOccurrences() == 0)
++        cl::ProvidePositionalOption(clopt, "1", 1);
+ 
+     clopt = llvmopts.lookup("time-passes");
+     if (clopt && clopt->getNumOccurrences() > 
+0)
+
