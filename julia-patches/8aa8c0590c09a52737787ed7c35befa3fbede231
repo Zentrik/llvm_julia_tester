@@ -11,7 +11,7 @@ diff --git a/src/codegen.cpp b/src/codegen.cpp
 index a504bb189bdfd..0e1dcec527d6e 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -10315,6 +10315,10 @@ extern "C" void jl_init_llvm(void)
+@@ -10465,6 +10465,10 @@ extern "C" void jl_init_llvm(void)
      clopt = llvmopts.lookup("combiner-store-merge-dependence-limit");
      if (clopt && clopt->getNumOccurrences() == 0)
          cl::ProvidePositionalOption(clopt, "4", 1);
@@ -21,6 +21,5 @@ index a504bb189bdfd..0e1dcec527d6e 100644
 +        cl::ProvidePositionalOption(clopt, "1", 1);
  
      clopt = llvmopts.lookup("time-passes");
-     if (clopt && clopt->getNumOccurrences() > 
-0)
+     if (clopt && clopt->getNumOccurrences() > 0)
 
