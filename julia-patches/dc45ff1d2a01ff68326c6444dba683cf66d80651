@@ -1,4 +1,4 @@
-From 21d3ccb4e111dec467f4da2ed9366590b855d5db Mon Sep 17 00:00:00 2001
+From 60272bd1d72abb8b3ec83b3440c51981a5e054fe Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:31:19 +0000
 Subject: [PATCH] dc45ff1d2a01ff68326c6444dba683cf66d80651
@@ -8,10 +8,10 @@ Subject: [PATCH] dc45ff1d2a01ff68326c6444dba683cf66d80651
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/pipeline.cpp b/src/pipeline.cpp
-index d0456844e9..e813b1720f 100644
+index aaadc66747..b00f2ccc87 100644
 --- a/src/pipeline.cpp
 +++ b/src/pipeline.cpp
-@@ -238,7 +238,7 @@ namespace {
+@@ -245,7 +245,7 @@ namespace {
      std::enable_if_t<decltype(hasInvokeCallbacks_helper<PB_t>(nullptr))::value, void> invokeEarlySimplificationCallbacks(ModulePassManager &MPM, PB_t *PB, OptimizationLevel O) JL_NOTSAFEPOINT {
          static_assert(std::is_same<PassBuilder, PB_t>::value, "Expected PassBuilder as second argument!");
          if (!PB) return;

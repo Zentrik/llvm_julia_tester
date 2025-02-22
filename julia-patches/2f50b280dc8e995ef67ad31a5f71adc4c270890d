@@ -1,4 +1,4 @@
-From fb68e67f2d07b60eb8aae80daf27c10fe35479eb Mon Sep 17 00:00:00 2001
+From f2427a8aaae0cb49446552061dcc7d016106139c Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:11 +0000
 Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
@@ -13,7 +13,7 @@ Subject: [PATCH] 2f50b280dc8e995ef67ad31a5f71adc4c270890d
  6 files changed, 23 insertions(+), 23 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index af66a6926e..0e6dea4616 100644
+index 8f099925ec..78de7c4085 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -2352,7 +2352,7 @@ static GlobalVariable *get_pointer_to_constant(jl_codegen_params_t &emission_con
@@ -85,7 +85,7 @@ index baf844dffa..e09f5cad92 100644
                          createNewInstruction(CI, call, MSSAU);
                          LLVM_DEBUG(dbgs() << "Cloned and sunk gc_preserve_end: " << *CI << "\n");
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index 7a298551db..86b413311f 100644
+index da42bc5f04..af14341ed4 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -359,10 +359,10 @@ void LateLowerGCFrame::LiftSelect(State &S, SelectInst *SI) {
@@ -110,7 +110,7 @@ index 7a298551db..86b413311f 100644
          int Number = ++S.MaxPtrNumber;
          S.AllPtrNumbering[lift] = Number;
          S.ReversePtrNumbering[Number] = lift;
-@@ -1995,7 +1995,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2027,7 +2027,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
      if (T_prjlvalue) {
          T_pprjlvalue = T_prjlvalue->getPointerTo();
          Frame = new AllocaInst(T_prjlvalue, allocaAddressSpace,
@@ -119,7 +119,7 @@ index 7a298551db..86b413311f 100644
      }
      SmallVector<CallInst*, 0> write_barriers;
      for (BasicBlock &BB : F) {
-@@ -2036,13 +2036,13 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2070,13 +2070,13 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                  /* No replacement */
              } else if (pointer_from_objref_func != nullptr && callee == pointer_from_objref_func) {
                  auto *obj = CI->getOperand(0);
@@ -135,7 +135,7 @@ index 7a298551db..86b413311f 100644
                  ASCI->takeName(CI);
                  CI->replaceAllUsesWith(ASCI);
                  UpdatePtrNumbering(CI, ASCI, S);
-@@ -2195,7 +2195,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2229,7 +2229,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                  FunctionType *FTy = callee == call3_func ? JuliaType::get_jlfunc3_ty(CI->getContext()) :
                                      callee == call2_func ? JuliaType::get_jlfunc2_ty(CI->getContext()) :
                                                             JuliaType::get_jlfunc_ty(CI->getContext());
@@ -144,16 +144,16 @@ index 7a298551db..86b413311f 100644
                  NewCall->setTailCallKind(CI->getTailCallKind());
                  auto callattrs = CI->getAttributes();
                  callattrs = AttributeList::get(CI->getContext(), getFnAttrs(callattrs), getRetAttrs(callattrs), {});
-@@ -2241,7 +2241,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
+@@ -2276,7 +2276,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                      continue;
                  } else {
-                     // remove operand bundle
+                     // remove all operand bundles
 -                    CallInst *NewCall = CallInst::Create(CI, None, CI);
 +                    CallInst *NewCall = CallInst::Create(CI, None, CI->getIterator());
                      NewCall->takeName(CI);
                      NewCall->copyMetadata(*CI);
                      CI->replaceAllUsesWith(NewCall);
-@@ -2308,14 +2308,14 @@ void LateLowerGCFrame::PlaceGCFrameStore(State &S, unsigned R, unsigned MinColor
+@@ -2343,14 +2343,14 @@ void LateLowerGCFrame::PlaceGCFrameStore(State &S, unsigned R, unsigned MinColor
      auto slotAddress = CallInst::Create(
          getOrDeclare(jl_intrinsics::getGCFrameSlot),
          {GCFrame, ConstantInt::get(Type::getInt32Ty(InsertBefore->getContext()), Colors[R] + MinColorRoot)},
@@ -170,7 +170,7 @@ index 7a298551db..86b413311f 100644
  }
  
  void LateLowerGCFrame::PlaceGCFrameReset(State &S, unsigned R, unsigned MinColorRoot,
-@@ -2476,7 +2476,7 @@ void LateLowerGCFrame::PlaceRootsAndUpdateCalls(ArrayRef<int> Colors, int PreAss
+@@ -2514,7 +2514,7 @@ void LateLowerGCFrame::PlaceRootsAndUpdateCalls(ArrayRef<int> Colors, int PreAss
                  assert(Elem->getType() == T_prjlvalue);
                  //auto Idxs = ArrayRef<unsigned>(Tracked[i]);
                  //Value *Elem = ExtractScalar(Base, true, Idxs, SI);
@@ -205,7 +205,7 @@ index a76d076ebd..2961a77e08 100644
              ptr->setMetadata(llvm::LLVMContext::MD_tbaa, tbaa_const);
              ptr->setMetadata(llvm::LLVMContext::MD_invariant_load, MDNode::get(ptr->getContext(), None));
 diff --git a/src/llvm-ptls.cpp b/src/llvm-ptls.cpp
-index 15f5a5574a..58fdd8aafa 100644
+index 238032e68d..a2e783d7ef 100644
 --- a/src/llvm-ptls.cpp
 +++ b/src/llvm-ptls.cpp
 @@ -190,7 +190,7 @@ void LowerPTLS::fix_pgcstack_use(CallInst *pgcstack, Function *pgcstack_getter,
