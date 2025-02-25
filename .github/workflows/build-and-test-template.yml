@@ -141,7 +141,7 @@ jobs:
     if: inputs.target == 'x86_64-w64-mingw32-cxx11' || inputs.target == 'i686-w64-mingw32-cxx11'
     runs-on: windows-latest
     needs: build_llvm_assert
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
