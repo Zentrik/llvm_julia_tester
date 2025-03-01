@@ -1,4 +1,4 @@
-From 5ec1fdb70b7f4748de76b82a3d80f2df6b5f1fb4 Mon Sep 17 00:00:00 2001
+From 510f790eb0674f483269a021af66fada0d171e03 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Tue, 4 Feb 2025 20:44:02 +0000
 Subject: [PATCH] 29441e4f5fa5f5c7709f7cf180815ba97f611297
@@ -9,7 +9,7 @@ Adapt to removal of NoCapture
  1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 8866dcf2f1..a32e91a379 100644
+index a752d09db5..57adbdb502 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -614,7 +614,7 @@ static AttributeList get_func_attrs(LLVMContext &C)
@@ -21,7 +21,7 @@ index 8866dcf2f1..a32e91a379 100644
  }
  
  static AttributeList get_donotdelete_func_attrs(LLVMContext &C)
-@@ -1017,7 +1017,7 @@ static const auto jllockvalue_func = new JuliaFunction<>{
+@@ -1016,7 +1016,7 @@ static const auto jllockvalue_func = new JuliaFunction<>{
      [](LLVMContext &C) { return AttributeList::get(C,
              AttributeSet(),
              AttributeSet(),
@@ -30,7 +30,7 @@ index 8866dcf2f1..a32e91a379 100644
  };
  static const auto jlunlockvalue_func = new JuliaFunction<>{
      XSTR(jl_unlock_value),
-@@ -1026,7 +1026,7 @@ static const auto jlunlockvalue_func = new JuliaFunction<>{
+@@ -1025,7 +1025,7 @@ static const auto jlunlockvalue_func = new JuliaFunction<>{
      [](LLVMContext &C) { return AttributeList::get(C,
              AttributeSet(),
              AttributeSet(),
@@ -39,7 +39,7 @@ index 8866dcf2f1..a32e91a379 100644
  };
  static const auto jllockfield_func = new JuliaFunction<>{
      XSTR(jl_lock_field),
-@@ -1035,7 +1035,7 @@ static const auto jllockfield_func = new JuliaFunction<>{
+@@ -1034,7 +1034,7 @@ static const auto jllockfield_func = new JuliaFunction<>{
      [](LLVMContext &C) { return AttributeList::get(C,
              AttributeSet(),
              AttributeSet(),
@@ -48,7 +48,7 @@ index 8866dcf2f1..a32e91a379 100644
  };
  static const auto jlunlockfield_func = new JuliaFunction<>{
      XSTR(jl_unlock_field),
-@@ -1044,7 +1044,7 @@ static const auto jlunlockfield_func = new JuliaFunction<>{
+@@ -1043,7 +1043,7 @@ static const auto jlunlockfield_func = new JuliaFunction<>{
      [](LLVMContext &C) { return AttributeList::get(C,
              AttributeSet(),
              AttributeSet(),
@@ -57,7 +57,7 @@ index 8866dcf2f1..a32e91a379 100644
  };
  static const auto jlenter_func = new JuliaFunction<>{
      XSTR(jl_enter_handler),
-@@ -1503,7 +1503,7 @@ static const auto gc_loaded_func = new JuliaFunction<>{
+@@ -1501,7 +1501,7 @@ static const auto gc_loaded_func = new JuliaFunction<>{
          RetAttrs.addAttribute(Attribute::NonNull);
          RetAttrs.addAttribute(Attribute::NoUndef);
          return AttributeList::get(C, AttributeSet::get(C,FnAttrs), AttributeSet::get(C,RetAttrs),
@@ -66,7 +66,7 @@ index 8866dcf2f1..a32e91a379 100644
                    Attributes(C, {Attribute::NonNull, Attribute::NoUndef, Attribute::ReadNone}) });
                    },
  };
-@@ -8207,7 +8207,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
+@@ -7940,7 +7940,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
          AttrBuilder param(M->getContext());
          param.addStructRetAttr(srt);
          param.addAttribute(Attribute::NoAlias);
@@ -75,7 +75,7 @@ index 8866dcf2f1..a32e91a379 100644
          param.addAttribute(Attribute::NoUndef);
          attrs.push_back(AttributeSet::get(M->getContext(), param));
          assert(fsig.size() == 1);
-@@ -8215,7 +8215,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
+@@ -7948,7 +7948,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
      if (props.cc == jl_returninfo_t::Union) {
          AttrBuilder param(M->getContext());
          param.addAttribute(Attribute::NoAlias);
@@ -84,7 +84,7 @@ index 8866dcf2f1..a32e91a379 100644
          param.addAttribute(Attribute::NoUndef);
          attrs.push_back(AttributeSet::get(M->getContext(), param));
          assert(fsig.size() == 1);
-@@ -8224,7 +8224,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
+@@ -7957,7 +7957,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
      if (props.return_roots) {
          AttrBuilder param(M->getContext());
          param.addAttribute(Attribute::NoAlias);
@@ -93,7 +93,7 @@ index 8866dcf2f1..a32e91a379 100644
          param.addAttribute(Attribute::NoUndef);
          attrs.push_back(AttributeSet::get(M->getContext(), param));
          fsig.push_back(getPointerTy(M->getContext()));
-@@ -8257,7 +8257,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
+@@ -7990,7 +7990,7 @@ static jl_returninfo_t get_specsig_function(jl_codegen_params_t &params, Module
          AttrBuilder param(M->getContext());
          Type *ty = et;
          if (et == nullptr || et->isAggregateType()) { // aggregate types are passed by pointer
