@@ -1,0 +1,34 @@
+From 41682735e1f8dc6a6babea66f5f71852b49f78b6 Mon Sep 17 00:00:00 2001
+From: Tim Stahlhut <stahta01@gmail.com>
+Date: Sat, 25 Feb 2023 23:11:57 -0500
+Subject: [PATCH] deps/tools: [msys2] Fix tar file creation
+
+Add CREATE_TAR_FLAGS to avoid symbolic links under Windows build OS.
+---
+ deps/tools/common.mk | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/deps/tools/common.mk b/deps/tools/common.mk
+index c19886114c14e..d7d14b055831a 100644
+--- a/deps/tools/common.mk
++++ b/deps/tools/common.mk
+@@ -159,11 +159,18 @@ reinstall-$(strip $1):
+ 	+$$(MAKE) stage-$(strip $1)
+ 	+$$(MAKE) install-$(strip $1)
+
++ifeq ($(BUILD_OS),WINNT)
++# MSys2 has issues with symbolic links
++CREATE_TAR_FLAGS := --dereference -cf
++else
++CREATE_TAR_FLAGS := -cf
++endif
++
+ $$(build_staging)/$2.tar: $$(BUILDDIR)/$2/build-compiled
+ 	rm -rf $$(build_staging)/$2
+ 	mkdir -p $$(build_staging)/$2$$(build_prefix)
+ 	$(call $3,$$(BUILDDIR)/$2,$$(build_staging)/$2,$4)
+-	cd $$(build_staging)/$2$$(build_prefix) && $$(TAR) -cf $$@.tmp .
++	cd $$(build_staging)/$2$$(build_prefix) && $$(TAR) $$(CREATE_TAR_FLAGS) $$@.tmp .
+ 	rm -rf $$(build_staging)/$2
+ 	mv $$@.tmp $$@
+
