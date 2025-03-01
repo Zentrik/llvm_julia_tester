@@ -1,4 +1,4 @@
-From 9470e9e48b5eabe4ceaecd0c1c92ea792f5055b8 Mon Sep 17 00:00:00 2001
+From 94377d312a10a82f48b709649ef2813b0e6a65e3 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Fri, 8 Nov 2024 21:02:10 +0000
 Subject: [PATCH] f3d2609af3031ddb54030548e86335f295cf49ca
@@ -9,7 +9,7 @@ Subject: [PATCH] f3d2609af3031ddb54030548e86335f295cf49ca
  2 files changed, 41 insertions(+), 1 deletion(-)
 
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index b8e732f061..da42bc5f04 100644
+index 4a5741fed0..1ff7a9d2a5 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
 @@ -1,6 +1,7 @@
@@ -39,7 +39,7 @@ index b8e732f061..da42bc5f04 100644
          }
          else if (auto CI = dyn_cast<CallInst>(CurrentV)) {
              auto callee = CI->getCalledFunction();
-@@ -518,6 +529,16 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
+@@ -530,6 +541,16 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
          Numbers = NumberAll(S, IEI->getOperand(0));
          int ElNumber = Number(S, IEI->getOperand(1));
          Numbers[idx] = ElNumber;
@@ -56,7 +56,7 @@ index b8e732f061..da42bc5f04 100644
      } else if (auto *IVI = dyn_cast<InsertValueInst>(CurrentV)) {
          Numbers = NumberAll(S, IVI->getAggregateOperand());
          auto Tracked = TrackCompositeType(IVI->getType());
-@@ -1191,6 +1212,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
+@@ -1206,6 +1227,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
                              }
                          }
                      }
