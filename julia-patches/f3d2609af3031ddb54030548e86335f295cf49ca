@@ -205,3 +205,4 @@ index 35e5add2de601..d594c02a4392e 100644
  # RUN: FileCheck %s < %t/output.txt
  
  # COM: checks that global variables compiled in imaging codegen
+
