@@ -187,7 +187,6 @@ jobs:
           echo $(git rev-parse HEAD)
           git remote add fork https://github.com/Zentrik/julia
           git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
-          git checkout -b llvm-20 fork/llvm-20
 
           for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
             git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
