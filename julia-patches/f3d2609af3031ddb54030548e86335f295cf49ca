@@ -1,0 +1,208 @@
+From b58834a94f4f21ed9273f26cf9f28b2afeb74c8e Mon Sep 17 00:00:00 2001
+From: gbaraldi <baraldigabriel@gmail.com>
+Date: Tue, 25 Feb 2025 10:25:35 -0300
+Subject: [PATCH 1/3] Handle vector_insert and vector_extract in
+ late-gc-lowering
+
+---
+ src/llvm-late-gc-lowering.cpp    | 83 +++++++++++++++++++++++---------
+ test/llvmpasses/late-lower-gc.ll | 15 ++++++
+ 2 files changed, 74 insertions(+), 24 deletions(-)
+
+diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
+index b8e732f06190a..12248e16b42d5 100644
+--- a/src/llvm-late-gc-lowering.cpp
++++ b/src/llvm-late-gc-lowering.cpp
+@@ -1,6 +1,8 @@
+ // This file is a part of Julia. License is MIT: https://julialang.org/license
+ 
+ #include "llvm-gc-interface-passes.h"
++#include "llvm/IR/Intrinsics.h"
++#include "llvm/Support/Casting.h"
+ 
+ #define DEBUG_TYPE "late_lower_gcroot"
+ 
+@@ -171,39 +173,54 @@ static std::pair<Value*,int> FindBaseValue(const State &S, Value *V, bool UseCac
+             (void)LI;
+             break;
+         }
+-        else if (auto II = dyn_cast<IntrinsicInst>(CurrentV)) {
++        else if (dyn_cast<IntrinsicInst>(CurrentV) != nullptr &&
++                (cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::masked_load ||
++                cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::masked_gather)) {
+             // Some intrinsics behave like LoadInst followed by a SelectInst
+             // This should never happen in a derived addrspace (since those cannot be stored to memory)
+             // so we don't need to lift these operations, but we do need to check if it's loaded and continue walking the base pointer
+-            if (II->getIntrinsicID() == Intrinsic::masked_load ||
+-                II->getIntrinsicID() == Intrinsic::masked_gather) {
+-                if (auto VTy = dyn_cast<VectorType>(II->getType())) {
+-                    if (hasLoadedTy(VTy->getElementType())) {
+-                        Value *Mask = II->getOperand(2);
+-                        Value *Passthrough = II->getOperand(3);
+-                        if (!isa<Constant>(Mask) || !cast<Constant>(Mask)->isAllOnesValue()) {
+-                            assert(isa<UndefValue>(Passthrough) && "unimplemented");
+-                            (void)Passthrough;
++            auto II = dyn_cast<IntrinsicInst>(CurrentV);
++            if (auto VTy = dyn_cast<VectorType>(II->getType())) {
++                if (hasLoadedTy(VTy->getElementType())) {
++                    Value *Mask = II->getOperand(2);
++                    Value *Passthrough = II->getOperand(3);
++                    if (!isa<Constant>(Mask) || !cast<Constant>(Mask)->isAllOnesValue()) {
++                        assert(isa<UndefValue>(Passthrough) && "unimplemented");
++                        (void)Passthrough;
++                    }
++                    CurrentV = II->getOperand(0);
++                    if (II->getIntrinsicID() == Intrinsic::masked_load) {
++                        fld_idx = -1;
++                        if (!isSpecialPtr(CurrentV->getType())) {
++                            CurrentV = ConstantPointerNull::get(PointerType::get(V->getContext(), 0));
+                         }
+-                        CurrentV = II->getOperand(0);
+-                        if (II->getIntrinsicID() == Intrinsic::masked_load) {
+-                            fld_idx = -1;
+-                            if (!isSpecialPtr(CurrentV->getType())) {
++                    } else {
++                        if (auto VTy2 = dyn_cast<VectorType>(CurrentV->getType())) {
++                            if (!isSpecialPtr(VTy2->getElementType())) {
+                                 CurrentV = ConstantPointerNull::get(PointerType::get(V->getContext(), 0));
+-                            }
+-                        } else {
+-                            if (auto VTy2 = dyn_cast<VectorType>(CurrentV->getType())) {
+-                                if (!isSpecialPtr(VTy2->getElementType())) {
+-                                    CurrentV = ConstantPointerNull::get(PointerType::get(V->getContext(), 0));
+-                                    fld_idx = -1;
+-                                }
++                                fld_idx = -1;
+                             }
+                         }
+-                        continue;
+                     }
++                    continue;
++                }
++            }
++            // In general a load terminates a walk
++            break;
++        }
++        else if (dyn_cast<IntrinsicInst>(CurrentV) != nullptr && cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::vector_extract) {
++            auto II = dyn_cast<IntrinsicInst>(CurrentV);
++            if (auto VTy = dyn_cast<VectorType>(II->getType())) {
++                if (hasLoadedTy(VTy->getElementType())) {
++                    Value *Idx = II->getOperand(1);
++                    if (!isa<ConstantInt>(Idx)) {
++                        assert(isa<UndefValue>(Idx) && "unimplemented");
++                        (void)Idx;
++                    }
++                    CurrentV = II->getOperand(0);
++                    fld_idx = -1;
++                    continue;
+                 }
+-                // In general a load terminates a walk
+-                break;
+             }
+         }
+         else if (auto CI = dyn_cast<CallInst>(CurrentV)) {
+@@ -518,6 +535,20 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
+         Numbers = NumberAll(S, IEI->getOperand(0));
+         int ElNumber = Number(S, IEI->getOperand(1));
+         Numbers[idx] = ElNumber;
++    } else if (dyn_cast<IntrinsicInst>(CurrentV) != nullptr && dyn_cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::vector_insert) {
++        auto *VII = cast<IntrinsicInst>(CurrentV);
++        // Vector insert is a bit like a shuffle so use the same approach
++        SmallVector<int, 0> Numbers1 = NumberAll(S, VII->getOperand(0));
++        SmallVector<int, 0> Numbers2 = NumberAll(S, VII->getOperand(1));
++        int first_idx = cast<ConstantInt>(VII->getOperand(2))->getZExtValue();
++        for (unsigned i = 0; i < Numbers1.size(); ++i) {
++            if (i < first_idx)
++                Numbers.push_back(Numbers1[i]);
++            else if (i - first_idx < Numbers2.size())
++                Numbers.push_back(Numbers2[i - first_idx]);
++            else
++                Numbers.push_back(Numbers1[i]);
++        }
+     } else if (auto *IVI = dyn_cast<InsertValueInst>(CurrentV)) {
+         Numbers = NumberAll(S, IVI->getAggregateOperand());
+         auto Tracked = TrackCompositeType(IVI->getType());
+@@ -1191,6 +1222,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
+                             }
+                         }
+                     }
++                    if (II->getIntrinsicID() == Intrinsic::vector_extract || II->getIntrinsicID() == Intrinsic::vector_insert) {
++                        // These are not real defs
++                        continue;
++                    }
+                 }
+                 auto callee = CI->getCalledFunction();
+                 if (callee && callee == typeof_func) {
+diff --git a/test/llvmpasses/late-lower-gc.ll b/test/llvmpasses/late-lower-gc.ll
+index 4739fa186ffc7..af71d3c8d2c75 100644
+--- a/test/llvmpasses/late-lower-gc.ll
++++ b/test/llvmpasses/late-lower-gc.ll
+@@ -164,6 +164,21 @@ define {} addrspace(10)* @gclift_switch({} addrspace(13)* addrspace(10)* %input,
+   ret {} addrspace(10)* %ret
+ }
+ 
++; Shouldn't hang
++define void @vector_insert(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
++top:
++  %pgcstack = call {}*** @julia.get_pgcstack()
++  %2 = call <4 x {} addrspace(10)*> @llvm.vector.insert.v4p10.v2p10(<4 x {} addrspace(10)*> %0, <2 x {} addrspace(10)*> %1, i64 2)
++  ret void
++}
++
++define void @vector_extract(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
++top:
++  %pgcstack = call {}*** @julia.get_pgcstack()
++  %2 = call <2 x {} addrspace(10)*> @llvm.vector.extract.v2p10.v4p10(<4 x {} addrspace(10)* > %0, i64 2)
++  ret void
++}
++
+ define void @decayar([2 x {} addrspace(10)* addrspace(11)*] %ar) {
+   %v2 = call {}*** @julia.get_pgcstack()
+   %e0 = extractvalue [2 x {} addrspace(10)* addrspace(11)*] %ar, 0
+
+From df6d7842f8bae5c5f8479b160d05bcb248e79581 Mon Sep 17 00:00:00 2001
+From: gbaraldi <baraldigabriel@gmail.com>
+Date: Tue, 25 Feb 2025 10:32:19 -0300
+Subject: [PATCH 2/3] Use unsigned instead of int
+
+---
+ src/llvm-late-gc-lowering.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
+index 12248e16b42d5..f3aa89b10600c 100644
+--- a/src/llvm-late-gc-lowering.cpp
++++ b/src/llvm-late-gc-lowering.cpp
+@@ -540,7 +540,7 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
+         // Vector insert is a bit like a shuffle so use the same approach
+         SmallVector<int, 0> Numbers1 = NumberAll(S, VII->getOperand(0));
+         SmallVector<int, 0> Numbers2 = NumberAll(S, VII->getOperand(1));
+-        int first_idx = cast<ConstantInt>(VII->getOperand(2))->getZExtValue();
++        unsigned first_idx = cast<ConstantInt>(VII->getOperand(2))->getZExtValue();
+         for (unsigned i = 0; i < Numbers1.size(); ++i) {
+             if (i < first_idx)
+                 Numbers.push_back(Numbers1[i]);
+
+From 1846dd1be0138366833047ffda50790a83bd824f Mon Sep 17 00:00:00 2001
+From: Gabriel Baraldi <baraldigabriel@gmail.com>
+Date: Tue, 25 Feb 2025 11:22:35 -0300
+Subject: [PATCH 3/3] Remove threads from llvmpasses test
+
+---
+ test/llvmpasses/image-codegen.jl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/test/llvmpasses/image-codegen.jl b/test/llvmpasses/image-codegen.jl
+index 35e5add2de601..d594c02a4392e 100644
+--- a/test/llvmpasses/image-codegen.jl
++++ b/test/llvmpasses/image-codegen.jl
+@@ -2,7 +2,7 @@
+ # RUN: export JULIA_LLVM_ARGS="--print-before=loop-vectorize --print-module-scope"
+ # RUN: rm -rf %t
+ # RUN: mkdir %t
+-# RUN: julia --image-codegen --startup-file=no %s 2> %t/output.txt
++# RUN: julia --image-codegen -t1,0 --startup-file=no %s 2> %t/output.txt
+ # RUN: FileCheck %s < %t/output.txt
+ 
+ # COM: checks that global variables compiled in imaging codegen
+
