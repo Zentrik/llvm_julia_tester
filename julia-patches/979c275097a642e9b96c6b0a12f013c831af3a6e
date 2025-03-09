@@ -1,0 +1,58 @@
+From 61d04f7da53713cec0fee68f8c35fc70684403b6 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sun, 9 Mar 2025 02:09:24 +0000
+Subject: [PATCH] 979c275097a642e9b96c6b0a12f013c831af3a6e
+
+Adapt to "[IR] Store Triple in Module (NFC)"
+---
+ src/aotcompile.cpp | 6 +++---
+ src/codegen.cpp    | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/aotcompile.cpp b/src/aotcompile.cpp
+index 951706fd80..8cf5d5874f 100644
+--- a/src/aotcompile.cpp
++++ b/src/aotcompile.cpp
+@@ -2018,7 +2018,7 @@ void jl_dump_native_impl(void *native_code,
+         LLVMContext Context;
+         Context.setDiscardValueNames(true);
+         Module sysimgM("sysimg", Context);
+-        sysimgM.setTargetTriple(TheTriple.str());
++        sysimgM.setTargetTriple(TheTriple);
+         sysimgM.setDataLayout(DL);
+         sysimgM.setStackProtectorGuard(StackProtectorGuard);
+         sysimgM.setOverrideStackAlignment(OverrideStackAlignment);
+@@ -2060,7 +2060,7 @@ void jl_dump_native_impl(void *native_code,
+ 
+     data->M.withModuleDo([&](Module &dataM) {
+         JL_TIMING(NATIVE_AOT, NATIVE_Setup);
+-        dataM.setTargetTriple(TheTriple.str());
++        dataM.setTargetTriple(TheTriple);
+         dataM.setDataLayout(DL);
+         dataM.setPICLevel(PICLevel::BigPIC);
+         auto &Context = dataM.getContext();
+@@ -2161,7 +2161,7 @@ void jl_dump_native_impl(void *native_code,
+         LLVMContext Context;
+         Context.setDiscardValueNames(true);
+         Module metadataM("metadata", Context);
+-        metadataM.setTargetTriple(TheTriple.str());
++        metadataM.setTargetTriple(TheTriple);
+         metadataM.setDataLayout(DL);
+         metadataM.setStackProtectorGuard(StackProtectorGuard);
+         metadataM.setOverrideStackAlignment(OverrideStackAlignment);
+diff --git a/src/codegen.cpp b/src/codegen.cpp
+index 5fc0bcb324..28ce3d9a83 100644
+--- a/src/codegen.cpp
++++ b/src/codegen.cpp
+@@ -2726,7 +2726,7 @@ std::unique_ptr<Module> jl_create_llvm_module(StringRef name, LLVMContext &conte
+         m->addModuleFlag(llvm::Module::Warning, "Debug Info Version",
+             llvm::DEBUG_METADATA_VERSION);
+     m->setDataLayout(DL);
+-    m->setTargetTriple(triple.str());
++    m->setTargetTriple(triple);
+ 
+     if (triple.isOSWindows() && triple.getArch() == Triple::x86) {
+         // tell Win32 to assume the stack is always 16-byte aligned,
+-- 
+2.34.1
+
