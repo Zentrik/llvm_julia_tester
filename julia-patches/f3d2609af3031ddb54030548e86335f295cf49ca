@@ -1,62 +1,128 @@
-From af9785747d73182952a088d59c97d20395bb219d Mon Sep 17 00:00:00 2001
+From 310b0b1b73aec5f57cf4053ee4bd5eaf0b5fb2b3 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Fri, 8 Nov 2024 21:02:10 +0000
+Date: Sun, 9 Mar 2025 02:27:47 +0000
 Subject: [PATCH] f3d2609af3031ddb54030548e86335f295cf49ca
 
 ---
- src/llvm-late-gc-lowering.cpp    | 27 ++++++++++++++++++++++++++-
- test/llvmpasses/late-lower-gc.ll | 15 +++++++++++++++
- 2 files changed, 41 insertions(+), 1 deletion(-)
+ src/llvm-late-gc-lowering.cpp    | 83 +++++++++++++++++++++++---------
+ test/llvmpasses/image-codegen.jl |  2 +-
+ test/llvmpasses/late-lower-gc.ll | 15 ++++++
+ 3 files changed, 75 insertions(+), 25 deletions(-)
 
 diff --git a/src/llvm-late-gc-lowering.cpp b/src/llvm-late-gc-lowering.cpp
-index 4a5741fed0..1ff7a9d2a5 100644
+index 4a5741fed0..a871b29265 100644
 --- a/src/llvm-late-gc-lowering.cpp
 +++ b/src/llvm-late-gc-lowering.cpp
-@@ -1,6 +1,7 @@
+@@ -1,6 +1,8 @@
  // This file is a part of Julia. License is MIT: https://julialang.org/license
  
  #include "llvm-gc-interface-passes.h"
 +#include "llvm/IR/Intrinsics.h"
++#include "llvm/Support/Casting.h"
  
  #define DEBUG_TYPE "late_lower_gcroot"
  
-@@ -204,7 +205,17 @@ static std::pair<Value*,int> FindBaseValue(const State &S, Value *V, bool UseCac
-                 }
-                 // In general a load terminates a walk
-                 break;
--            }
-+            } else if (II->getIntrinsicID() == Intrinsic::vector_extract) {
-+                if (auto VTy = dyn_cast<VectorType>(II->getType())) {
-+                    if (hasLoadedTy(VTy->getElementType())) {
-+                        // TODO: For now, only support constant index.
-+                        auto IdxOp = cast<ConstantInt>(II->getOperand(1));
-+                        fld_idx = IdxOp->getLimitedValue(INT_MAX);
-+                        CurrentV = II->getOperand(0);
+@@ -171,39 +173,54 @@ static std::pair<Value*,int> FindBaseValue(const State &S, Value *V, bool UseCac
+             (void)LI;
+             break;
+         }
+-        else if (auto II = dyn_cast<IntrinsicInst>(CurrentV)) {
++        else if (dyn_cast<IntrinsicInst>(CurrentV) != nullptr &&
++                (cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::masked_load ||
++                cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::masked_gather)) {
+             // Some intrinsics behave like LoadInst followed by a SelectInst
+             // This should never happen in a derived addrspace (since those cannot be stored to memory)
+             // so we don't need to lift these operations, but we do need to check if it's loaded and continue walking the base pointer
+-            if (II->getIntrinsicID() == Intrinsic::masked_load ||
+-                II->getIntrinsicID() == Intrinsic::masked_gather) {
+-                if (auto VTy = dyn_cast<VectorType>(II->getType())) {
+-                    if (hasLoadedTy(VTy->getElementType())) {
+-                        Value *Mask = II->getOperand(2);
+-                        Value *Passthrough = II->getOperand(3);
+-                        if (!isa<Constant>(Mask) || !cast<Constant>(Mask)->isAllOnesValue()) {
+-                            assert(isa<UndefValue>(Passthrough) && "unimplemented");
+-                            (void)Passthrough;
++            auto II = dyn_cast<IntrinsicInst>(CurrentV);
++            if (auto VTy = dyn_cast<VectorType>(II->getType())) {
++                if (hasLoadedTy(VTy->getElementType())) {
++                    Value *Mask = II->getOperand(2);
++                    Value *Passthrough = II->getOperand(3);
++                    if (!isa<Constant>(Mask) || !cast<Constant>(Mask)->isAllOnesValue()) {
++                        assert(isa<UndefValue>(Passthrough) && "unimplemented");
++                        (void)Passthrough;
 +                    }
++                    CurrentV = II->getOperand(0);
++                    if (II->getIntrinsicID() == Intrinsic::masked_load) {
++                        fld_idx = -1;
++                        if (!isSpecialPtr(CurrentV->getType())) {
++                            CurrentV = ConstantPointerNull::get(PointerType::get(V->getContext(), 0));
+                         }
+-                        CurrentV = II->getOperand(0);
+-                        if (II->getIntrinsicID() == Intrinsic::masked_load) {
+-                            fld_idx = -1;
+-                            if (!isSpecialPtr(CurrentV->getType())) {
++                    } else {
++                        if (auto VTy2 = dyn_cast<VectorType>(CurrentV->getType())) {
++                            if (!isSpecialPtr(VTy2->getElementType())) {
+                                 CurrentV = ConstantPointerNull::get(PointerType::get(V->getContext(), 0));
+-                            }
+-                        } else {
+-                            if (auto VTy2 = dyn_cast<VectorType>(CurrentV->getType())) {
+-                                if (!isSpecialPtr(VTy2->getElementType())) {
+-                                    CurrentV = ConstantPointerNull::get(PointerType::get(V->getContext(), 0));
+-                                    fld_idx = -1;
+-                                }
++                                fld_idx = -1;
+                             }
+                         }
+-                        continue;
+                     }
++                    continue;
 +                }
-+            } else
-+                break;
++            }
++            // In general a load terminates a walk
++            break;
++        }
++        else if (dyn_cast<IntrinsicInst>(CurrentV) != nullptr && cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::vector_extract) {
++            auto II = dyn_cast<IntrinsicInst>(CurrentV);
++            if (auto VTy = dyn_cast<VectorType>(II->getType())) {
++                if (hasLoadedTy(VTy->getElementType())) {
++                    Value *Idx = II->getOperand(1);
++                    if (!isa<ConstantInt>(Idx)) {
++                        assert(isa<UndefValue>(Idx) && "unimplemented");
++                        (void)Idx;
++                    }
++                    CurrentV = II->getOperand(0);
++                    fld_idx = -1;
++                    continue;
+                 }
+-                // In general a load terminates a walk
+-                break;
+             }
          }
          else if (auto CI = dyn_cast<CallInst>(CurrentV)) {
-             auto callee = CI->getCalledFunction();
-@@ -530,6 +541,16 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
+@@ -530,6 +547,20 @@ SmallVector<int, 0> LateLowerGCFrame::NumberAllBase(State &S, Value *CurrentV) {
          Numbers = NumberAll(S, IEI->getOperand(0));
          int ElNumber = Number(S, IEI->getOperand(1));
          Numbers[idx] = ElNumber;
-+    } else if (auto * VII = dyn_cast<IntrinsicInst>(CurrentV)) {
-+        if (VII->getIntrinsicID() == Intrinsic::vector_insert) {
-+            Numbers = NumberAll(S, VII->getOperand(0));
-+            int first_idx = cast<ConstantInt>(VII->getOperand(2))->getZExtValue();
-+            SmallVector<int, 0> Numbers2 = NumberAll(S, VII->getOperand(1));
-+            for (unsigned i = 0; i < Numbers2.size(); ++i) {
-+                dbgs() << Numbers2[i] << " "<< first_idx + i << "\n";
-+                Numbers[first_idx + i] = Numbers2[i];
-+            }
++    } else if (dyn_cast<IntrinsicInst>(CurrentV) != nullptr && dyn_cast<IntrinsicInst>(CurrentV)->getIntrinsicID() == Intrinsic::vector_insert) {
++        auto *VII = cast<IntrinsicInst>(CurrentV);
++        // Vector insert is a bit like a shuffle so use the same approach
++        SmallVector<int, 0> Numbers1 = NumberAll(S, VII->getOperand(0));
++        SmallVector<int, 0> Numbers2 = NumberAll(S, VII->getOperand(1));
++        unsigned first_idx = cast<ConstantInt>(VII->getOperand(2))->getZExtValue();
++        for (unsigned i = 0; i < Numbers1.size(); ++i) {
++            if (i < first_idx)
++                Numbers.push_back(Numbers1[i]);
++            else if (i - first_idx < Numbers2.size())
++                Numbers.push_back(Numbers2[i - first_idx]);
++            else
++                Numbers.push_back(Numbers1[i]);
 +        }
      } else if (auto *IVI = dyn_cast<InsertValueInst>(CurrentV)) {
          Numbers = NumberAll(S, IVI->getAggregateOperand());
          auto Tracked = TrackCompositeType(IVI->getType());
-@@ -1206,6 +1227,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
+@@ -1206,6 +1237,10 @@ State LateLowerGCFrame::LocalScan(Function &F) {
                              }
                          }
                      }
@@ -67,25 +133,38 @@ index 4a5741fed0..1ff7a9d2a5 100644
                  }
                  auto callee = CI->getCalledFunction();
                  if (callee && callee == typeof_func) {
+diff --git a/test/llvmpasses/image-codegen.jl b/test/llvmpasses/image-codegen.jl
+index 35e5add2de..d594c02a43 100644
+--- a/test/llvmpasses/image-codegen.jl
++++ b/test/llvmpasses/image-codegen.jl
+@@ -2,7 +2,7 @@
+ # RUN: export JULIA_LLVM_ARGS="--print-before=loop-vectorize --print-module-scope"
+ # RUN: rm -rf %t
+ # RUN: mkdir %t
+-# RUN: julia --image-codegen --startup-file=no %s 2> %t/output.txt
++# RUN: julia --image-codegen -t1,0 --startup-file=no %s 2> %t/output.txt
+ # RUN: FileCheck %s < %t/output.txt
+ 
+ # COM: checks that global variables compiled in imaging codegen
 diff --git a/test/llvmpasses/late-lower-gc.ll b/test/llvmpasses/late-lower-gc.ll
-index 4739fa186f..57ee669535 100644
+index 4739fa186f..af71d3c8d2 100644
 --- a/test/llvmpasses/late-lower-gc.ll
 +++ b/test/llvmpasses/late-lower-gc.ll
 @@ -164,6 +164,21 @@ define {} addrspace(10)* @gclift_switch({} addrspace(13)* addrspace(10)* %input,
    ret {} addrspace(10)* %ret
  }
  
-+; Shouldn't hang 
++; Shouldn't hang
 +define void @vector_insert(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
 +top:
-+  %pgcstack = call ptr @julia.get_pgcstack()
++  %pgcstack = call {}*** @julia.get_pgcstack()
 +  %2 = call <4 x {} addrspace(10)*> @llvm.vector.insert.v4p10.v2p10(<4 x {} addrspace(10)*> %0, <2 x {} addrspace(10)*> %1, i64 2)
 +  ret void
 +}
 +
 +define void @vector_extract(<4 x {} addrspace(10)* > %0, <2 x {} addrspace(10)* > %1) {
 +top:
-+  %pgcstack = call ptr @julia.get_pgcstack()
++  %pgcstack = call {}*** @julia.get_pgcstack()
 +  %2 = call <2 x {} addrspace(10)*> @llvm.vector.extract.v2p10.v4p10(<4 x {} addrspace(10)* > %0, i64 2)
 +  ret void
 +}
