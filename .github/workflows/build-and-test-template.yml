@@ -240,11 +240,48 @@ jobs:
           done
 
           mkdir -p deps/srccache
-          JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')  
+          JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
 
           make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)"
           make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)" binary-dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          path: ${{ github.workspace }}/julia/*.tar.gz
+          if-no-files-found: warn
+  build_julia_assert_mac:
+    if: inputs.target == 'x86_64-apple-darwin'
+    runs-on: macos-13
+
+    # needs: build_llvm_assert
+    timeout-minutes: 60
+    # env:
+    #   LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
+    steps:
+      # - uses: actions/checkout@v4
+      # - name: Download a single artifact
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+      - name: "Build Julia Assert"
+        run: |
+          set -o xtrace
+          xcode-select --install
+
+          git clone https://github.com/JuliaLang/julia
+          cd julia
+          echo $(git rev-parse HEAD)
+          git remote add fork https://github.com/Zentrik/julia
+          git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
+
+          # mkdir -p deps/srccache
+          # JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
+          # mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
+
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)"
+          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)" binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
