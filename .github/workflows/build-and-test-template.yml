@@ -274,6 +274,7 @@ jobs:
           echo $(git rev-parse HEAD)
           git remote add fork https://github.com/Zentrik/julia
           git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
+          git switch debug-llvm-20
 
           # mkdir -p deps/srccache
           # JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
