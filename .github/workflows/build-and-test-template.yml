@@ -348,3 +348,30 @@ jobs:
           name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}-test-results
           path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
           if-no-files-found: warn
+  test_julia_assert_mac:
+    if: inputs.target == 'x86_64-apple-darwin' || inputs.target == 'aarch64-apple-darwin'
+    runs-on: ${{ inputs.target == 'x86_64-apple-darwin' && 'macos-13' || 'macos-latest' }}
+    needs: build_julia_assert_mac
+    env:
+      JULIA_TEST_MAXRSS_MB: "1000"
+    steps:
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+      - name: "Test Julia Assert"
+        run: |
+          set -o xtrace
+
+          tar xzf *.tar.gz
+          cd julia-*/
+
+          bin/julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
+          bin/julia -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs\"; ncores=4)"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}-test-results
+          path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
+          if-no-files-found: warn
