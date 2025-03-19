@@ -19,124 +19,124 @@ on:
         required: true
 
 jobs:
-  # build_llvm_assert:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     JULIA_PATCHES_TO_APPLY: ${{ steps.julia_patches.outputs.JULIA_PATCHES_TO_APPLY }}
-  #   env:
-  #       BINARYBUILDER_USE_CCACHE: true
-  #       BINARYBUILDER_AUTOMATIC_APPLE: true
-  #       BINARYBUILDER_STORAGE_DIR: ${{ github.workspace }}/binarybuilder_storage
-  #       BINARYBUILDER_CCACHE_DIR: ${{ github.workspace }}/binarybuilder_ccache
-  #       LLVM_VERSION: ${{ inputs.LLVM_VERSION }}
-  #       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Maximize build disk space (Only remove unwanted software)
-  #         # You may pin to the exact commit or the version.
-  #         # uses: AdityaGarg8/remove-unwanted-software@8831c82abf29b34eb2caac48d5f999ecfc0d8eef
-  #       uses: AdityaGarg8/remove-unwanted-software@v4.1
-  #       with:
-  #         # # Removes .NET runtime and libraries. (frees ~2 GB)
-  #         # remove-dotnet: true
-  #         # Removes Android SDKs and Tools. (frees ~9 GB)
-  #         remove-android: true
-  #         # Removes GHC (Haskell) artifacts. (frees ~5.2 GB)
-  #         remove-haskell: true
-  #         # # Removes CodeQL Action Bundles. (frees ~5.4 GB)
-  #         # remove-codeql: true
-  #         # # Removes cached Docker images. (frees ~3.2 GB)
-  #         # remove-docker-images: true
-  #         # # Removes unwanted large Apt packages. (frees ~3.1 GB)
-  #         # remove-large-packages: true
-  #         # # Removes cached tools used by setup actions by GitHub. (frees ~8.3 GB)
-  #         # remove-cached-tools: true
-  #         # Enables detailed logging of the action
-  #         verbose: false
-  #     - uses: julia-actions/setup-julia@v2
-  #       with:
-  #         version: '1.7'
-  #         arch: x64
-  #     - name: Cache BinaryBuilder Storage Directory
-  #       if: inputs.save_cache
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: ${{ github.workspace }}/binarybuilder_storage
-  #         key: binarybuilder_storage-${{ inputs.LLVM_VERSION }}
-  #         restore-keys: binarybuilder_storage
-  #     - name: Restore Cached BinaryBuilder Storage Directory
-  #       if: ${{ !inputs.save_cache }}
-  #       uses: actions/cache/restore@v4
-  #       with:
-  #         path: ${{ github.workspace }}/binarybuilder_storage
-  #         key: binarybuilder_storage-${{ inputs.LLVM_VERSION }}
-  #         restore-keys: binarybuilder_storage
-  #     - name: Cache BinaryBuilder ccache Directory
-  #       if: github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == ''
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: ${{ github.workspace }}/binarybuilder_ccache
-  #         key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
-  #         restore-keys: ${{ inputs.target }}
-  #     - name: Restore Cached BinaryBuilder ccache Directory
-  #       if: github.ref != 'refs/heads/master' || github.event.inputs.LLVM_VERSION != ''
-  #       uses: actions/cache/restore@v4
-  #       with:
-  #         path: ${{ github.workspace }}/binarybuilder_ccache
-  #         key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
-  #         restore-keys: ${{ inputs.target }}
-  #     - name: Build LLVM assert on ${{ inputs.target }}
-  #       id: build
-  #       run: |
-  #         set -o xtrace
-  #         git clone https://github.com/JuliaPackaging/Yggdrasil.git
-  #         cd Yggdrasil
-  #         git apply $GITHUB_WORKSPACE/yggy-patches/*
-  #         if [[ "${{ inputs.MINIMAL_LLVM_BUILD }}" == "true" ]]; then
-  #           git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
-  #         fi
+  build_llvm_assert:
+    runs-on: ubuntu-latest
+    outputs:
+      JULIA_PATCHES_TO_APPLY: ${{ steps.julia_patches.outputs.JULIA_PATCHES_TO_APPLY }}
+    env:
+        BINARYBUILDER_USE_CCACHE: true
+        BINARYBUILDER_AUTOMATIC_APPLE: true
+        BINARYBUILDER_STORAGE_DIR: ${{ github.workspace }}/binarybuilder_storage
+        BINARYBUILDER_CCACHE_DIR: ${{ github.workspace }}/binarybuilder_ccache
+        LLVM_VERSION: ${{ inputs.LLVM_VERSION }}
+        LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Maximize build disk space (Only remove unwanted software)
+          # You may pin to the exact commit or the version.
+          # uses: AdityaGarg8/remove-unwanted-software@8831c82abf29b34eb2caac48d5f999ecfc0d8eef
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          # # Removes .NET runtime and libraries. (frees ~2 GB)
+          # remove-dotnet: true
+          # Removes Android SDKs and Tools. (frees ~9 GB)
+          remove-android: true
+          # Removes GHC (Haskell) artifacts. (frees ~5.2 GB)
+          remove-haskell: true
+          # # Removes CodeQL Action Bundles. (frees ~5.4 GB)
+          # remove-codeql: true
+          # # Removes cached Docker images. (frees ~3.2 GB)
+          # remove-docker-images: true
+          # # Removes unwanted large Apt packages. (frees ~3.1 GB)
+          # remove-large-packages: true
+          # # Removes cached tools used by setup actions by GitHub. (frees ~8.3 GB)
+          # remove-cached-tools: true
+          # Enables detailed logging of the action
+          verbose: false
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.7'
+          arch: x64
+      - name: Cache BinaryBuilder Storage Directory
+        if: inputs.save_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/binarybuilder_storage
+          key: binarybuilder_storage-${{ inputs.LLVM_VERSION }}
+          restore-keys: binarybuilder_storage
+      - name: Restore Cached BinaryBuilder Storage Directory
+        if: ${{ !inputs.save_cache }}
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/binarybuilder_storage
+          key: binarybuilder_storage-${{ inputs.LLVM_VERSION }}
+          restore-keys: binarybuilder_storage
+      - name: Cache BinaryBuilder ccache Directory
+        if: github.ref == 'refs/heads/master' && github.event.inputs.LLVM_VERSION == ''
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/binarybuilder_ccache
+          key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          restore-keys: ${{ inputs.target }}
+      - name: Restore Cached BinaryBuilder ccache Directory
+        if: github.ref != 'refs/heads/master' || github.event.inputs.LLVM_VERSION != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/binarybuilder_ccache
+          key: ${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          restore-keys: ${{ inputs.target }}
+      - name: Build LLVM assert on ${{ inputs.target }}
+        id: build
+        run: |
+          set -o xtrace
+          git clone https://github.com/JuliaPackaging/Yggdrasil.git
+          cd Yggdrasil
+          git apply $GITHUB_WORKSPACE/yggy-patches/*
+          if [[ "${{ inputs.MINIMAL_LLVM_BUILD }}" == "true" ]]; then
+            git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
+          fi
 
-  #         cd L/LLVM/LLVM_full@19
-  #         rm -rf bundled/libcxx_patches
-  #         if [ "$(ls -A $GITHUB_WORKSPACE/llvm-patches)" ]; then
-  #             cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
-  #         fi
-  #         julia -e '
-  #           using Pkg
-  #           Pkg.activate(ENV["GITHUB_WORKSPACE"])
-  #           Pkg.instantiate(verbose=true)
+          cd L/LLVM/LLVM_full@19
+          rm -rf bundled/libcxx_patches
+          if [ "$(ls -A $GITHUB_WORKSPACE/llvm-patches)" ]; then
+              cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
+          fi
+          julia -e '
+            using Pkg
+            Pkg.activate(ENV["GITHUB_WORKSPACE"])
+            Pkg.instantiate(verbose=true)
 
-  #           version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
+            version = VersionNumber(parse(Int, ENV["LLVM_VERSION_MAJOR"]), 0, 0)
 
-  #           include("../common.jl")
+            include("../common.jl")
 
-  #           src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_path=git_path=git_path="https://github.com/llvm/llvm-project.git", git_ver=ENV["LLVM_VERSION"])
-  #           products = Product[]
-  #           build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], src_name, src_version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
-  #         '
-  #     - name: Work out which julia patches to apply
-  #       id: julia_patches
-  #       run: |
-  #         set -o xtrace
-  #         cd binarybuilder_storage/downloads/clones/llvm-project.git-1df819a03ecf6890e3787b27bfd4f160aeeeeacd50a98d003be8b0893f11a9be # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/b77c32e367f6db32517967d2b3c41f2c9850806b/src/Sources.jl#L209
+            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_path=git_path=git_path="https://github.com/llvm/llvm-project.git", git_ver=ENV["LLVM_VERSION"])
+            products = Product[]
+            build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], src_name, src_version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
+          '
+      - name: Work out which julia patches to apply
+        id: julia_patches
+        run: |
+          set -o xtrace
+          cd binarybuilder_storage/downloads/clones/llvm-project.git-1df819a03ecf6890e3787b27bfd4f160aeeeeacd50a98d003be8b0893f11a9be # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/b77c32e367f6db32517967d2b3c41f2c9850806b/src/Sources.jl#L209
 
-  #         JULIA_PATCHES_TO_APPLY=()
-  #         for patch in $GITHUB_WORKSPACE/julia-patches/*; do
-  #           patch=$(basename "$patch")
-  #           if git merge-base --is-ancestor "$patch" "$LLVM_VERSION"; then
-  #             JULIA_PATCHES_TO_APPLY+=( "$patch" )
-  #           fi
-  #         done
+          JULIA_PATCHES_TO_APPLY=()
+          for patch in $GITHUB_WORKSPACE/julia-patches/*; do
+            patch=$(basename "$patch")
+            if git merge-base --is-ancestor "$patch" "$LLVM_VERSION"; then
+              JULIA_PATCHES_TO_APPLY+=( "$patch" )
+            fi
+          done
 
-  #         JULIA_PATCHES_TO_APPLY=$(git rev-list --no-walk=sorted --reverse ${JULIA_PATCHES_TO_APPLY[*]} | tr '\n' ' ')
+          JULIA_PATCHES_TO_APPLY=$(git rev-list --no-walk=sorted --reverse ${JULIA_PATCHES_TO_APPLY[*]} | tr '\n' ' ')
 
-  #         echo "JULIA_PATCHES_TO_APPLY=$JULIA_PATCHES_TO_APPLY" >> "$GITHUB_OUTPUT"
-  #     - name: Upload artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
-  #         path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
-  #         if-no-files-found: warn
+          echo "JULIA_PATCHES_TO_APPLY=$JULIA_PATCHES_TO_APPLY" >> "$GITHUB_OUTPUT"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
+          if-no-files-found: warn
   build_julia_assert_windows:
     if: inputs.target == 'x86_64-w64-mingw32-cxx11' || inputs.target == 'i686-w64-mingw32-cxx11'
     runs-on: windows-latest
@@ -252,19 +252,18 @@ jobs:
           path: ${{ github.workspace }}/julia/*.tar.gz
           if-no-files-found: warn
   build_julia_assert_mac:
-    if: inputs.target == 'x86_64-apple-darwin'
+    if: inputs.target == 'x86_64-apple-darwin' || inputs.target == 'aarch64-apple-darwin'
     runs-on: macos-13
-
-    # needs: build_llvm_assert
+    needs: build_llvm_assert
     timeout-minutes: 60
-    # env:
-    #   LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
+    env:
+      LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
-      # - uses: actions/checkout@v4
-      # - name: Download a single artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+      - uses: actions/checkout@v4
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
       - name: "Build Julia Assert"
         run: |
           set -o xtrace
@@ -274,14 +273,19 @@ jobs:
           echo $(git rev-parse HEAD)
           git remote add fork https://github.com/Zentrik/julia
           git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
-          git switch debug-llvm-20
 
-          # mkdir -p deps/srccache
-          # JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
-          # mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
+          mkdir -p deps/srccache
+          JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
+          mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
 
-          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)"
-          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)" binary-dist
+          if [[ "${{ inputs.target }}" == "x86_64-apple-darwin" ]]; then
+            JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)"
+          else
+            JULIA_CPU_TARGET="generic;apple-m1,clone_all"
+          fi
+
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET
+          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
