@@ -253,7 +253,7 @@ jobs:
           if-no-files-found: warn
   build_julia_assert_mac:
     if: inputs.target == 'x86_64-apple-darwin' || inputs.target == 'aarch64-apple-darwin'
-    runs-on: macos-13
+    runs-on: ${{ inputs.target == 'x86_64-apple-darwin' && 'macos-13' || 'macos-latest' }}
     needs: build_llvm_assert
     timeout-minutes: 60
     env:
