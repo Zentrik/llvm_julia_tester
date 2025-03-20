@@ -274,6 +274,10 @@ jobs:
           git remote add fork https://github.com/Zentrik/julia
           git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
 
+          for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
+            git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
+          done
+
           mkdir -p deps/srccache
           JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
