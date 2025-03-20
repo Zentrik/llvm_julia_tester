@@ -49,6 +49,7 @@ jobs:
           - x86_64-linux-musl-cxx11
           - x86_64-w64-mingw32-cxx11
           - aarch64-apple-darwin
+          - x86_64-apple-darwin
           - i686-w64-mingw32-cxx11
     uses: ./.github/workflows/build-and-test-template.yml
     with:

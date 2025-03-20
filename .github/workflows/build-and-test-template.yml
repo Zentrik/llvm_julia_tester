@@ -110,7 +110,7 @@ jobs:
 
             include("../common.jl")
 
-            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=false, assert=true, experimental_platforms=true, git_path=git_path=git_path="https://github.com/llvm/llvm-project.git", git_ver=ENV["LLVM_VERSION"])
+            src_name, src_version, sources, script, platforms, products, dependencies = configure_build([], version; update_sdk=${{ inputs.target == 'x86_64-apple-darwin' && 'true' || 'false' }}, assert=true, experimental_platforms=true, git_path=git_path=git_path="https://github.com/llvm/llvm-project.git", git_ver=ENV["LLVM_VERSION"])
             products = Product[]
             build_tarballs(["--verbose", "${{ inputs.target }}", "--skip-audit"], src_name, src_version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
           '
@@ -240,11 +240,56 @@ jobs:
           done
 
           mkdir -p deps/srccache
-          JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')  
+          JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
           mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
 
           make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)"
           make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)" binary-dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+          path: ${{ github.workspace }}/julia/*.tar.gz
+          if-no-files-found: warn
+  build_julia_assert_mac:
+    if: inputs.target == 'x86_64-apple-darwin' || inputs.target == 'aarch64-apple-darwin'
+    runs-on: ${{ inputs.target == 'x86_64-apple-darwin' && 'macos-13' || 'macos-latest' }}
+    needs: build_llvm_assert
+    timeout-minutes: 60
+    env:
+      LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+      - name: "Build Julia Assert"
+        run: |
+          set -o xtrace
+
+          git clone https://github.com/JuliaLang/julia
+          cd julia
+          echo $(git rev-parse HEAD)
+          git remote add fork https://github.com/Zentrik/julia
+          git fetch --all # https://jvns.ca/blog/2023/11/10/how-cherry-pick-and-revert-work/
+
+          for patch in ${{ needs.build_llvm_assert.outputs.JULIA_PATCHES_TO_APPLY }}; do
+            git apply $GITHUB_WORKSPACE/julia-patches/$patch -v --3way
+          done
+
+          mkdir -p deps/srccache
+          JULIA_LLVM_VERSION=$(grep 'version' stdlib/libLLVM_jll/Project.toml | sed 's/version = "\(.*\)"/\1/')
+          mv ../LLVM_full_assert.v${LLVM_VERSION_MAJOR}.0.0.${{ inputs.target }}.tar.gz deps/srccache/libLLVM.v$JULIA_LLVM_VERSION.${{ inputs.target }}.tar.gz
+
+          if [[ "${{ inputs.target }}" == "x86_64-apple-darwin" ]]; then
+            JULIA_CPU_TARGET="generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)"
+          else
+            JULIA_CPU_TARGET="generic;apple-m1,clone_all"
+          fi
+
+          make -j4 FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET
+          make FORCE_ASSERTIONS=1 LLVM_ASSERTIONS=1 VERBOSE=1 LLVM_JLL_TAGS= LLVM_SHARED_LIB_VER_SUFFIX=${LLVM_VERSION_MAJOR}jl JULIA_CPU_TARGET=$JULIA_CPU_TARGET binary-dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -284,6 +329,33 @@ jobs:
     if: inputs.target == 'x86_64-linux-gnu-cxx11'
     runs-on: ubuntu-latest
     needs: build_julia_assert_linux
+    env:
+      JULIA_TEST_MAXRSS_MB: "1000"
+    steps:
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
+      - name: "Test Julia Assert"
+        run: |
+          set -o xtrace
+
+          tar xzf *.tar.gz
+          cd julia-*/
+
+          bin/julia -e 'using InteractiveUtils; InteractiveUtils.versioninfo()'
+          bin/julia -e "Base.runtests(\"all --ci --skip Pkg Sockets cmdlineargs\"; ncores=4)"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: julia-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}-test-results
+          path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
+          if-no-files-found: warn
+  test_julia_assert_mac:
+    if: inputs.target == 'x86_64-apple-darwin' || inputs.target == 'aarch64-apple-darwin'
+    runs-on: ${{ inputs.target == 'x86_64-apple-darwin' && 'macos-13' || 'macos-latest' }}
+    needs: build_julia_assert_mac
     env:
       JULIA_TEST_MAXRSS_MB: "1000"
     steps:
