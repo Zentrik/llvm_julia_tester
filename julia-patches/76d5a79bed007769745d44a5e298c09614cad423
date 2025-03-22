@@ -1,4 +1,4 @@
-From e9c702748068bcf09e075afc72e63ac4c28482a0 Mon Sep 17 00:00:00 2001
+From de460cde6d8a21ba000fb182e4cccbab78f15a26 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Sat, 22 Mar 2025 20:48:51 +0000
 Subject: [PATCH] 76d5a79bed007769745d44a5e298c09614cad423
@@ -8,9 +8,9 @@ Try adapting to "[ORC] Drop EHFrameRegistrar, register eh-frames with AllocActio
 Probably broken.
 ---
  src/debuginfo.cpp    | 12 ++++++------
- src/jitlayers.cpp    | 22 +++++-----------------
+ src/jitlayers.cpp    | 23 ++++++-----------------
  src/julia_internal.h | 10 ++++++++--
- 3 files changed, 19 insertions(+), 25 deletions(-)
+ 3 files changed, 20 insertions(+), 25 deletions(-)
 
 diff --git a/src/debuginfo.cpp b/src/debuginfo.cpp
 index 6db6a07c91..262ba16570 100644
@@ -67,7 +67,7 @@ index 6db6a07c91..262ba16570 100644
  }
  
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index 219d6ce0bd..0270d87dd6 100644
+index 219d6ce0bd..e8ee8bdb40 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
 @@ -1165,18 +1165,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
@@ -89,21 +89,22 @@ index 219d6ce0bd..0270d87dd6 100644
  
  RTDyldMemoryManager *createRTDyldMemoryManager(void) JL_NOTSAFEPOINT;
  
-@@ -1865,12 +1853,12 @@ JuliaOJIT::JuliaOJIT()
+@@ -1865,12 +1853,13 @@ JuliaOJIT::JuliaOJIT()
  # if defined(LLVM_SHLIB)
      // When dynamically linking against LLVM, use our custom EH frame registration code
      // also used with RTDyld to inform both our and the libc copy of libunwind.
 -    auto ehRegistrar = std::make_unique<JLEHFrameRegistrar>();
 -# else
 -    auto ehRegistrar = std::make_unique<jitlink::InProcessEHFrameRegistrar>();
+-# endif
 +    // auto ehRegistrar = std::make_unique<JLEHFrameRegistrar>();
-+    ES.getExecutorProcessControl().BootstrapSymbols[rt::RegisterEHFrameSectionAllocActionName] = ExecutorAddr::fromPtr(&register_eh_frames);
-+    ES.getExecutorProcessControl().BootstrapSymbols[rt::DeregisterEHFrameSectionAllocActionName] = ExecutorAddr::fromPtr(&deregister_eh_frames);
- # endif
--    ObjectLayer.addPlugin(std::make_unique<EHFrameRegistrationPlugin>(
+     ObjectLayer.addPlugin(std::make_unique<EHFrameRegistrationPlugin>(
 -        ES, std::move(ehRegistrar)));
-+
++        ExecutorAddr::fromPtr(&register_eh_frames), ExecutorAddr::fromPtr(&deregister_eh_frames)));
++else
 +    ObjectLayer.addPlugin(EHFrameRegistrationPlugin::Create(ES));
++# endif
++
  
      ObjectLayer.addPlugin(std::make_unique<JLDebuginfoPlugin>());
      ObjectLayer.addPlugin(std::make_unique<JLMemoryUsagePlugin>(&jit_bytes_size));
