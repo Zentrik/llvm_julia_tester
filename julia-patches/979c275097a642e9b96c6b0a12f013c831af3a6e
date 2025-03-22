@@ -1,4 +1,4 @@
-From 61d04f7da53713cec0fee68f8c35fc70684403b6 Mon Sep 17 00:00:00 2001
+From fd4897f37095f57fc696ee65415cc64f53a57174 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Sun, 9 Mar 2025 02:09:24 +0000
 Subject: [PATCH] 979c275097a642e9b96c6b0a12f013c831af3a6e
@@ -10,7 +10,7 @@ Adapt to "[IR] Store Triple in Module (NFC)"
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/src/aotcompile.cpp b/src/aotcompile.cpp
-index 951706fd80..8cf5d5874f 100644
+index 30cf1d8b60..f442cb2a9e 100644
 --- a/src/aotcompile.cpp
 +++ b/src/aotcompile.cpp
 @@ -2018,7 +2018,7 @@ void jl_dump_native_impl(void *native_code,
@@ -41,7 +41,7 @@ index 951706fd80..8cf5d5874f 100644
          metadataM.setStackProtectorGuard(StackProtectorGuard);
          metadataM.setOverrideStackAlignment(OverrideStackAlignment);
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 5fc0bcb324..28ce3d9a83 100644
+index 15be3fce84..679c616b42 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -2726,7 +2726,7 @@ std::unique_ptr<Module> jl_create_llvm_module(StringRef name, LLVMContext &conte

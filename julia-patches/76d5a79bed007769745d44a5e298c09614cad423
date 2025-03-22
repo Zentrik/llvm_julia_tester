@@ -1,0 +1,133 @@
+From e9c702748068bcf09e075afc72e63ac4c28482a0 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Sat, 22 Mar 2025 20:48:51 +0000
+Subject: [PATCH] 76d5a79bed007769745d44a5e298c09614cad423
+
+Try adapting to "[ORC] Drop EHFrameRegistrar, register eh-frames with AllocActions (#130719)"
+
+Probably broken.
+---
+ src/debuginfo.cpp    | 12 ++++++------
+ src/jitlayers.cpp    | 22 +++++-----------------
+ src/julia_internal.h | 10 ++++++++--
+ 3 files changed, 19 insertions(+), 25 deletions(-)
+
+diff --git a/src/debuginfo.cpp b/src/debuginfo.cpp
+index 6db6a07c91..262ba16570 100644
+--- a/src/debuginfo.cpp
++++ b/src/debuginfo.cpp
+@@ -1277,7 +1277,7 @@ extern "C" jl_code_instance_t *jl_gdblookupci(void *p) JL_NOTSAFEPOINT
+  */
+ 
+ // This implementation handles frame registration for local targets.
+-void register_eh_frames(uint8_t *Addr, size_t Size)
++extern "C" void register_eh_frames(uint8_t *Addr, size_t Size)
+ {
+   // On OS X OS X __register_frame takes a single FDE as an argument.
+   // See http://lists.cs.uiuc.edu/pipermail/llvmdev/2013-April/061768.html
+@@ -1286,7 +1286,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
+     });
+ }
+ 
+-void deregister_eh_frames(uint8_t *Addr, size_t Size)
++extern "C" void deregister_eh_frames(uint8_t *Addr, size_t Size)
+ {
+    processFDEs((char*)Addr, Size, [](const char *Entry) JL_NOTSAFEPOINT {
+       getJITDebugRegistry().libc_frames.libc_deregister_frame(Entry);
+@@ -1472,7 +1472,7 @@ static DW_EH_PE parseCIE(const uint8_t *Addr, const uint8_t *End) JL_NOTSAFEPOIN
+     return DW_EH_PE_absptr;
+ }
+ 
+-void register_eh_frames(uint8_t *Addr, size_t Size)
++extern "C" void register_eh_frames(uint8_t *Addr, size_t Size)
+ {
+     // System unwinder
+     jl_profile_atomic([&]() JL_NOTSAFEPOINT {
+@@ -1608,7 +1608,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
+     });
+ }
+ 
+-void deregister_eh_frames(uint8_t *Addr, size_t Size)
++extern "C" void deregister_eh_frames(uint8_t *Addr, size_t Size)
+ {
+     jl_profile_atomic([&]() JL_NOTSAFEPOINT {
+         __deregister_frame(Addr);
+@@ -1620,11 +1620,11 @@ void deregister_eh_frames(uint8_t *Addr, size_t Size)
+ 
+ #else
+ 
+-void register_eh_frames(uint8_t *Addr, size_t Size)
++extern "C" void register_eh_frames(uint8_t *Addr, size_t Size)
+ {
+ }
+ 
+-void deregister_eh_frames(uint8_t *Addr, size_t Size)
++extern "C" void deregister_eh_frames(uint8_t *Addr, size_t Size)
+ {
+ }
+ 
+diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
+index 219d6ce0bd..0270d87dd6 100644
+--- a/src/jitlayers.cpp
++++ b/src/jitlayers.cpp
+@@ -1165,18 +1165,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
+ #endif
+ }
+ 
+-class JLEHFrameRegistrar final : public jitlink::EHFrameRegistrar {
+-public:
+-    Error registerEHFrames(orc::ExecutorAddrRange EHFrameSection) override {
+-        register_eh_frames(EHFrameSection.Start.toPtr<uint8_t *>(), static_cast<size_t>(EHFrameSection.size()));
+-        return Error::success();
+-    }
+-
+-    Error deregisterEHFrames(orc::ExecutorAddrRange EHFrameSection) override {
+-        deregister_eh_frames(EHFrameSection.Start.toPtr<uint8_t *>(), static_cast<size_t>(EHFrameSection.size()));
+-        return Error::success();
+-    }
+-};
+ 
+ RTDyldMemoryManager *createRTDyldMemoryManager(void) JL_NOTSAFEPOINT;
+ 
+@@ -1865,12 +1853,12 @@ JuliaOJIT::JuliaOJIT()
+ # if defined(LLVM_SHLIB)
+     // When dynamically linking against LLVM, use our custom EH frame registration code
+     // also used with RTDyld to inform both our and the libc copy of libunwind.
+-    auto ehRegistrar = std::make_unique<JLEHFrameRegistrar>();
+-# else
+-    auto ehRegistrar = std::make_unique<jitlink::InProcessEHFrameRegistrar>();
++    // auto ehRegistrar = std::make_unique<JLEHFrameRegistrar>();
++    ES.getExecutorProcessControl().BootstrapSymbols[rt::RegisterEHFrameSectionAllocActionName] = ExecutorAddr::fromPtr(&register_eh_frames);
++    ES.getExecutorProcessControl().BootstrapSymbols[rt::DeregisterEHFrameSectionAllocActionName] = ExecutorAddr::fromPtr(&deregister_eh_frames);
+ # endif
+-    ObjectLayer.addPlugin(std::make_unique<EHFrameRegistrationPlugin>(
+-        ES, std::move(ehRegistrar)));
++
++    ObjectLayer.addPlugin(EHFrameRegistrationPlugin::Create(ES));
+ 
+     ObjectLayer.addPlugin(std::make_unique<JLDebuginfoPlugin>());
+     ObjectLayer.addPlugin(std::make_unique<JLMemoryUsagePlugin>(&jit_bytes_size));
+diff --git a/src/julia_internal.h b/src/julia_internal.h
+index 3bd2ac4f3c..5d070a08ab 100644
+--- a/src/julia_internal.h
++++ b/src/julia_internal.h
+@@ -1814,8 +1814,14 @@ JL_DLLEXPORT jl_value_t *jl_argtype_without_function(jl_value_t *ftypes);
+ 
+ JL_DLLEXPORT unsigned jl_special_vector_alignment(size_t nfields, jl_value_t *field_type);
+ 
+-void register_eh_frames(uint8_t *Addr, size_t Size) JL_NOTSAFEPOINT;
+-void deregister_eh_frames(uint8_t *Addr, size_t Size) JL_NOTSAFEPOINT;
++#ifdef __cplusplus
++extern "C" {
++#endif
++    void register_eh_frames(uint8_t *Addr, size_t Size) JL_NOTSAFEPOINT;
++    void deregister_eh_frames(uint8_t *Addr, size_t Size) JL_NOTSAFEPOINT;
++#ifdef __cplusplus
++}
++#endif
+ 
+ STATIC_INLINE void *jl_get_frame_addr(void) JL_NOTSAFEPOINT
+ {
+-- 
+2.34.1
+
