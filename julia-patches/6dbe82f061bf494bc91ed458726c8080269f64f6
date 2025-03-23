@@ -1,13 +1,12 @@
-From aa9bee478918d64fcb5fa9e38fc6c65b7ee803f3 Mon Sep 17 00:00:00 2001
+From 43beb87ae99169cd9429cbda599f9c479ea2a53b Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Sat, 22 Mar 2025 21:34:48 +0000
+Date: Sun, 23 Mar 2025 09:57:09 +0000
 Subject: [PATCH] 6dbe82f061bf494bc91ed458726c8080269f64f6
 
 Adapt to " [NFC][DebugInfo] Wrap DILineInfo return type with std::optional to handle missing debug info. #129792"
 ---
- src/debuginfo.cpp |  5 ++++-
- src/disasm.cpp    | 38 ++++++++++++++++++++------------------
- 2 files changed, 24 insertions(+), 19 deletions(-)
+ src/debuginfo.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/src/debuginfo.cpp b/src/debuginfo.cpp
 index 262ba16570..835cab3fe9 100644
@@ -24,56 +23,6 @@ index 262ba16570..835cab3fe9 100644
 +            }
              jl_unlock_profile_wr();
          }
- 
-diff --git a/src/disasm.cpp b/src/disasm.cpp
-index a80f79218f..38d870ee32 100644
---- a/src/disasm.cpp
-+++ b/src/disasm.cpp
-@@ -941,25 +941,27 @@ static void jl_dump_asm_internal(
-     ArrayRef<uint8_t> memoryObject(const_cast<uint8_t*>((const uint8_t*)Fptr),Fsize);
-     SymbolTable DisInfo(Ctx, Section.getObject(), slide, memoryObject);
- 
--    DILineInfoTable di_lineinfo;
--    if (di_ctx)
--        di_lineinfo = di_ctx->getLineInfoForAddressRange(makeAddress(Section, Fptr + slide), Fsize);
--    if (!di_lineinfo.empty()) {
--        auto cur_addr = di_lineinfo[0].first;
--        auto nlineinfo = di_lineinfo.size();
--        // filter out line infos that doesn't contain any instructions
--        unsigned j = 0;
--        for (unsigned i = 1; i < nlineinfo; i++) {
--            auto &info = di_lineinfo[i];
--            if (info.first != cur_addr)
--                j++;
--            cur_addr = info.first;
--            if (i != j) {
--                di_lineinfo[j] = std::move(info);
-+    if (di_ctx) {
-+        auto di_lineinfo_opt = di_ctx->getLineInfoForAddressRange(makeAddress(Section, Fptr + slide), Fsize);
-+
-+        if (di_lineinfo_opt && !di_lineinfo_opt->empty()) {
-+            auto di_lineinfo = *di_lineinfo_opt;
-+            auto cur_addr = di_lineinfo[0].first;
-+            auto nlineinfo = di_lineinfo.size();
-+            // filter out line infos that doesn't contain any instructions
-+            unsigned j = 0;
-+            for (unsigned i = 1; i < nlineinfo; i++) {
-+                auto &info = di_lineinfo[i];
-+                if (info.first != cur_addr)
-+                    j++;
-+                cur_addr = info.first;
-+                if (i != j) {
-+                    di_lineinfo[j] = std::move(info);
-+                }
-+            }
-+            if (j + 1 < nlineinfo) {
-+                di_lineinfo.resize(j + 1);
-             }
--        }
--        if (j + 1 < nlineinfo) {
--            di_lineinfo.resize(j + 1);
-         }
-     }
  
 -- 
 2.34.1
