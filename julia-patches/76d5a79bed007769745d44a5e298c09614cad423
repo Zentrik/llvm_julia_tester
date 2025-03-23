@@ -1,6 +1,6 @@
-From 1403d772ab6240a103d9d63a122eea74949af781 Mon Sep 17 00:00:00 2001
+From 9ef9125d57a434a6eb913478193da58c47b21436 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Sat, 22 Mar 2025 20:48:51 +0000
+Date: Sun, 23 Mar 2025 13:34:02 +0000
 Subject: [PATCH] 76d5a79bed007769745d44a5e298c09614cad423
 
 Try adapting to "[ORC] Drop EHFrameRegistrar, register eh-frames with AllocActions (#130719)"
@@ -8,9 +8,9 @@ Try adapting to "[ORC] Drop EHFrameRegistrar, register eh-frames with AllocActio
 Probably broken.
 ---
  src/debuginfo.cpp    | 12 ++++++------
- src/jitlayers.cpp    | 25 +++++++------------------
+ src/jitlayers.cpp    | 25 ++++++++-----------------
  src/julia_internal.h | 10 ++++++++--
- 3 files changed, 21 insertions(+), 26 deletions(-)
+ 3 files changed, 22 insertions(+), 25 deletions(-)
 
 diff --git a/src/debuginfo.cpp b/src/debuginfo.cpp
 index 6db6a07c91..262ba16570 100644
@@ -67,20 +67,23 @@ index 6db6a07c91..262ba16570 100644
  }
  
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index 219d6ce0bd..4b1b254e14 100644
+index 219d6ce0bd..c3c0cca097 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
-@@ -15,7 +15,8 @@
+@@ -14,8 +14,11 @@
+ #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
  #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
  #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
++#if JL_LLVM_VERSION >= 210000
++#include <llvm/ExecutionEngine/Orc/EHFrameRegistrationPlugin.h>
++#endif
  #if JL_LLVM_VERSION >= 200000
 -#include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
 +#include <llvm/ExecutionEngine/Orc/AbsoluteSymbols.h>
-+#include <llvm/ExecutionEngine/Orc/EHFrameRegistrationPlugin.h>
  #endif
  #if JL_LLVM_VERSION >= 180000
  #include <llvm/ExecutionEngine/Orc/Debugging/DebugInfoSupport.h>
-@@ -1165,18 +1166,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
+@@ -1165,18 +1168,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
  #endif
  }
  
@@ -99,16 +102,15 @@ index 219d6ce0bd..4b1b254e14 100644
  
  RTDyldMemoryManager *createRTDyldMemoryManager(void) JL_NOTSAFEPOINT;
  
-@@ -1865,12 +1854,12 @@ JuliaOJIT::JuliaOJIT()
+@@ -1865,12 +1856,12 @@ JuliaOJIT::JuliaOJIT()
  # if defined(LLVM_SHLIB)
      // When dynamically linking against LLVM, use our custom EH frame registration code
      // also used with RTDyld to inform both our and the libc copy of libunwind.
 -    auto ehRegistrar = std::make_unique<JLEHFrameRegistrar>();
--# else
--    auto ehRegistrar = std::make_unique<jitlink::InProcessEHFrameRegistrar>();
 +    ObjectLayer.addPlugin(std::make_unique<llvm::orc::EHFrameRegistrationPlugin>(
 +        ExecutorAddr::fromPtr(&register_eh_frames), ExecutorAddr::fromPtr(&deregister_eh_frames)));
-+else
+ # else
+-    auto ehRegistrar = std::make_unique<jitlink::InProcessEHFrameRegistrar>();
 +    ObjectLayer.addPlugin(llvm::orc::EHFrameRegistrationPlugin::Create(ES));
  # endif
 -    ObjectLayer.addPlugin(std::make_unique<EHFrameRegistrationPlugin>(
