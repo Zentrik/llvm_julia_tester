@@ -1,0 +1,29 @@
+From 4584d8b12f60aa0f23b2b005bad77c3a89935189 Mon Sep 17 00:00:00 2001
+From: Zentrik <llvm.zentrik@gmail.com>
+Date: Fri, 21 Mar 2025 23:18:33 +0000
+Subject: [PATCH] Revert "[MC] Explicitly mark MCSymbol for MO_ExternalSymbol
+ (#108880)"
+
+This reverts commit 3d0846bedcd18d546fd3733c93c2e144f2faab09.
+---
+ llvm/lib/Target/X86/X86MCInstLower.cpp | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/llvm/lib/Target/X86/X86MCInstLower.cpp b/llvm/lib/Target/X86/X86MCInstLower.cpp
+index 645a9baeba65c..680bf4286da0c 100644
+--- a/llvm/lib/Target/X86/X86MCInstLower.cpp
++++ b/llvm/lib/Target/X86/X86MCInstLower.cpp
+@@ -348,12 +348,8 @@ MCOperand X86MCInstLower::LowerMachineOperand(const MachineInstr *MI,
+     return MCOperand::createImm(MO.getImm());
+   case MachineOperand::MO_MachineBasicBlock:
+   case MachineOperand::MO_GlobalAddress:
++  case MachineOperand::MO_ExternalSymbol:
+     return LowerSymbolOperand(MO, GetSymbolFromOperand(MO));
+-  case MachineOperand::MO_ExternalSymbol: {
+-    MCSymbol *Sym = GetSymbolFromOperand(MO);
+-    Sym->setExternal(true);
+-    return LowerSymbolOperand(MO, Sym);
+-  }
+   case MachineOperand::MO_MCSymbol:
+     return LowerSymbolOperand(MO, MO.getMCSymbol());
+   case MachineOperand::MO_JumpTableIndex:

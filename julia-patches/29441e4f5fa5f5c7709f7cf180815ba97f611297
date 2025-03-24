@@ -1,4 +1,4 @@
-From 27ebcb82df8506fe0f633c0a0f7f96f9f538172d Mon Sep 17 00:00:00 2001
+From ae54499943bb21ba1d9ebf3d8cb2979e62824a18 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Tue, 4 Feb 2025 20:44:02 +0000
 Subject: [PATCH] 29441e4f5fa5f5c7709f7cf180815ba97f611297
@@ -9,7 +9,7 @@ Adapt to removal of NoCapture
  1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index b33c50ca08..5fc0bcb324 100644
+index 9bd8d9a518..15be3fce84 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -614,7 +614,7 @@ static AttributeList get_func_attrs(LLVMContext &C)
