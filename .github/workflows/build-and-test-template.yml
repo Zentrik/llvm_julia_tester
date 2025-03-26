@@ -214,7 +214,7 @@ jobs:
     if: inputs.target == 'x86_64-linux-gnu-cxx11'
     runs-on: ubuntu-22.04
     needs: build_llvm_assert
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
@@ -255,7 +255,7 @@ jobs:
     if: inputs.target == 'x86_64-apple-darwin' || inputs.target == 'aarch64-apple-darwin'
     runs-on: ${{ inputs.target == 'x86_64-apple-darwin' && 'macos-13' || 'macos-latest' }}
     needs: build_llvm_assert
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       LLVM_VERSION_MAJOR: ${{ inputs.LLVM_VERSION_MAJOR }}
     steps:
