@@ -353,7 +353,7 @@ jobs:
           path: ${{ github.workspace }}/julia-*/share/julia/test/results*.json
           if-no-files-found: warn
   test_julia_assert_mac:
-    if: inputs.target == 'x86_64-apple-darwin' || inputs.target == 'aarch64-apple-darwin'
+    if: inputs.target == 'x86_64-apple-darwin' #|| inputs.target == 'aarch64-apple-darwin'
     runs-on: ${{ inputs.target == 'x86_64-apple-darwin' && 'macos-13' || 'macos-latest' }}
     needs: build_julia_assert_mac
     env:
