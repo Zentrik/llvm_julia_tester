@@ -1,4 +1,4 @@
-From fd4897f37095f57fc696ee65415cc64f53a57174 Mon Sep 17 00:00:00 2001
+From b5f72ee0b21af37f60644362a9d864feab49ae82 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Sun, 9 Mar 2025 02:09:24 +0000
 Subject: [PATCH] 979c275097a642e9b96c6b0a12f013c831af3a6e
@@ -10,10 +10,10 @@ Adapt to "[IR] Store Triple in Module (NFC)"
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/src/aotcompile.cpp b/src/aotcompile.cpp
-index 30cf1d8b60..f442cb2a9e 100644
+index d687f44808..7650dd4013 100644
 --- a/src/aotcompile.cpp
 +++ b/src/aotcompile.cpp
-@@ -2018,7 +2018,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -2035,7 +2035,7 @@ void jl_dump_native_impl(void *native_code,
          LLVMContext Context;
          Context.setDiscardValueNames(true);
          Module sysimgM("sysimg", Context);
@@ -22,7 +22,7 @@ index 30cf1d8b60..f442cb2a9e 100644
          sysimgM.setDataLayout(DL);
          sysimgM.setStackProtectorGuard(StackProtectorGuard);
          sysimgM.setOverrideStackAlignment(OverrideStackAlignment);
-@@ -2060,7 +2060,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -2077,7 +2077,7 @@ void jl_dump_native_impl(void *native_code,
  
      data->M.withModuleDo([&](Module &dataM) {
          JL_TIMING(NATIVE_AOT, NATIVE_Setup);
@@ -31,7 +31,7 @@ index 30cf1d8b60..f442cb2a9e 100644
          dataM.setDataLayout(DL);
          dataM.setPICLevel(PICLevel::BigPIC);
          auto &Context = dataM.getContext();
-@@ -2161,7 +2161,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -2178,7 +2178,7 @@ void jl_dump_native_impl(void *native_code,
          LLVMContext Context;
          Context.setDiscardValueNames(true);
          Module metadataM("metadata", Context);
@@ -41,7 +41,7 @@ index 30cf1d8b60..f442cb2a9e 100644
          metadataM.setStackProtectorGuard(StackProtectorGuard);
          metadataM.setOverrideStackAlignment(OverrideStackAlignment);
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 15be3fce84..679c616b42 100644
+index 01bc022009..5ab1b95be8 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
 @@ -2726,7 +2726,7 @@ std::unique_ptr<Module> jl_create_llvm_module(StringRef name, LLVMContext &conte

@@ -1,4 +1,4 @@
-From 9ef9125d57a434a6eb913478193da58c47b21436 Mon Sep 17 00:00:00 2001
+From 67bbb500fa5e690bdf2fe7d970644bae97fe8545 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Sun, 23 Mar 2025 13:34:02 +0000
 Subject: [PATCH] 76d5a79bed007769745d44a5e298c09614cad423
@@ -8,15 +8,15 @@ Try adapting to "[ORC] Drop EHFrameRegistrar, register eh-frames with AllocActio
 Probably broken.
 ---
  src/debuginfo.cpp    | 12 ++++++------
- src/jitlayers.cpp    | 25 ++++++++-----------------
+ src/jitlayers.cpp    | 24 +++++++-----------------
  src/julia_internal.h | 10 ++++++++--
- 3 files changed, 22 insertions(+), 25 deletions(-)
+ 3 files changed, 21 insertions(+), 25 deletions(-)
 
 diff --git a/src/debuginfo.cpp b/src/debuginfo.cpp
-index 6db6a07c91..262ba16570 100644
+index 53c07c978f..4d2441ac7d 100644
 --- a/src/debuginfo.cpp
 +++ b/src/debuginfo.cpp
-@@ -1277,7 +1277,7 @@ extern "C" jl_code_instance_t *jl_gdblookupci(void *p) JL_NOTSAFEPOINT
+@@ -1280,7 +1280,7 @@ extern "C" jl_code_instance_t *jl_gdblookupci(void *p) JL_NOTSAFEPOINT
   */
  
  // This implementation handles frame registration for local targets.
@@ -25,7 +25,7 @@ index 6db6a07c91..262ba16570 100644
  {
    // On OS X OS X __register_frame takes a single FDE as an argument.
    // See http://lists.cs.uiuc.edu/pipermail/llvmdev/2013-April/061768.html
-@@ -1286,7 +1286,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
+@@ -1289,7 +1289,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
      });
  }
  
@@ -34,7 +34,7 @@ index 6db6a07c91..262ba16570 100644
  {
     processFDEs((char*)Addr, Size, [](const char *Entry) JL_NOTSAFEPOINT {
        getJITDebugRegistry().libc_frames.libc_deregister_frame(Entry);
-@@ -1472,7 +1472,7 @@ static DW_EH_PE parseCIE(const uint8_t *Addr, const uint8_t *End) JL_NOTSAFEPOIN
+@@ -1475,7 +1475,7 @@ static DW_EH_PE parseCIE(const uint8_t *Addr, const uint8_t *End) JL_NOTSAFEPOIN
      return DW_EH_PE_absptr;
  }
  
@@ -43,7 +43,7 @@ index 6db6a07c91..262ba16570 100644
  {
      // System unwinder
      jl_profile_atomic([&]() JL_NOTSAFEPOINT {
-@@ -1608,7 +1608,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
+@@ -1611,7 +1611,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
      });
  }
  
@@ -52,7 +52,7 @@ index 6db6a07c91..262ba16570 100644
  {
      jl_profile_atomic([&]() JL_NOTSAFEPOINT {
          __deregister_frame(Addr);
-@@ -1620,11 +1620,11 @@ void deregister_eh_frames(uint8_t *Addr, size_t Size)
+@@ -1623,11 +1623,11 @@ void deregister_eh_frames(uint8_t *Addr, size_t Size)
  
  #else
  
@@ -67,10 +67,10 @@ index 6db6a07c91..262ba16570 100644
  }
  
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index 219d6ce0bd..c3c0cca097 100644
+index ac64c6ee8b..1fb1c47eb8 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
-@@ -14,8 +14,11 @@
+@@ -14,9 +14,11 @@
  #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
  #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
  #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
@@ -78,12 +78,12 @@ index 219d6ce0bd..c3c0cca097 100644
 +#include <llvm/ExecutionEngine/Orc/EHFrameRegistrationPlugin.h>
 +#endif
  #if JL_LLVM_VERSION >= 200000
--#include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
-+#include <llvm/ExecutionEngine/Orc/AbsoluteSymbols.h>
+ #include <llvm/ExecutionEngine/Orc/AbsoluteSymbols.h>
+-#include <llvm/ExecutionEngine/Orc/EHFrameRegistrationPlugin.h>
  #endif
  #if JL_LLVM_VERSION >= 180000
  #include <llvm/ExecutionEngine/Orc/Debugging/DebugInfoSupport.h>
-@@ -1165,18 +1168,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
+@@ -1166,18 +1168,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
  #endif
  }
  
@@ -102,7 +102,7 @@ index 219d6ce0bd..c3c0cca097 100644
  
  RTDyldMemoryManager *createRTDyldMemoryManager(void) JL_NOTSAFEPOINT;
  
-@@ -1865,12 +1856,12 @@ JuliaOJIT::JuliaOJIT()
+@@ -1866,12 +1856,12 @@ JuliaOJIT::JuliaOJIT()
  # if defined(LLVM_SHLIB)
      // When dynamically linking against LLVM, use our custom EH frame registration code
      // also used with RTDyld to inform both our and the libc copy of libunwind.
@@ -120,10 +120,10 @@ index 219d6ce0bd..c3c0cca097 100644
      ObjectLayer.addPlugin(std::make_unique<JLDebuginfoPlugin>());
      ObjectLayer.addPlugin(std::make_unique<JLMemoryUsagePlugin>(&jit_bytes_size));
 diff --git a/src/julia_internal.h b/src/julia_internal.h
-index 3bd2ac4f3c..5d070a08ab 100644
+index 9966d36027..640035e0a0 100644
 --- a/src/julia_internal.h
 +++ b/src/julia_internal.h
-@@ -1814,8 +1814,14 @@ JL_DLLEXPORT jl_value_t *jl_argtype_without_function(jl_value_t *ftypes);
+@@ -1835,8 +1835,14 @@ JL_DLLEXPORT jl_value_t *jl_argtype_without_function(jl_value_t *ftypes);
  
  JL_DLLEXPORT unsigned jl_special_vector_alignment(size_t nfields, jl_value_t *field_type);
  

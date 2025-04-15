@@ -1,4 +1,4 @@
-From cc094245a6e8dd7b3099f09779f8d71048323553 Mon Sep 17 00:00:00 2001
+From d926e390e4fb9a2ea964a56b8d0c00d5da44708b Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Sat, 22 Mar 2025 16:37:52 +0000
 Subject: [PATCH] f137c3d592e96330e450a8fd63ef7e8877fc1908
@@ -10,10 +10,10 @@ Adapt to " [TargetRegistry] Accept Triple in createTargetMachine() (NFC) #130940
  2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/src/aotcompile.cpp b/src/aotcompile.cpp
-index f442cb2a9e..4c4c004629 100644
+index 7650dd4013..d57ce0c53d 100644
 --- a/src/aotcompile.cpp
 +++ b/src/aotcompile.cpp
-@@ -1405,7 +1405,7 @@ static AOTOutputs add_output_impl(Module &M, TargetMachine &SourceTM, ShardTimer
+@@ -1422,7 +1422,7 @@ static AOTOutputs add_output_impl(Module &M, TargetMachine &SourceTM, ShardTimer
      AOTOutputs out;
      auto TM = std::unique_ptr<TargetMachine>(
          SourceTM.getTarget().createTargetMachine(
@@ -22,7 +22,7 @@ index f442cb2a9e..4c4c004629 100644
              SourceTM.getTargetCPU(),
              SourceTM.getTargetFeatureString(),
              SourceTM.Options,
-@@ -1433,7 +1433,7 @@ static AOTOutputs add_output_impl(Module &M, TargetMachine &SourceTM, ShardTimer
+@@ -1450,7 +1450,7 @@ static AOTOutputs add_output_impl(Module &M, TargetMachine &SourceTM, ShardTimer
  
          auto PMTM = std::unique_ptr<TargetMachine>(
              SourceTM.getTarget().createTargetMachine(
@@ -31,7 +31,7 @@ index f442cb2a9e..4c4c004629 100644
                  SourceTM.getTargetCPU(),
                  SourceTM.getTargetFeatureString(),
                  SourceTM.Options,
-@@ -1985,7 +1985,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -2002,7 +2002,7 @@ void jl_dump_native_impl(void *native_code,
      }
      std::unique_ptr<TargetMachine> SourceTM(
          jl_ExecutionEngine->getTarget().createTargetMachine(
@@ -41,10 +41,10 @@ index f442cb2a9e..4c4c004629 100644
              jl_ExecutionEngine->getTargetFeatureString(),
              jl_ExecutionEngine->getTargetOptions(),
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index 1358c923d1..219d6ce0bd 100644
+index 081f3f59ac..ac64c6ee8b 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
-@@ -1341,7 +1341,7 @@ namespace {
+@@ -1342,7 +1342,7 @@ namespace {
          }
          auto optlevel = CodeGenOptLevelFor(jl_options.opt_level);
          auto TM = TheTarget->createTargetMachine(
@@ -53,7 +53,7 @@ index 1358c923d1..219d6ce0bd 100644
                  options,
                  relocmodel,
                  codemodel,
-@@ -2423,7 +2423,7 @@ std::unique_ptr<TargetMachine> JuliaOJIT::cloneTargetMachine() const
+@@ -2424,7 +2424,7 @@ std::unique_ptr<TargetMachine> JuliaOJIT::cloneTargetMachine() const
  {
      auto NewTM = std::unique_ptr<TargetMachine>(getTarget()
          .createTargetMachine(
