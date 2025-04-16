@@ -1,15 +1,15 @@
-From 85fbd90eb7d1bc0e4364898c75f70853bf0108bc Mon Sep 17 00:00:00 2001
+From a5de0c9c85e29b9ec3972c0df1a007fb238ba91d Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Wed, 16 Apr 2025 08:40:22 +0100
+Date: Wed, 16 Apr 2025 20:17:17 +0100
 Subject: [PATCH] c04d9d57ee4c116ecc1222b1f4458a21be13ac15
 
 Adapt to "MCAsmStreamer: Replace the MCInstPrinter * parameter with unique_ptr #135128 "
 ---
- src/disasm.cpp | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ src/disasm.cpp | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/src/disasm.cpp b/src/disasm.cpp
-index a80f79218f..9b95cf46e9 100644
+index a80f79218f..f6e0dd27c0 100644
 --- a/src/disasm.cpp
 +++ b/src/disasm.cpp
 @@ -927,7 +927,7 @@ static void jl_dump_asm_internal(
@@ -17,7 +17,7 @@ index a80f79218f..9b95cf46e9 100644
          TheTarget->createAsmStreamer(Ctx, std::move(ustream),
  
 -                                     IP.release(), std::move(CE), std::move(MAB))
-+                                     IP, std::move(CE), std::move(MAB))
++                                     std::move(IP), std::move(CE), std::move(MAB))
  #else
          TheTarget->createAsmStreamer(Ctx, std::move(ustream), /*asmverbose*/ true,
                                       /*useDwarfDirectory*/ true, IP.release(),
@@ -32,6 +32,15 @@ index a80f79218f..9b95cf46e9 100644
              std::unique_ptr<MCAsmBackend> MAB(TM->getTarget().createMCAsmBackend(
                  STI, MRI, Options));
              std::unique_ptr<MCCodeEmitter> MCE;
+@@ -1279,7 +1279,7 @@ jl_value_t *jl_dump_function_asm_impl(jl_llvmf_dump_t* dump, char emit_mc, const
+             auto FOut = std::make_unique<formatted_raw_ostream>(asmfile);
+             std::unique_ptr<MCStreamer> S(TM->getTarget().createAsmStreamer(
+ #if JL_LLVM_VERSION >= 190000
+-                *Context, std::move(FOut), InstPrinter, std::move(MCE), std::move(MAB)
++                *Context, std::move(FOut), std::move(InstPrinter), std::move(MCE), std::move(MAB)
+ #else
+                 *Context, std::move(FOut), true, true, InstPrinter, std::move(MCE),
+                 std::move(MAB), false
 -- 
 2.34.1
 
