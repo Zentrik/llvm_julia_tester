@@ -96,7 +96,7 @@ jobs:
             git apply $GITHUB_WORKSPACE/yggy-minimal-llvm-build-for-julia.patch
           fi
 
-          cd L/LLVM/LLVM_full@19
+          cd L/LLVM/LLVM_full@20
           rm -rf bundled/libcxx_patches
           if [ "$(ls -A $GITHUB_WORKSPACE/llvm-patches)" ]; then
               cp $GITHUB_WORKSPACE/llvm-patches/* bundled/patches/
@@ -135,7 +135,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: llvm-assert-${{ inputs.target }}-${{ inputs.LLVM_VERSION }}
-          path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@19/products
+          path: ${{ github.workspace }}/Yggdrasil/L/LLVM/LLVM_full@20/products
           if-no-files-found: warn
   build_julia_assert_windows:
     if: inputs.target == 'x86_64-w64-mingw32-cxx11' || inputs.target == 'i686-w64-mingw32-cxx11'
