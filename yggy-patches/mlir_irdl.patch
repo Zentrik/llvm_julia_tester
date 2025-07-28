@@ -1,5 +1,5 @@
 diff --git a/L/LLVM/common.jl b/L/LLVM/common.jl
-index 63f4dd2fe..f390912ac 100644
+index 63f4dd2fe..eef8c920f 100644
 --- a/L/LLVM/common.jl
 +++ b/L/LLVM/common.jl
 @@ -149,6 +149,9 @@ fi
@@ -10,4 +10,6 @@ index 63f4dd2fe..f390912ac 100644
 +    ninja -j${nproc} mlir-irdl-to-cpp
 +fi
  popd
- 
+
+ # Let's do the actual build within the `build` subdirectory
+
