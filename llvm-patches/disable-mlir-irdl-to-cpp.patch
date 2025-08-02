@@ -22,4 +22,15 @@ index 3b7bd9b9637a..5eda9987aad0 100644
  add_subdirectory(Tosa)
  add_subdirectory(Transform)
  add_subdirectory(Vector)
+diff --git a/mlir/tools/mlir-opt/CMakeLists.txt b/mlir/tools/mlir-opt/CMakeLists.txt
+index 7cc6e78ca08c..40d365669fcf 100644
+--- a/mlir/tools/mlir-opt/CMakeLists.txt
++++ b/mlir/tools/mlir-opt/CMakeLists.txt
+@@ -50,7 +50,6 @@ if(MLIR_INCLUDE_TESTS)
+   set(test_libs ${test_libs}
+     MLIRTestPDLL
+     MLIRTestTransformDialect
+-    MLIRTestIRDLToCppDialect
+     )
 
+   if (MLIR_ENABLE_PDL_IN_PATTERNMATCH)
