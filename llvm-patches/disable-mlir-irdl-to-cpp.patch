@@ -1,15 +1,3 @@
-diff --git a/mlir/CMakeLists.txt b/mlir/CMakeLists.txt
-index a1ad81f625cd..3163e082b29b 100644
---- a/mlir/CMakeLists.txt
-+++ b/mlir/CMakeLists.txt
-@@ -214,7 +214,6 @@ include_directories(BEFORE
- # Adding tools/mlir-tblgen here as calling add_tablegen sets some variables like
- # MLIR_TABLEGEN_EXE in PARENT_SCOPE which gets lost if that folder is included
- # from another directory like tools
--add_subdirectory(tools/mlir-irdl-to-cpp)
- add_subdirectory(tools/mlir-linalg-ods-gen)
- add_subdirectory(tools/mlir-pdll)
- add_subdirectory(tools/mlir-tblgen)
 diff --git a/mlir/test/lib/Dialect/CMakeLists.txt b/mlir/test/lib/Dialect/CMakeLists.txt
 index 3b7bd9b9637a..5eda9987aad0 100644
 --- a/mlir/test/lib/Dialect/CMakeLists.txt
@@ -22,6 +10,46 @@ index 3b7bd9b9637a..5eda9987aad0 100644
  add_subdirectory(Tosa)
  add_subdirectory(Transform)
  add_subdirectory(Vector)
+diff --git a/mlir/tools/mlir-irdl-to-cpp/CMakeLists.txt b/mlir/tools/mlir-irdl-to-cpp/CMakeLists.txt
+index 3a0f77d856b4..b9e6e0d211d9 100644
+--- a/mlir/tools/mlir-irdl-to-cpp/CMakeLists.txt
++++ b/mlir/tools/mlir-irdl-to-cpp/CMakeLists.txt
+@@ -7,21 +7,21 @@ mlir_target_link_libraries(mlir-irdl-to-cpp
+   )
+
+ # Set up a native build when cross-compiling.
+-if(LLVM_USE_HOST_TOOLS)
+-  build_native_tool(
+-    mlir-irdl-to-cpp
+-    MLIR_IRDL_TO_CPP_EXE
++# if(LLVM_USE_HOST_TOOLS)
++#   build_native_tool(
++#     mlir-irdl-to-cpp
++#     MLIR_IRDL_TO_CPP_EXE
+
+-    # Native tool must depend on target tool so that the native tool gets
+-    # properly rebuilt when the target tool changes.
+-    DEPENDS mlir-irdl-to-cpp
+-  )
+-  add_custom_target(mlir-irdl-to-cpp-host DEPENDS ${MLIR_IRDL_TO_CPP_EXE})
+-  set(MLIR_IRDL_TO_CPP_TARGET mlir-irdl-to-cpp-host)
+-else()
+-  set(MLIR_IRDL_TO_CPP_EXE $<TARGET_FILE:mlir-irdl-to-cpp>)
+-  set(MLIR_IRDL_TO_CPP_TARGET mlir-irdl-to-cpp)
+-endif()
++#     # Native tool must depend on target tool so that the native tool gets
++#     # properly rebuilt when the target tool changes.
++#     DEPENDS mlir-irdl-to-cpp
++#   )
++#   add_custom_target(mlir-irdl-to-cpp-host DEPENDS ${MLIR_IRDL_TO_CPP_EXE})
++#   set(MLIR_IRDL_TO_CPP_TARGET mlir-irdl-to-cpp-host)
++# else()
++set(MLIR_IRDL_TO_CPP_EXE $<TARGET_FILE:mlir-irdl-to-cpp>)
++set(MLIR_IRDL_TO_CPP_TARGET mlir-irdl-to-cpp)
++# endif()
+
+ # Save the executable path and target name to the cache to expose it globally.
+ set(MLIR_IRDL_TO_CPP_EXE "${MLIR_IRDL_TO_CPP_EXE}" CACHE INTERNAL "")
 diff --git a/mlir/tools/mlir-opt/CMakeLists.txt b/mlir/tools/mlir-opt/CMakeLists.txt
 index 7cc6e78ca08c..40d365669fcf 100644
 --- a/mlir/tools/mlir-opt/CMakeLists.txt
