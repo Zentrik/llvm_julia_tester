@@ -7,7 +7,7 @@ index 63f4dd2fe..eef8c920f 100644
      ninja -j${nproc} mlir-src-sharder
  fi
 +if [[ "${LLVM_MAJ_VER}" -ge "21" ]]; then
-+    ninja -j${nproc} mlir-irdl-to-cpp
++    ninja -j${nproc} mlir-irdl-to-cpp-host
 +fi
  popd
 
