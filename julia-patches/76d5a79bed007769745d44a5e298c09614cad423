@@ -1,4 +1,4 @@
-From 67bbb500fa5e690bdf2fe7d970644bae97fe8545 Mon Sep 17 00:00:00 2001
+From 87a37a9dec02307581387f6f2f41f3109a6729b9 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
 Date: Sun, 23 Mar 2025 13:34:02 +0000
 Subject: [PATCH] 76d5a79bed007769745d44a5e298c09614cad423
@@ -13,10 +13,10 @@ Probably broken.
  3 files changed, 21 insertions(+), 25 deletions(-)
 
 diff --git a/src/debuginfo.cpp b/src/debuginfo.cpp
-index 53c07c978f..4d2441ac7d 100644
+index 4adfd3398e..e541939a90 100644
 --- a/src/debuginfo.cpp
 +++ b/src/debuginfo.cpp
-@@ -1280,7 +1280,7 @@ extern "C" jl_code_instance_t *jl_gdblookupci(void *p) JL_NOTSAFEPOINT
+@@ -1310,7 +1310,7 @@ extern "C" jl_code_instance_t *jl_gdblookupci(void *p) JL_NOTSAFEPOINT
   */
  
  // This implementation handles frame registration for local targets.
@@ -25,7 +25,7 @@ index 53c07c978f..4d2441ac7d 100644
  {
    // On OS X OS X __register_frame takes a single FDE as an argument.
    // See http://lists.cs.uiuc.edu/pipermail/llvmdev/2013-April/061768.html
-@@ -1289,7 +1289,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
+@@ -1319,7 +1319,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
      });
  }
  
@@ -34,7 +34,7 @@ index 53c07c978f..4d2441ac7d 100644
  {
     processFDEs((char*)Addr, Size, [](const char *Entry) JL_NOTSAFEPOINT {
        getJITDebugRegistry().libc_frames.libc_deregister_frame(Entry);
-@@ -1475,7 +1475,7 @@ static DW_EH_PE parseCIE(const uint8_t *Addr, const uint8_t *End) JL_NOTSAFEPOIN
+@@ -1505,7 +1505,7 @@ static DW_EH_PE parseCIE(const uint8_t *Addr, const uint8_t *End) JL_NOTSAFEPOIN
      return DW_EH_PE_absptr;
  }
  
@@ -43,7 +43,7 @@ index 53c07c978f..4d2441ac7d 100644
  {
      // System unwinder
      jl_profile_atomic([&]() JL_NOTSAFEPOINT {
-@@ -1611,7 +1611,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
+@@ -1641,7 +1641,7 @@ void register_eh_frames(uint8_t *Addr, size_t Size)
      });
  }
  
@@ -52,7 +52,7 @@ index 53c07c978f..4d2441ac7d 100644
  {
      jl_profile_atomic([&]() JL_NOTSAFEPOINT {
          __deregister_frame(Addr);
-@@ -1623,11 +1623,11 @@ void deregister_eh_frames(uint8_t *Addr, size_t Size)
+@@ -1653,11 +1653,11 @@ void deregister_eh_frames(uint8_t *Addr, size_t Size)
  
  #else
  
@@ -67,10 +67,10 @@ index 53c07c978f..4d2441ac7d 100644
  }
  
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index ac64c6ee8b..1fb1c47eb8 100644
+index 938550ed82..e3de8414e5 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
-@@ -14,9 +14,11 @@
+@@ -15,9 +15,11 @@
  #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
  #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
  #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
@@ -83,7 +83,7 @@ index ac64c6ee8b..1fb1c47eb8 100644
  #endif
  #if JL_LLVM_VERSION >= 180000
  #include <llvm/ExecutionEngine/Orc/Debugging/DebugInfoSupport.h>
-@@ -1166,18 +1168,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
+@@ -1220,18 +1222,6 @@ std::unique_ptr<jitlink::JITLinkMemoryManager> createJITLinkMemoryManager() JL_N
  #endif
  }
  
@@ -102,7 +102,7 @@ index ac64c6ee8b..1fb1c47eb8 100644
  
  RTDyldMemoryManager *createRTDyldMemoryManager(void) JL_NOTSAFEPOINT;
  
-@@ -1866,12 +1856,12 @@ JuliaOJIT::JuliaOJIT()
+@@ -1923,12 +1913,12 @@ JuliaOJIT::JuliaOJIT()
  # if defined(LLVM_SHLIB)
      // When dynamically linking against LLVM, use our custom EH frame registration code
      // also used with RTDyld to inform both our and the libc copy of libunwind.
@@ -120,10 +120,10 @@ index ac64c6ee8b..1fb1c47eb8 100644
      ObjectLayer.addPlugin(std::make_unique<JLDebuginfoPlugin>());
      ObjectLayer.addPlugin(std::make_unique<JLMemoryUsagePlugin>(&jit_bytes_size));
 diff --git a/src/julia_internal.h b/src/julia_internal.h
-index 9966d36027..640035e0a0 100644
+index e539bd48e2..968d8e7dfc 100644
 --- a/src/julia_internal.h
 +++ b/src/julia_internal.h
-@@ -1835,8 +1835,14 @@ JL_DLLEXPORT jl_value_t *jl_argtype_without_function(jl_value_t *ftypes);
+@@ -1860,8 +1860,14 @@ JL_DLLEXPORT jl_value_t *jl_argtype_without_function(jl_value_t *ftypes);
  
  JL_DLLEXPORT unsigned jl_special_vector_alignment(size_t nfields, jl_value_t *field_type);
  

@@ -1,6 +1,6 @@
-From 513ba5d5956858d0c08fe47d415be55a71452f1c Mon Sep 17 00:00:00 2001
+From 0719d1250097281d54aecf7b0612f0c34fb22792 Mon Sep 17 00:00:00 2001
 From: Zentrik <llvm.zentrik@gmail.com>
-Date: Sun, 23 Mar 2025 09:57:09 +0000
+Date: Sat, 6 Sep 2025 18:23:44 +0100
 Subject: [PATCH] 6dbe82f061bf494bc91ed458726c8080269f64f6
 
 Adapt to " [NFC][DebugInfo] Wrap DILineInfo return type with std::optional to handle missing debug info. #129792"
@@ -9,13 +9,13 @@ Adapt to " [NFC][DebugInfo] Wrap DILineInfo return type with std::optional to ha
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/src/debuginfo.cpp b/src/debuginfo.cpp
-index 4d2441ac7d..3081f05806 100644
+index e541939a90..91417498ed 100644
 --- a/src/debuginfo.cpp
 +++ b/src/debuginfo.cpp
-@@ -491,7 +491,10 @@ static int lookup_pointer(
-         }
+@@ -504,7 +504,10 @@ static int lookup_pointer(
          else {
-             jl_lock_profile_wr();
+             int havelock = jl_lock_profile_wr();
+             assert(havelock); (void)havelock;
 -            info = context->getLineInfoForAddress(makeAddress(Section, pointer + slide), infoSpec);
 +            auto info_opt = context->getLineInfoForAddress(makeAddress(Section, pointer + slide), infoSpec);
 +            if (info_opt) {
